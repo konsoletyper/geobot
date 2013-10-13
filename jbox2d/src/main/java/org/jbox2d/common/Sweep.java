@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2013, Daniel Murphy
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 	* Redistributions of source code must retain the above copyright notice,
@@ -9,7 +9,7 @@
  * 	* Redistributions in binary form must reproduce the above copyright notice,
  * 	  this list of conditions and the following disclaimer in the documentation
  * 	  and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -23,18 +23,18 @@
  ******************************************************************************/
 /*
  * JBox2D - A Java Port of Erin Catto's Box2D
- * 
- * JBox2D homepage: http://jbox2d.sourceforge.net/ 
+ *
+ * JBox2D homepage: http://jbox2d.sourceforge.net/
  * Box2D homepage: http://www.box2d.org
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  * claim that you wrote the original software. If you use this software
  * in a product, an acknowledgment in the product documentation would be
@@ -58,33 +58,34 @@ import java.io.Serializable;
  */
 public class Sweep implements Serializable {
 	private static final long serialVersionUID = 1L;
-	
+
 	/** Local center of mass position */
 	public final Vec2 localCenter;
 	/** Center world positions */
 	public final Vec2 c0, c;
 	/** World angles */
 	public float a0, a;
-	
-	public String toString() {
+
+	@Override
+    public String toString() {
 		String s = "Sweep:\nlocalCenter: " + localCenter + "\n";
 		s += "c0: " + c0 + ", c: " + c + "\n";
 		s += "a0: " + a0 + ", a: " + a + "\n";
 		return s;
 	}
-	
+
 	public Sweep() {
 		localCenter = new Vec2();
 		c0 = new Vec2();
 		c = new Vec2();
 	}
-	
+
 	public final void normalize() {
 		float d = MathUtils.TWOPI * MathUtils.floor(a0 / MathUtils.TWOPI);
 		a0 -= d;
 		a -= d;
 	}
-	
+
 	public final Sweep set(Sweep argCloneFrom) {
 		localCenter.set(argCloneFrom.localCenter);
 		c0.set(argCloneFrom.c0);
@@ -93,10 +94,10 @@ public class Sweep implements Serializable {
 		a = argCloneFrom.a;
 		return this;
 	}
-	
+
 	/**
 	 * Get the interpolated transform at a specific time.
-	 * 
+	 *
 	 * @param xf
 	 *            the result is placed here - must not be null
 	 * @param t
@@ -125,16 +126,16 @@ public class Sweep implements Serializable {
 		// float angle = (1.0f - alpha) * a0 + alpha * a;
 		// xf.R.set(angle);
 		xf.R.set((1.0f - alpha) * a0 + alpha * a);
-		
+
 		// Shift to origin
 		// xf.position.subLocal(Mat22.mul(xf.R, localCenter));
 		xf.position.x -= xf.R.col1.x * localCenter.x + xf.R.col2.x * localCenter.y;
 		xf.position.y -= xf.R.col1.y * localCenter.x + xf.R.col2.y * localCenter.y;
 	}
-	
+
 	/**
 	 * Advance the sweep forward, yielding a new initial state.
-	 * 
+	 *
 	 * @param t
 	 *            the new initial time.
 	 */
@@ -144,5 +145,5 @@ public class Sweep implements Serializable {
 		c0.y = (1.0f - t) * c0.y + t * c.y;
 		a0 = (1.0f - t) * a0 + t * a;
 	}
-	
+
 }

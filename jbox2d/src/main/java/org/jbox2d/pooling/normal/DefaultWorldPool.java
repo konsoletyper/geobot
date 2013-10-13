@@ -27,7 +27,6 @@
 package org.jbox2d.pooling.normal;
 
 import java.util.HashMap;
-
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.Collision;
 import org.jbox2d.collision.Distance;
@@ -44,201 +43,220 @@ import org.jbox2d.pooling.IDynamicStack;
 import org.jbox2d.pooling.IWorldPool;
 
 /**
- * Provides object pooling for all objects used in the engine. Objects retrieved from here should
- * only be used temporarily, and then pushed back (with the exception of arrays).
+ * Provides object pooling for all objects used in the engine. Objects retrieved
+ * from here should only be used temporarily, and then pushed back (with the
+ * exception of arrays).
  *
  * @author Daniel Murphy
  */
 public class DefaultWorldPool implements IWorldPool {
 
-  private final OrderedStack<Vec2> vecs;
-  private final OrderedStack<Vec3> vec3s;
-  private final OrderedStack<Mat22> mats;
-  private final OrderedStack<AABB> aabbs;
+    private final OrderedStack<Vec2> vecs;
+    private final OrderedStack<Vec3> vec3s;
+    private final OrderedStack<Mat22> mats;
+    private final OrderedStack<AABB> aabbs;
 
-  private final HashMap<Integer, float[]> afloats = new HashMap<>();
-  private final HashMap<Integer, int[]> aints = new HashMap<>();
-  private final HashMap<Integer, Vec2[]> avecs = new HashMap<>();
+    private final HashMap<Integer, float[]> afloats = new HashMap<>();
+    private final HashMap<Integer, int[]> aints = new HashMap<>();
+    private final HashMap<Integer, Vec2[]> avecs = new HashMap<>();
 
-  private final MutableStack<Contact> pcstack = new MutableStack<Contact>(
-          Settings.CONTACT_STACK_INIT_SIZE) {
+    private final MutableStack<Contact> pcstack = new MutableStack<Contact>(Settings.CONTACT_STACK_INIT_SIZE) {
         @Override
         protected Contact createElement() {
             return new PolygonContact(DefaultWorldPool.this);
         }
-  };
+    };
 
-  private final MutableStack<Contact> ccstack = new MutableStack<Contact>(
-          Settings.CONTACT_STACK_INIT_SIZE) {
+    private final MutableStack<Contact> ccstack = new MutableStack<Contact>(Settings.CONTACT_STACK_INIT_SIZE) {
         @Override
         protected Contact createElement() {
             return new CircleContact(DefaultWorldPool.this);
         }
-  };
+    };
 
-  private final MutableStack<Contact> cpstack = new MutableStack<Contact>(
-          Settings.CONTACT_STACK_INIT_SIZE) {
+    private final MutableStack<Contact> cpstack = new MutableStack<Contact>(Settings.CONTACT_STACK_INIT_SIZE) {
         @Override
         protected Contact createElement() {
             return new PolygonAndCircleContact(DefaultWorldPool.this);
         }
-  };
-
-  private final Collision collision;
-  private final TimeOfImpact toi;
-  private final Distance dist;
-
-  public DefaultWorldPool(int argSize, int argContainerSize) {
-    vecs = new OrderedStack<Vec2>(argSize) {
-        @Override
-        protected Vec2 createElement() {
-            return new Vec2();
-        }
-
-        @Override
-        protected Vec2[] createArray(int size) {
-            return new Vec2[size];
-        }
-    };
-    vec3s = new OrderedStack<Vec3>(argSize) {
-        @Override
-        protected Vec3 createElement() {
-            return new Vec3();
-        }
-
-        @Override
-        protected Vec3[] createArray(int size) {
-            return new Vec3[size];
-        }
-    };
-    mats = new OrderedStack<Mat22>(argSize) {
-        @Override
-        protected Mat22 createElement() {
-            return new Mat22();
-        }
-
-        @Override
-        protected Mat22[] createArray(int size) {
-            return new Mat22[size];
-        }
-    };
-    aabbs = new OrderedStack<AABB>(argSize) {
-        @Override
-        protected AABB createElement() {
-            return new AABB();
-        }
-
-        @Override
-        protected AABB[] createArray(int size) {
-            return new AABB[size];
-        }
     };
 
-    dist = new Distance();
-    collision = new Collision(this);
-    toi = new TimeOfImpact(this);
-  }
+    private final Collision collision;
+    private final TimeOfImpact toi;
+    private final Distance dist;
 
-  public final IDynamicStack<Contact> getPolyContactStack() {
-    return pcstack;
-  }
+    public DefaultWorldPool(int argSize) {
+        vecs = new OrderedStack<Vec2>(argSize) {
+            @Override
+            protected Vec2 createElement() {
+                return new Vec2();
+            }
 
-  public final IDynamicStack<Contact> getCircleContactStack() {
-    return ccstack;
-  }
+            @Override
+            protected Vec2[] createArray(int size) {
+                return new Vec2[size];
+            }
+        };
+        vec3s = new OrderedStack<Vec3>(argSize) {
+            @Override
+            protected Vec3 createElement() {
+                return new Vec3();
+            }
 
-  public final IDynamicStack<Contact> getPolyCircleContactStack() {
-    return cpstack;
-  }
+            @Override
+            protected Vec3[] createArray(int size) {
+                return new Vec3[size];
+            }
+        };
+        mats = new OrderedStack<Mat22>(argSize) {
+            @Override
+            protected Mat22 createElement() {
+                return new Mat22();
+            }
 
-  public final Vec2 popVec2() {
-    return vecs.pop();
-  }
+            @Override
+            protected Mat22[] createArray(int size) {
+                return new Mat22[size];
+            }
+        };
+        aabbs = new OrderedStack<AABB>(argSize) {
+            @Override
+            protected AABB createElement() {
+                return new AABB();
+            }
 
-  public final Vec2[] popVec2(int argNum) {
-    return vecs.pop(argNum);
-  }
+            @Override
+            protected AABB[] createArray(int size) {
+                return new AABB[size];
+            }
+        };
 
-  public final void pushVec2(int argNum) {
-    vecs.push(argNum);
-  }
-
-  public final Vec3 popVec3() {
-    return vec3s.pop();
-  }
-
-  public final Vec3[] popVec3(int argNum) {
-    return vec3s.pop(argNum);
-  }
-
-  public final void pushVec3(int argNum) {
-    vec3s.push(argNum);
-  }
-
-  public final Mat22 popMat22() {
-    return mats.pop();
-  }
-
-  public final Mat22[] popMat22(int argNum) {
-    return mats.pop(argNum);
-  }
-
-  public final void pushMat22(int argNum) {
-    mats.push(argNum);
-  }
-
-  public final AABB popAABB() {
-    return aabbs.pop();
-  }
-
-  public final AABB[] popAABB(int argNum) {
-    return aabbs.pop(argNum);
-  }
-
-  public final void pushAABB(int argNum) {
-    aabbs.push(argNum);
-  }
-
-  public final Collision getCollision() {
-    return collision;
-  }
-
-  public final TimeOfImpact getTimeOfImpact() {
-    return toi;
-  }
-
-  public final Distance getDistance() {
-    return dist;
-  }
-
-  public final float[] getFloatArray(int argLength) {
-    if (!afloats.containsKey(argLength)) {
-      afloats.put(argLength, new float[argLength]);
+        dist = new Distance();
+        collision = new Collision(this);
+        toi = new TimeOfImpact(this);
     }
 
-    assert (afloats.get(argLength).length == argLength) : "Array not built with correct length";
-    return afloats.get(argLength);
-  }
-
-  public final int[] getIntArray(int argLength) {
-    if (!aints.containsKey(argLength)) {
-      aints.put(argLength, new int[argLength]);
+    @Override
+    public final IDynamicStack<Contact> getPolyContactStack() {
+        return pcstack;
     }
 
-    assert (aints.get(argLength).length == argLength) : "Array not built with correct length";
-    return aints.get(argLength);
-  }
-
-  public final Vec2[] getVec2Array(int argLength) {
-    if (!avecs.containsKey(argLength)) {
-      Vec2[] ray = new Vec2[argLength];
-      for (int i = 0; i < argLength; i++) {
-        ray[i] = new Vec2();
-      }
-      avecs.put(argLength, ray);
+    @Override
+    public final IDynamicStack<Contact> getCircleContactStack() {
+        return ccstack;
     }
 
-    assert (avecs.get(argLength).length == argLength) : "Array not built with correct length";
-    return avecs.get(argLength);
-  }
+    @Override
+    public final IDynamicStack<Contact> getPolyCircleContactStack() {
+        return cpstack;
+    }
+
+    @Override
+    public final Vec2 popVec2() {
+        return vecs.pop();
+    }
+
+    @Override
+    public final Vec2[] popVec2(int argNum) {
+        return vecs.pop(argNum);
+    }
+
+    @Override
+    public final void pushVec2(int argNum) {
+        vecs.push(argNum);
+    }
+
+    @Override
+    public final Vec3 popVec3() {
+        return vec3s.pop();
+    }
+
+    @Override
+    public final Vec3[] popVec3(int argNum) {
+        return vec3s.pop(argNum);
+    }
+
+    @Override
+    public final void pushVec3(int argNum) {
+        vec3s.push(argNum);
+    }
+
+    @Override
+    public final Mat22 popMat22() {
+        return mats.pop();
+    }
+
+    @Override
+    public final Mat22[] popMat22(int argNum) {
+        return mats.pop(argNum);
+    }
+
+    @Override
+    public final void pushMat22(int argNum) {
+        mats.push(argNum);
+    }
+
+    @Override
+    public final AABB popAABB() {
+        return aabbs.pop();
+    }
+
+    @Override
+    public final AABB[] popAABB(int argNum) {
+        return aabbs.pop(argNum);
+    }
+
+    @Override
+    public final void pushAABB(int argNum) {
+        aabbs.push(argNum);
+    }
+
+    @Override
+    public final Collision getCollision() {
+        return collision;
+    }
+
+    @Override
+    public final TimeOfImpact getTimeOfImpact() {
+        return toi;
+    }
+
+    @Override
+    public final Distance getDistance() {
+        return dist;
+    }
+
+    @Override
+    public final float[] getFloatArray(int argLength) {
+        if (!afloats.containsKey(argLength)) {
+            afloats.put(argLength, new float[argLength]);
+        }
+
+        assert (afloats.get(argLength).length == argLength) : "Array not built with correct length";
+        return afloats.get(argLength);
+    }
+
+    @Override
+    public final int[] getIntArray(int argLength) {
+        if (!aints.containsKey(argLength)) {
+            aints.put(argLength, new int[argLength]);
+        }
+
+        assert (aints.get(argLength).length == argLength) : "Array not built with correct length";
+        return aints.get(argLength);
+    }
+
+    @Override
+    public final Vec2[] getVec2Array(int argLength) {
+        if (!avecs.containsKey(argLength)) {
+            Vec2[] ray = new Vec2[argLength];
+            for (int i = 0; i < argLength; i++) {
+                ray[i] = new Vec2();
+            }
+            avecs.put(argLength, ray);
+        }
+
+        assert (avecs.get(argLength).length == argLength) : "Array not built with correct length";
+        return avecs.get(argLength);
+    }
 }

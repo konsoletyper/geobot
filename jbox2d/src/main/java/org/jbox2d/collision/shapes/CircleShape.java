@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2013, Daniel Murphy
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 	* Redistributions of source code must retain the above copyright notice,
@@ -9,7 +9,7 @@
  * 	* Redistributions in binary form must reproduce the above copyright notice,
  * 	  this list of conditions and the following disclaimer in the documentation
  * 	  and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -23,18 +23,18 @@
  ******************************************************************************/
 /*
  * JBox2D - A Java Port of Erin Catto's Box2D
- * 
+ *
  * JBox2D homepage: http://jbox2d.sourceforge.net/
  * Box2D homepage: http://www.box2d.org
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  * claim that you wrote the original software. If you use this software
  * in a product, an acknowledgment in the product documentation would be
@@ -62,9 +62,9 @@ import org.jbox2d.common.Vec2;
  * A circle shape.
  */
 public class CircleShape extends Shape {
-	
+
 	public final Vec2 m_p;
-	
+
 	private final Vec2 pool1 = new Vec2();
 	private final Vec2 pool2 = new Vec2();
 	private final Vec2 pool3 = new Vec2();
@@ -74,46 +74,47 @@ public class CircleShape extends Shape {
 		m_p = new Vec2();
 		m_radius = 0;
 	}
-	
-	public final Shape clone() {
+
+	@Override
+    public final Shape clone() {
 		CircleShape shape = new CircleShape();
 		shape.m_p.set(m_p);
 		shape.m_radius = m_radius;
 		return shape;
 	}
-	
+
 	/**
 	 * Get the supporting vertex index in the given direction.
-	 * 
+	 *
 	 * @param d
 	 * @return
 	 */
 	public final int getSupport(final Vec2 d) {
 		return 0;
 	}
-	
+
 	/**
 	 * Get the supporting vertex in the given direction.
-	 * 
+	 *
 	 * @param d
 	 * @return
 	 */
 	public final Vec2 getSupportVertex(final Vec2 d) {
 		return m_p;
 	}
-	
+
 	/**
 	 * Get the vertex count.
-	 * 
+	 *
 	 * @return
 	 */
 	public final int getVertexCount() {
 		return 1;
 	}
-	
+
 	/**
 	 * Get a vertex by index.
-	 * 
+	 *
 	 * @param index
 	 * @return
 	 */
@@ -121,7 +122,7 @@ public class CircleShape extends Shape {
 		assert (index == 0);
 		return m_p;
 	}
-	
+
 	/**
 	 * @see Shape#testPoint(Transform, Vec2)
 	 */
@@ -130,46 +131,46 @@ public class CircleShape extends Shape {
 		final Vec2 center = pool1;
 		Mat22.mulToOut(transform.R, m_p, center);
 		center.addLocal(transform.position);
-		
+
 		final Vec2 d = center.subLocal(p).negateLocal();
 		return Vec2.dot(d, d) <= m_radius * m_radius;
 	}
-	
+
 	// Collision Detection in Interactive 3D Environments by Gino van den Bergen
 	// From Section 3.1.2
 	// x = s + a * r
 	// norm(x) = radius
-	
+
 	/**
 	 * @see Shape#raycast(org.jbox2d.collision.RayCastOutput,
 	 *      org.jbox2d.collision.RayCastInput, org.jbox2d.common.Transform, int)
 	 */
 	@Override
 	public final boolean raycast(RayCastOutput argOutput, RayCastInput argInput, Transform argTransform) {
-		
+
 		final Vec2 position = pool1;
 		final Vec2 s = pool2;
 		final Vec2 r = pool3;
-		
+
 		Mat22.mulToOut(argTransform.R, m_p, position);
 		position.addLocal(argTransform.position);
 		s.set(argInput.p1).subLocal(position);
 		final float b = Vec2.dot(s, s) - m_radius * m_radius;
-		
+
 		// Solve quadratic equation.
 		r.set(argInput.p2).subLocal(argInput.p1);
 		final float c = Vec2.dot(s, r);
 		final float rr = Vec2.dot(r, r);
 		final float sigma = c * c - rr * b;
-		
+
 		// Check for negative discriminant and short segment.
 		if (sigma < 0.0f || rr < Settings.EPSILON) {
 			return false;
 		}
-		
+
 		// Find the point of intersection of the line with the circle.
 		float a = -(c + MathUtils.sqrt(sigma));
-		
+
 		// Is the intersection point on the segment?
 		if (0.0f <= a && a <= argInput.maxFraction * rr) {
 			a /= rr;
@@ -179,10 +180,10 @@ public class CircleShape extends Shape {
 			argOutput.normal.normalize();
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * @see org.jbox2d.collision.shapes.Shape#computeAABB(org.jbox2d.collision.AABB,
 	 *      org.jbox2d.common.Transform, int)
@@ -192,13 +193,13 @@ public class CircleShape extends Shape {
 		final Vec2 p = pool1;
 		Mat22.mulToOut(argTransform.R, m_p, p);
 		p.addLocal(argTransform.position);
-		
+
 		argAabb.lowerBound.x = p.x - m_radius;
 		argAabb.lowerBound.y = p.y - m_radius;
 		argAabb.upperBound.x = p.x + m_radius;
 		argAabb.upperBound.y = p.y + m_radius;
 	}
-	
+
 	/**
 	 * @see Shape#computeMass(MassData, float)
 	 */
@@ -206,11 +207,11 @@ public class CircleShape extends Shape {
 	public final void computeMass(final MassData massData, final float density) {
 		massData.mass = density * Settings.PI * m_radius * m_radius;
 		massData.center.set(m_p);
-		
+
 		// inertia about the local origin
 		massData.I = massData.mass * (0.5f * m_radius * m_radius + Vec2.dot(m_p, m_p));
 	}
-	
+
 	// djm pooled from above
 	/*
 	 * @see Shape#computeSubmergedArea(Vec2, float, Vec2, Vec2)

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2013, Daniel Murphy
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 	* Redistributions of source code must retain the above copyright notice,
@@ -9,7 +9,7 @@
  * 	* Redistributions in binary form must reproduce the above copyright notice,
  * 	  this list of conditions and the following disclaimer in the documentation
  * 	  and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -23,18 +23,18 @@
  ******************************************************************************/
 /*
  * JBox2D - A Java Port of Erin Catto's Box2D
- * 
+ *
  * JBox2D homepage: http://jbox2d.sourceforge.net/
  * Box2D homepage: http://www.box2d.org
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  * claim that you wrote the original software. If you use this software
  * in a product, an acknowledgment in the product documentation would be
@@ -67,7 +67,7 @@ public abstract class Shape {
 	public Shape() {
 		m_type = ShapeType.UNKNOWN;
 	}
-	
+
 	/**
 	 * Get the type of this shape. You can use this to down cast to the concrete shape.
 	 * @return the shape type.
@@ -108,8 +108,8 @@ public abstract class Shape {
 	 * @param density the density in kilograms per meter squared.
 	 */
 	public abstract void computeMass(final MassData massData, final float density);
-	
-	
+
+
 	/*
 	 * Compute the volume and centroid of this shape intersected with a half plane
 	 * @param normal the surface normal
@@ -120,9 +120,10 @@ public abstract class Shape {
 	 *
 	public abstract float computeSubmergedArea(Vec2 normal,
 									  float offset,
-									  Transform xf, 
+									  Transform xf,
 									  Vec2 c);*/
-	
-	
-	public abstract Shape clone();
+
+
+	@Override
+    public abstract Shape clone();
 }

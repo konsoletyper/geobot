@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2013, Daniel Murphy
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 	* Redistributions of source code must retain the above copyright notice,
@@ -9,7 +9,7 @@
  * 	* Redistributions in binary form must reproduce the above copyright notice,
  * 	  this list of conditions and the following disclaimer in the documentation
  * 	  and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -28,79 +28,86 @@ package org.jbox2d.common;
  * @author Daniel Murphy
  */
 public class OBBViewportTransform implements IViewportTransform{
-	
+
 	public static class OBB{
 		public final Mat22 R = new Mat22();
 		public final Vec2 center = new Vec2();
 		public final Vec2 extents = new Vec2();
 	}
-	
+
 	protected final OBB box = new OBB();
 	private boolean yFlip = false;
 	private final Mat22 yFlipMat = new Mat22(1,0,0,-1);
 	private final Mat22 yFlipMatInv = yFlipMat.invert();
-	
+
 	public OBBViewportTransform(){
 		box.R.setIdentity();
 	}
-	
+
 	public void set(OBBViewportTransform vpt){
 		box.center.set(vpt.box.center);
 		box.extents.set( vpt.box.extents);
 		box.R.set( vpt.box.R);
 		yFlip = vpt.yFlip;
 	}
-	
+
 	/**
 	 * @see IViewportTransform#setCamera(float, float, float)
 	 */
-	public void setCamera(float x, float y, float scale){
+	@Override
+    public void setCamera(float x, float y, float scale){
 		box.center.set(x, y);
 		Mat22.createScaleTransform(scale, box.R);
 	}
-	
+
 	/**
 	 * @see IViewportTransform#getExtents()
 	 */
-	public Vec2 getExtents(){
+	@Override
+    public Vec2 getExtents(){
 		return box.extents;
 	}
-	
+
 	/**
 	 * @see IViewportTransform#setExtents(Vec2)
 	 */
-	public void setExtents(Vec2 argExtents){
+	@Override
+    public void setExtents(Vec2 argExtents){
 		box.extents.set(argExtents);
 	}
-	
+
 	/**
 	 * @see IViewportTransform#setExtents(float, float)
 	 */
-	public void setExtents(float argHalfWidth, float argHalfHeight){
+	@Override
+    public void setExtents(float argHalfWidth, float argHalfHeight){
 		box.extents.set(argHalfWidth, argHalfHeight);
 	}
-	
+
 	/**
 	 * @see IViewportTransform#getCenter()
 	 */
-	public Vec2 getCenter(){
+	@Override
+    public Vec2 getCenter(){
 		return box.center;
 	}
-	
+
 	/**
 	 * @see IViewportTransform#setCenter(Vec2)
 	 */
-	public void setCenter(Vec2 argPos){
+	@Override
+    public void setCenter(Vec2 argPos){
 		box.center.set(argPos);
 	}
-	
+
 	/**
 	 * @see IViewportTransform#setCenter(float, float)
 	 */
-	public void setCenter(float x, float y){
+	@Override
+    public void setCenter(float x, float y){
 		box.center.set(x,y);
 	}
-	
+
 	/**
 	 * gets the transform of the viewport, transforms around the center.
 	 * Not a copy.
@@ -109,7 +116,7 @@ public class OBBViewportTransform implements IViewportTransform{
 	public Mat22 getTransform(){
 		return box.R;
 	}
-	
+
 	/**
 	 * Sets the transform of the viewport.  Transforms about the center.
 	 * @param transform
@@ -117,7 +124,7 @@ public class OBBViewportTransform implements IViewportTransform{
 	public void setTransform(Mat22 transform){
 		box.R.set(transform);
 	}
-	
+
 	/**
 	 * Multiplies the obb transform by the given transform
 	 * @param argTransform
@@ -125,18 +132,20 @@ public class OBBViewportTransform implements IViewportTransform{
 	public void mulByTransform(Mat22 argTransform){
 		box.R.mulLocal(argTransform);
 	}
-	
+
 	/**
 	 * @see IViewportTransform#isYFlip()
 	 */
-	public boolean isYFlip() {
+	@Override
+    public boolean isYFlip() {
 		return yFlip;
 	}
 
 	/**
 	 * @see IViewportTransform#setYFlip(boolean)
 	 */
-	public void setYFlip(boolean yFlip) {
+	@Override
+    public void setYFlip(boolean yFlip) {
 		this.yFlip = yFlip;
 	}
 
@@ -145,7 +154,8 @@ public class OBBViewportTransform implements IViewportTransform{
 	/**
 	 * @see IViewportTransform#getScreenVectorToWorld(Vec2, Vec2)
 	 */
-	public void getScreenVectorToWorld(Vec2 argScreen, Vec2 argWorld) {
+	@Override
+    public void getScreenVectorToWorld(Vec2 argScreen, Vec2 argWorld) {
 		inv.set(box.R);
 		inv.invertLocal();
 		inv.mulToOut(argScreen, argWorld);
@@ -157,17 +167,19 @@ public class OBBViewportTransform implements IViewportTransform{
 	/**
 	 * @see IViewportTransform#getWorldVectorToScreen(Vec2, Vec2)
 	 */
-	public void getWorldVectorToScreen(Vec2 argWorld, Vec2 argScreen) {
+	@Override
+    public void getWorldVectorToScreen(Vec2 argWorld, Vec2 argScreen) {
 		box.R.mulToOut(argWorld, argScreen);
 		if(yFlip){
 			yFlipMatInv.mulToOut( argScreen, argScreen);
 		}
 	}
-	
+
 	/**
 	 * @see IViewportTransform#getWorldToScreen(Vec2, Vec2)
 	 */
-	public void getWorldToScreen(Vec2 argWorld, Vec2 argScreen){
+	@Override
+    public void getWorldToScreen(Vec2 argWorld, Vec2 argScreen){
 		argScreen.set(argWorld);
 		argScreen.subLocal(box.center);
 		box.R.mulToOut(argScreen, argScreen);
@@ -176,12 +188,13 @@ public class OBBViewportTransform implements IViewportTransform{
 		}
 		argScreen.addLocal(box.extents);
 	}
-	
+
 	private final Mat22 inv2 = new Mat22();
 	/**
 	 * @see IViewportTransform#getScreenToWorld(Vec2, Vec2)
 	 */
-	public void getScreenToWorld(Vec2 argScreen, Vec2 argWorld){
+	@Override
+    public void getScreenToWorld(Vec2 argScreen, Vec2 argWorld){
 		argWorld.set(argScreen);
 		argWorld.subLocal(box.extents);
 		box.R.invertToOut(inv2);

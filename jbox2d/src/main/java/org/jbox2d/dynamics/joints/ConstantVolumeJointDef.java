@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2013, Daniel Murphy
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 	* Redistributions of source code must retain the above copyright notice,
@@ -9,7 +9,7 @@
  * 	* Redistributions in binary form must reproduce the above copyright notice,
  * 	  this list of conditions and the following disclaimer in the documentation
  * 	  and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -34,22 +34,22 @@ import org.jbox2d.dynamics.Body;
 public class ConstantVolumeJointDef extends JointDef {
 	public float frequencyHz;
 	public float dampingRatio;
-	
+
 	ArrayList<Body> bodies;
 	ArrayList<DistanceJoint> joints;
-	
+
 	//public float relaxationFactor;//1.0 is perfectly stiff (but doesn't work, unstable)
 
 	public ConstantVolumeJointDef() {
 		type = JointType.CONSTANT_VOLUME;
-		bodies = new ArrayList<Body>();
+		bodies = new ArrayList<>();
 		joints = null;
 		//relaxationFactor = 0.9f;
 		collideConnected = false;
 		frequencyHz = 0.0f;
 		dampingRatio = 0.0f;
 	}
-	
+
 	/**
 	 * Adds a body to the group
 	 * @param argBody
@@ -63,7 +63,7 @@ public class ConstantVolumeJointDef extends JointDef {
 			bodyB = argBody;
 		}
 	}
-	
+
 	/**
 	 * Adds a body and the pre-made distance joint.  Should only
 	 * be used for deserialization.
@@ -71,7 +71,7 @@ public class ConstantVolumeJointDef extends JointDef {
 	public void addBodyAndJoint(Body argBody, DistanceJoint argJoint){
 	  addBody(argBody);
 	  if(joints == null){
-	    joints = new ArrayList<DistanceJoint>();
+	    joints = new ArrayList<>();
 	  }
 	  joints.add(argJoint);
 	}

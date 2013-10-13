@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2013, Daniel Murphy
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 	* Redistributions of source code must retain the above copyright notice,
@@ -9,7 +9,7 @@
  * 	* Redistributions in binary form must reproduce the above copyright notice,
  * 	  this list of conditions and the following disclaimer in the documentation
  * 	  and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -23,18 +23,18 @@
  ******************************************************************************/
 /*
  * JBox2D - A Java Port of Erin Catto's Box2D
- * 
+ *
  * JBox2D homepage: http://jbox2d.sourceforge.net/
  * Box2D homepage: http://www.box2d.org
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  * claim that you wrote the original software. If you use this software
  * in a product, an acknowledgment in the product documentation would be
@@ -110,7 +110,8 @@ public class PolygonShape extends Shape {
 		m_centroid.setZero();
 	}
 
-	public final Shape clone() {
+	@Override
+    public final Shape clone() {
 		PolygonShape shape = new PolygonShape();
 		shape.m_centroid.set(this.m_centroid);
 		for (int i = 0; i < shape.m_normals.length; i++) {
@@ -124,7 +125,7 @@ public class PolygonShape extends Shape {
 
 	/**
 	 * Get the supporting vertex index in the given direction.
-	 * 
+	 *
 	 * @param d
 	 * @return
 	 */
@@ -143,7 +144,7 @@ public class PolygonShape extends Shape {
 
 	/**
 	 * Get the supporting vertex in the given direction.
-	 * 
+	 *
 	 * @param d
 	 * @return
 	 */
@@ -222,7 +223,7 @@ public class PolygonShape extends Shape {
 
 	/**
 	 * Build vertices to represent an axis-aligned box.
-	 * 
+	 *
 	 * @param hx
 	 *            the half-width.
 	 * @param hy
@@ -243,7 +244,7 @@ public class PolygonShape extends Shape {
 
 	/**
 	 * Build vertices to represent an oriented box.
-	 * 
+	 *
 	 * @param hx
 	 *            the half-width.
 	 * @param hy
@@ -279,7 +280,7 @@ public class PolygonShape extends Shape {
 
 	/**
 	 * Set this as a single edge.
-	 * 
+	 *
 	 * @param v1
 	 * @param v2
 	 */
@@ -368,7 +369,7 @@ public class PolygonShape extends Shape {
 	 * static final TLVec2 tlP2b = new TLVec2(); private static final TLVec2
 	 * tlP3 = new TLVec2(); private static final TLVec2 tlcenter = new TLVec2();
 	 * /*
-	 * 
+	 *
 	 * @see Shape#computeSubmergedArea(Vec2, float, XForm, Vec2) public float
 	 * computeSubmergedArea(final Vec2 normal, float offset, Transform xf, Vec2
 	 * c) { final Vec2 normalL = tlNormalL.get(); final MassData md =
@@ -418,17 +419,17 @@ public class PolygonShape extends Shape {
 
 	/*
 	 * Get the supporting vertex index in the given direction.
-	 * 
+	 *
 	 * @param d
-	 * 
+	 *
 	 * @return public final int getSupport( final Vec2 d){ int bestIndex = 0;
 	 * float bestValue = Vec2.dot(m_vertices[0], d); for (int i = 1; i <
 	 * m_vertexCount; ++i){ final float value = Vec2.dot(m_vertices[i], d); if
 	 * (value > bestValue){ bestIndex = i; bestValue = value; } } return
 	 * bestIndex; } /** Get the supporting vertex in the given direction.
-	 * 
+	 *
 	 * @param d
-	 * 
+	 *
 	 * @return public final Vec2 getSupportVertex( final Vec2 d){ int bestIndex
 	 * = 0; float bestValue = Vec2.dot(m_vertices[0], d); for (int i = 1; i <
 	 * m_vertexCount; ++i){ final float value = Vec2.dot(m_vertices[i], d); if
@@ -438,7 +439,7 @@ public class PolygonShape extends Shape {
 
 	/**
 	 * Get the vertex count.
-	 * 
+	 *
 	 * @return
 	 */
 	public final int getVertexCount() {
@@ -447,7 +448,7 @@ public class PolygonShape extends Shape {
 
 	/**
 	 * Get a vertex by index.
-	 * 
+	 *
 	 * @param index
 	 * @return
 	 */
@@ -631,7 +632,8 @@ public class PolygonShape extends Shape {
 	/**
 	 * @see Shape#computeMass(MassData)
 	 */
-	public void computeMass(final MassData massData, float density) {
+	@Override
+    public void computeMass(final MassData massData, float density) {
 		// Polygon mass, centroid, and inertia.
 		// Let rho be the polygon density in mass per unit area.
 		// Then:

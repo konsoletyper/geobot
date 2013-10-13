@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2013, Daniel Murphy
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 	* Redistributions of source code must retain the above copyright notice,
@@ -9,7 +9,7 @@
  * 	* Redistributions in binary form must reproduce the above copyright notice,
  * 	  this list of conditions and the following disclaimer in the documentation
  * 	  and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -47,7 +47,7 @@ public class AABB {
 
 	/**
 	 * Copies from the given object
-	 * 
+	 *
 	 * @param copy
 	 *            the object to copy from
 	 */
@@ -57,7 +57,7 @@ public class AABB {
 
 	/**
 	 * Creates an AABB object using the given bounding vertices.
-	 * 
+	 *
 	 * @param lowerVertex
 	 *            the bottom left vertex of the bounding box
 	 * @param maxVertex
@@ -70,7 +70,7 @@ public class AABB {
 
 	/**
 	 * Sets this object from the given object
-	 * 
+	 *
 	 * @param aabb
 	 *            the object to copy from
 	 */
@@ -94,7 +94,7 @@ public class AABB {
 
 	/**
 	 * Get the center of the AABB
-	 * 
+	 *
 	 * @return
 	 */
 	public final Vec2 getCenter() {
@@ -111,7 +111,7 @@ public class AABB {
 
 	/**
 	 * Get the extents of the AABB (half-widths).
-	 * 
+	 *
 	 * @return
 	 */
 	public final Vec2 getExtents() {
@@ -137,7 +137,7 @@ public class AABB {
 
 	/**
 	 * Gets the perimeter length
-	 * 
+	 *
 	 * @return
 	 */
 	public final float getPerimeter() {
@@ -146,7 +146,7 @@ public class AABB {
 
 	/**
 	 * Combine two AABBs into this one.
-	 * 
+	 *
 	 * @param aabb1
 	 * @param aab
 	 */
@@ -163,7 +163,7 @@ public class AABB {
 
 	/**
 	 * Does this aabb contain the provided AABB.
-	 * 
+	 *
 	 * @return
 	 */
 	public final boolean contains(final AABB aabb) {
@@ -193,12 +193,12 @@ public class AABB {
 	 */
 	public final boolean raycast(final RayCastOutput output,
 			final RayCastInput input) {
-		return raycast(output, input, new DefaultWorldPool(4, 4));
+		return raycast(output, input, new DefaultWorldPool(4));
 	}
 
 	/**
 	 * From Real-time Collision Detection, p179.
-	 * 
+	 *
 	 * @param output
 	 * @param input
 	 */
