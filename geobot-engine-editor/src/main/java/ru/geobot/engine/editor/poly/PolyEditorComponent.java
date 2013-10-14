@@ -8,6 +8,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.image.RenderedImage;
+import java.util.List;
 import javax.swing.JComponent;
 
 /**
@@ -15,14 +16,15 @@ import javax.swing.JComponent;
  * @author Alexey Andreev <konsoletyper@gmail.com>
  */
 public class PolyEditorComponent extends JComponent {
-    private byte ACTIVE_TYPE_VERTEX = 0;
-    private byte ACTIVE_TYPE_EDGE = 1;
+    private static final byte ACTIVE_TYPE_VERTEX = 0;
+    private static final byte ACTIVE_TYPE_EDGE = 1;
     private static final long serialVersionUID = 3078945964049110789L;
     private RenderedImage backgroundImage;
     private int scale = 1;
     private Polygon polygon = new Polygon();
     private int activeObjectIndex;
     private byte activeObjectType;
+    private Vertex vertexOnActiveEdge;
     private int leftBound;
     private int topBound;
     private int rightBound;
@@ -139,28 +141,55 @@ public class PolyEditorComponent extends JComponent {
             graphics.drawRenderedImage(backgroundImage, AffineTransform.getScaleInstance(scale, scale));
         }
         Path2D path = new Path2D.Float();
-        Vertex v = polyToView(polygon.getVertices().get(0));
-        path.moveTo(v.getX() + scale / 2, v.getY() + scale / 2);
-        for (int i = 1; i < polygon.getVertices().size(); ++i) {
-            v = polyToView(polygon.getVertices().get(i));
-            path.lineTo(v.getX() + scale / 2, v.getY() + scale / 2);
-        }
-        if (polygon.isClosed()) {
-            path.closePath();
-        }
-        graphics.setColor(new Color(255, 0, 0, 96));
-        graphics.fill(path);
-        graphics.setColor(new Color(255, 0, 0, 255));
-        graphics.draw(path);
-        for (int i = 0; i < polygon.getVertices().size(); ++i) {
-            v = polyToView(polygon.getVertices().get(i));
-            int x = v.getX() + scale / 2;
-            int y = v.getY() + scale / 2;
-            if (i == activeObjectIndex) {
-                graphics.setColor(new Color(0, 255, 0, 255));
-            } else {
-                graphics.setColor(new Color(255, 0, 0, 255));
+        List<Vertex> vertices = polygon.getVertices();
+        if (activeObjectIndex < 0 || activeObjectType != ACTIVE_TYPE_EDGE) {
+            Vertex v = polyToView(vertices.get(0));
+            path.moveTo(v.getX() + scale / 2, v.getY() + scale / 2);
+            for (int i = 1; i < vertices.size(); ++i) {
+                v = polyToView(vertices.get(i));
+                path.lineTo(v.getX() + scale / 2, v.getY() + scale / 2);
             }
+            path.closePath();
+            graphics.setColor(new Color(255, 0, 0, 96));
+            graphics.fill(path);
+            graphics.setColor(new Color(255, 0, 0, 255));
+            graphics.draw(path);
+            for (int i = 0; i < vertices.size(); ++i) {
+                v = polyToView(vertices.get(i));
+                int x = v.getX() + scale / 2;
+                int y = v.getY() + scale / 2;
+                if (i == activeObjectIndex) {
+                    graphics.setColor(new Color(0, 255, 0, 255));
+                } else {
+                    graphics.setColor(new Color(255, 0, 0, 255));
+                }
+                graphics.fillRect(x - 1, y - 1, 3, 3);
+            }
+        } else {
+            Vertex v = polyToView(vertices.get(activeObjectIndex));
+            path.moveTo(v.getX() + scale / 2, v.getY() + scale / 2);
+            for (int i = 1; i < vertices.size(); ++i) {
+                v = polyToView(vertices.get((vertices.size() + activeObjectIndex - i) % vertices.size()));
+                path.lineTo(v.getX() + scale / 2, v.getY() + scale / 2);
+            }
+            graphics.setColor(new Color(255, 0, 0, 96));
+            graphics.fill(path);
+            graphics.setColor(new Color(255, 0, 0, 255));
+            graphics.draw(path);
+            graphics.setColor(new Color(0, 255, 0, 255));
+            v = polyToView(vertices.get(activeObjectIndex));
+            Vertex w = polyToView(vertices.get((activeObjectIndex + 1) % vertices.size()));
+            graphics.drawLine(v.getX() + scale / 2, v.getY() + scale / 2, w.getX() + scale / 2, w.getY() + scale / 2);
+            graphics.setColor(new Color(255, 0, 0, 255));
+            for (int i = 0; i < polygon.getVertices().size(); ++i) {
+                v = polyToView(polygon.getVertices().get(i));
+                int x = v.getX() + scale / 2;
+                int y = v.getY() + scale / 2;
+                graphics.fillRect(x - 1, y - 1, 3, 3);
+            }
+            graphics.setColor(new Color(0, 255, 0, 255));
+            int x = vertexOnActiveEdge.getX() + scale / 2;
+            int y = vertexOnActiveEdge.getY() + scale  /2;
             graphics.fillRect(x - 1, y - 1, 3, 3);
         }
     }
@@ -178,38 +207,101 @@ public class PolyEditorComponent extends JComponent {
 
     private void onMouseMoved(MouseEvent event) {
         if ((event.getModifiers() & InputEvent.BUTTON1_DOWN_MASK) == 0) {
-            updateActiveVertex(event.getX(), event.getY());
+            updateActiveObject(event.getX(), event.getY());
         }
     }
 
     private void onMousePressed(MouseEvent event) {
-
     }
 
     private void onMouseReleased(MouseEvent event) {
         if (event.getButton() == MouseEvent.BUTTON1) {
-            updateActiveVertex(event.getX(), event.getY());
+            updateActiveObject(event.getX(), event.getY());
         }
     }
 
-    private void updateActiveVertex(int x, int y) {
-        int h = getHeight();
-        if (backgroundImage != null) {
-            h = backgroundImage.getHeight() * scale;
-        }
-        int oldActiveVertexIndex = activeObjectIndex;
+    private void updateActiveObject(int x, int y) {
+        int oldActiveObjectIndex = activeObjectIndex;
+        int oldActiveObjectType = activeObjectType;
         activeObjectIndex = -1;
+        activeObjectType = ACTIVE_TYPE_VERTEX;
+        int bestDistance = 5;
         for (int i = 0; i < polygon.getVertices().size(); ++i) {
-            Vertex v = polygon.getVertices().get(i);
-            int refX = v.getX() * scale + scale / 2;
-            int refY = h - (v.getY() * scale + scale / 2);
-            if (Math.abs(refX - x) <= 4 && Math.abs(refY - y) <= 4) {
+            Vertex v = polyToView(polygon.getVertices().get(i));
+            v.setX(v.getX() + scale / 2);
+            v.setY(v.getY() + scale / 2);
+            int distance = Math.max(Math.abs(v.getX() - x), Math.abs(v.getY() - y));
+            if (distance <= 6 && bestDistance > distance) {
                 activeObjectIndex = i;
-                break;
             }
         }
-        if (activeObjectIndex != oldActiveVertexIndex) {
+        if (activeObjectIndex == -1) {
+            Vertex v = new Vertex();
+            v.setX(x);
+            v.setY(y);
+            for (int i = 0; i < polygon.getVertices().size(); ++i) {
+                int j = (i + 1) % polygon.getVertices().size();
+                Vertex a = polyToView(polygon.getVertices().get(i));
+                Vertex b = polyToView(polygon.getVertices().get(j));
+                Intersection intersection = getIntersection(a, b, v);
+                int distance = intersectionDistance(intersection, a, b);
+                if (distance <= 6 && bestDistance > distance) {
+                    activeObjectIndex = i;
+                    activeObjectType = ACTIVE_TYPE_EDGE;
+                    Vertex active = new Vertex();
+                    Vertex dir = sub(b, a);
+                    active.setX(Math.round(a.getX() + dir.getX() * intersection.along));
+                    active.setY(Math.round(a.getY() + dir.getY() * intersection.along));
+                    vertexOnActiveEdge = active;
+                }
+            }
+        }
+        if (activeObjectIndex != oldActiveObjectIndex || activeObjectType != oldActiveObjectType ||
+                (activeObjectIndex >= 0 && activeObjectType == ACTIVE_TYPE_EDGE)) {
             repaint();
         }
+    }
+
+    static class Intersection {
+        float across;
+        float along;
+    }
+
+    private int intersectionDistance(Intersection distance, Vertex a, Vertex b) {
+        Vertex dir = sub(b, a);
+        float length = (float)Math.sqrt(dotProduct(dir, dir));
+        float along = distance.along < 0 ? Math.abs(distance.along) :
+                distance.along > 1 ? Math.abs(distance.along - 1) : 0;
+        float across = Math.abs(distance.across);
+        return Math.round(Math.max(along, across) * length);
+    }
+
+    private Intersection getIntersection(Vertex a, Vertex b, Vertex v) {
+        Vertex dir = sub(b, a);
+        Vertex perp = rotate90degrees(dir);
+        Vertex vdir = sub(v, a);
+        float norm = dotProduct(dir, dir);
+        Intersection dist = new Intersection();
+        dist.across = dotProduct(perp, vdir) / norm;
+        dist.along = dotProduct(dir, vdir) / norm;
+        return dist;
+    }
+
+    private int dotProduct(Vertex a, Vertex b) {
+        return a.getX() * b.getX() + a.getY() * b.getY();
+    }
+
+    private Vertex rotate90degrees(Vertex v) {
+        Vertex r = new Vertex();
+        r.setX(v.getY());
+        r.setY(-v.getX());
+        return r;
+    }
+
+    private Vertex sub(Vertex a, Vertex b) {
+        Vertex v = new Vertex();
+        v.setX(a.getX() - b.getX());
+        v.setY(a.getY() - b.getY());
+        return v;
     }
 }

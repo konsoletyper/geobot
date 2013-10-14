@@ -26,7 +26,6 @@ public class EditorWindow extends JFrame {
             window.editor.setBackgroundImage(ImageIO.read(input));
         }
         Polygon polygon = new Polygon();
-        polygon.setClosed(true);
         Vertex v = new Vertex();
         v.setX(20);
         v.setY(20);

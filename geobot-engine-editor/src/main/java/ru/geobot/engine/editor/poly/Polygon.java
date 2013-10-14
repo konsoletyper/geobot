@@ -9,18 +9,9 @@ import java.util.List;
  */
 public class Polygon {
     private List<Vertex> vertices = new ArrayList<>();
-    private boolean closed;
 
     public List<Vertex> getVertices() {
         return vertices;
-    }
-
-    public boolean isClosed() {
-        return closed;
-    }
-
-    public void setClosed(boolean closed) {
-        this.closed = closed;
     }
 
     @Override
@@ -29,7 +20,6 @@ public class Polygon {
         for (Vertex vertex : vertices) {
             copy.vertices.add(vertex.clone());
         }
-        copy.closed = closed;
         return copy;
     }
 }
