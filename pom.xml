@@ -18,6 +18,7 @@
     <module>geobot-engine</module>
     <module>geobot-game</module>
     <module>jbox2d</module>
+    <module>geobot-engine-editor</module>
   </modules>
 
   <dependencyManagement>
