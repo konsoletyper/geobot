@@ -1,4 +1,4 @@
-package ru.geobot.engine.editor.poly;
+package ru.geobot.engine.editor.model;
 
 /**
  *

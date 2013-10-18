@@ -8,20 +8,25 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.image.RenderedImage;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
+import ru.geobot.engine.editor.model.Polygon;
+import ru.geobot.engine.editor.model.PolygonalObject;
+import ru.geobot.engine.editor.model.Vertex;
 
 /**
  *
  * @author Alexey Andreev <konsoletyper@gmail.com>
  */
-public class PolyEditorComponent extends JComponent {
+public class PolygonalObjectEditor extends JComponent {
     private static final byte ACTIVE_TYPE_VERTEX = 0;
     private static final byte ACTIVE_TYPE_EDGE = 1;
     private static final long serialVersionUID = 3078945964049110789L;
     private RenderedImage backgroundImage;
     private int scale = 1;
-    private Polygon polygon = new Polygon();
+    private List<PolygonInfo> polygonList = new ArrayList<>();
+    private int activePolygonIndex;
     private int activeObjectIndex;
     private byte activeObjectType;
     private Vertex vertexOnActiveEdge;
@@ -32,7 +37,15 @@ public class PolyEditorComponent extends JComponent {
     private int activeOffsetX;
     private int activeOffsetY;
 
-    public PolyEditorComponent() {
+    private static class PolygonInfo {
+        Polygon polygon;
+        int left;
+        int top;
+        int right;
+        int bottom;
+    }
+
+    public PolygonalObjectEditor() {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override public void mouseMoved(MouseEvent e) {
                 onMouseMoved(e);
@@ -57,14 +70,24 @@ public class PolyEditorComponent extends JComponent {
         });
     }
 
-    public void setBackgroundImage(RenderedImage backgroundImage) {
-        this.backgroundImage = backgroundImage;
-        repaint();
-        updateBounds();
+    private void updateBounds(PolygonInfo info) {
+        List<Vertex> vertices = info.polygon.getVertices();
+        Vertex v = vertices.get(0);
+        info.left = v.getX();
+        info.right = v.getX();
+        info.top = v.getY();
+        info.bottom = v.getY();
+        for (int i = 1; i < vertices.size(); ++i) {
+            v = vertices.get(i);
+            info.left = Math.min(info.left, v.getX());
+            info.top = Math.min(info.top, v.getY());
+            info.right = Math.max(info.right, v.getX());
+            info.bottom = Math.max(info.bottom, v.getY());
+        }
     }
 
     private void updateBounds() {
-        if (polygon.getVertices().isEmpty()) {
+        if (polygonList.isEmpty()) {
             topBound = 0;
             bottomBound = 0;
             if (backgroundImage != null) {
@@ -78,17 +101,17 @@ public class PolyEditorComponent extends JComponent {
             revalidate();
             return;
         }
-        Vertex v = polygon.getVertices().get(0);
-        topBound = v.getY();
-        bottomBound = v.getY();
-        leftBound = v.getX();
-        rightBound = v.getX();
-        for (int i = 1; i < polygon.getVertices().size(); ++i) {
-            v = polygon.getVertices().get(i);
-            leftBound = Math.min(leftBound, v.getX());
-            topBound = Math.min(topBound, v.getY());
-            rightBound = Math.max(rightBound, v.getX());
-            bottomBound = Math.max(bottomBound, v.getY());
+        PolygonInfo p = polygonList.get(0);
+        topBound = p.top;
+        bottomBound = p.bottom;
+        leftBound = p.left;
+        rightBound = p.right;
+        for (int i = 1; i < polygonList.size(); ++i) {
+            p = polygonList.get(i);
+            leftBound = Math.min(leftBound, p.left);
+            topBound = Math.min(topBound, p.top);
+            rightBound = Math.max(rightBound, p.right);
+            bottomBound = Math.max(bottomBound, p.bottom);
         }
         if (backgroundImage != null) {
             leftBound = Math.min(leftBound, 0);
@@ -98,10 +121,6 @@ public class PolyEditorComponent extends JComponent {
         }
         repaint();
         revalidate();
-    }
-
-    public RenderedImage getBackgroundImage() {
-        return backgroundImage;
     }
 
     public int getScale() {
@@ -117,12 +136,24 @@ public class PolyEditorComponent extends JComponent {
         repaint();
     }
 
-    public Polygon getPolygon() {
-        return polygon.clone();
+    public PolygonalObject getEditObject() {
+        PolygonalObject obj = new PolygonalObject();
+        obj.setBackgroundImage(backgroundImage);
+        for (PolygonInfo polyInfo : polygonList) {
+            obj.getPolygons().add(polyInfo.polygon.clone());
+        }
+        return obj;
     }
 
-    public void setPolygon(Polygon polygon) {
-        this.polygon = polygon.clone();
+    public void setEditObject(PolygonalObject object) {
+        backgroundImage = object.getBackgroundImage();
+        polygonList.clear();
+        for (Polygon polygon : object.getPolygons()) {
+            PolygonInfo polygonInfo = new PolygonInfo();
+            polygonInfo.polygon = polygon;
+            updateBounds(polygonInfo);
+            polygonList.add(polygonInfo);
+        }
         updateBounds();
         repaint();
         revalidate();
@@ -148,9 +179,16 @@ public class PolyEditorComponent extends JComponent {
             transform.scale(scale, scale);
             graphics.drawRenderedImage(backgroundImage, transform);
         }
+        for (int i = 0; i < polygonList.size(); ++i) {
+            PolygonInfo polygonInfo = polygonList.get(i);
+            drawPolygon(graphics, polygonInfo.polygon, i);
+        }
+    }
+
+    private void drawPolygon(Graphics2D graphics, Polygon polygon, int index) {
         Path2D path = new Path2D.Float();
         List<Vertex> vertices = polygon.getVertices();
-        if (activeObjectIndex < 0 || activeObjectType != ACTIVE_TYPE_EDGE) {
+        if (activeObjectIndex < 0 || activeObjectType != ACTIVE_TYPE_EDGE || activePolygonIndex != index) {
             Vertex v = polyToView(vertices.get(0));
             path.moveTo(v.getX() + scale / 2, v.getY() + scale / 2);
             for (int i = 1; i < vertices.size(); ++i) {
@@ -166,7 +204,7 @@ public class PolyEditorComponent extends JComponent {
                 v = polyToView(vertices.get(i));
                 int x = v.getX() + scale / 2;
                 int y = v.getY() + scale / 2;
-                if (i == activeObjectIndex) {
+                if (i == activeObjectIndex && index == activePolygonIndex) {
                     graphics.setColor(new Color(0, 255, 0, 255));
                 } else {
                     graphics.setColor(new Color(255, 0, 0, 255));
@@ -232,29 +270,48 @@ public class PolyEditorComponent extends JComponent {
             return;
         }
         if (activeObjectIndex >= 0 && activeObjectType == ACTIVE_TYPE_VERTEX) {
+            PolygonInfo polygonInfo = polygonList.get(activePolygonIndex);
+            Polygon polygon = polygonInfo.polygon;
             Vertex v = viewToPoly(event.getX() - activeOffsetX, event.getY() - activeOffsetY);
             if (polygon.getVertices().size() == 1) {
                 polygon.getVertices().add(v);
             } else {
                 polygon.getVertices().set(activeObjectIndex, v);
             }
+            updateBounds(polygonInfo);
             repaint();
         }
     }
 
     private void onMousePressed(MouseEvent event) {
         if (activeObjectIndex < 0) {
-            System.out.println(event.getButton());
+            if (event.getButton() == MouseEvent.BUTTON1) {
+                Polygon poly = new Polygon();
+                Vertex v = viewToPoly(event.getX(), event.getY());
+                poly.getVertices().add(v);
+                activeObjectIndex = 0;
+                activeObjectType = ACTIVE_TYPE_VERTEX;
+                activePolygonIndex = polygonList.size();
+                PolygonInfo polyInfo = new PolygonInfo();
+                polyInfo.polygon = poly;
+                updateBounds(polyInfo);
+                polygonList.add(polyInfo);
+            }
             return;
         }
         if (event.getButton() == MouseEvent.BUTTON1) {
             if (activeObjectType == ACTIVE_TYPE_VERTEX) {
+                PolygonInfo polygonInfo = polygonList.get(activePolygonIndex);
+                Polygon polygon = polygonInfo.polygon;
                 Vertex v = polyToView(polygon.getVertices().get(activeObjectIndex));
                 v.setX(v.getX() + scale / 2);
                 v.setY(v.getY() + scale / 2);
                 activeOffsetX = event.getX() - v.getX();
                 activeOffsetY = event.getY() - v.getY();
+                updateBounds(polygonInfo);
             } else if (activeObjectType == ACTIVE_TYPE_EDGE) {
+                PolygonInfo polygonInfo = polygonList.get(activePolygonIndex);
+                Polygon polygon = polygonInfo.polygon;
                 Vertex v = vertexOnActiveEdge.clone();
                 activeOffsetX = event.getX() - v.getX();
                 activeOffsetY = event.getY() - v.getY();
@@ -263,11 +320,19 @@ public class PolyEditorComponent extends JComponent {
                 activeObjectIndex++;
                 activeObjectType = ACTIVE_TYPE_VERTEX;
                 repaint();
+                updateBounds(polygonInfo);
             }
         } else if (event.getButton() == MouseEvent.BUTTON3) {
             if (activeObjectType == ACTIVE_TYPE_VERTEX) {
-                polygon.getVertices().remove(activeObjectIndex);
-                activeObjectIndex = -1;
+                PolygonInfo polygonInfo = polygonList.get(activePolygonIndex);
+                Polygon polygon = polygonInfo.polygon;
+                if (polygon.getVertices().size() == 1) {
+                    polygonList.remove(activePolygonIndex);
+                    activeObjectIndex = -1;
+                } else {
+                    polygon.getVertices().remove(activeObjectIndex);
+                    activeObjectIndex = -1;
+                }
                 updateBounds();
                 updateActiveObject(event.getX(), event.getY());
             }
@@ -285,41 +350,61 @@ public class PolyEditorComponent extends JComponent {
     private void updateActiveObject(int x, int y) {
         int oldActiveObjectIndex = activeObjectIndex;
         int oldActiveObjectType = activeObjectType;
+        int oldActivePolygonIndex = activePolygonIndex;
         activeObjectIndex = -1;
         activeObjectType = ACTIVE_TYPE_VERTEX;
         int bestDistance = 5;
-        for (int i = 0; i < polygon.getVertices().size(); ++i) {
-            Vertex v = polyToView(polygon.getVertices().get(i));
-            v.setX(v.getX() + scale / 2);
-            v.setY(v.getY() + scale / 2);
-            int distance = Math.max(Math.abs(v.getX() - x), Math.abs(v.getY() - y));
-            if (distance <= 6 && bestDistance > distance) {
-                activeObjectIndex = i;
+        for (int i = 0; i < polygonList.size(); ++i) {
+            PolygonInfo polyInfo = polygonList.get(i);
+            Vertex leftTop = new Vertex();
+            leftTop.setX(polyInfo.left - 6);
+            leftTop.setY(polyInfo.bottom + 6);
+            leftTop = polyToView(leftTop);
+            Vertex rightBottom = new Vertex();
+            rightBottom.setX(polyInfo.right + 6);
+            rightBottom.setY(polyInfo.top - 6);
+            rightBottom = polyToView(rightBottom);
+            if (x < leftTop.getX() || x >= rightBottom.getX() || y < leftTop.getY() || y >= rightBottom.getY()) {
+                continue;
             }
-        }
-        if (activeObjectIndex == -1) {
-            Vertex v = new Vertex();
-            v.setX(x);
-            v.setY(y);
-            for (int i = 0; i < polygon.getVertices().size(); ++i) {
-                int j = (i + 1) % polygon.getVertices().size();
-                Vertex a = polyToView(polygon.getVertices().get(i));
-                Vertex b = polyToView(polygon.getVertices().get(j));
-                Intersection intersection = getIntersection(a, b, v);
-                int distance = intersectionDistance(intersection, a, b);
+            Polygon polygon = polyInfo.polygon;
+            for (int j = 0; j < polygon.getVertices().size(); ++j) {
+                Vertex v = polyToView(polygon.getVertices().get(j));
+                v.setX(v.getX() + scale / 2);
+                v.setY(v.getY() + scale / 2);
+                int distance = Math.max(Math.abs(v.getX() - x), Math.abs(v.getY() - y));
                 if (distance <= 6 && bestDistance > distance) {
-                    activeObjectIndex = i;
-                    activeObjectType = ACTIVE_TYPE_EDGE;
-                    Vertex active = new Vertex();
-                    Vertex dir = sub(b, a);
-                    active.setX(Math.round(a.getX() + dir.getX() * intersection.along));
-                    active.setY(Math.round(a.getY() + dir.getY() * intersection.along));
-                    vertexOnActiveEdge = active;
+                    activeObjectIndex = j;
+                    activePolygonIndex = i;
+                }
+            }
+            if (activeObjectIndex == -1) {
+                Vertex v = new Vertex();
+                v.setX(x);
+                v.setY(y);
+                for (int j = 0; j < polygon.getVertices().size(); ++j) {
+                    int k = (j + 1) % polygon.getVertices().size();
+                    Vertex a = polyToView(polygon.getVertices().get(j));
+                    Vertex b = polyToView(polygon.getVertices().get(k));
+                    Intersection intersection = getIntersection(a, b, v);
+                    int distance = intersectionDistance(intersection, a, b);
+                    if (distance <= 6 && bestDistance > distance) {
+                        activeObjectIndex = j;
+                        activeObjectType = ACTIVE_TYPE_EDGE;
+                        activePolygonIndex = i;
+                        bestDistance = distance;
+                        Vertex active = new Vertex();
+                        Vertex dir = sub(b, a);
+                        active.setX(Math.round(a.getX() + dir.getX() * intersection.along));
+                        active.setY(Math.round(a.getY() + dir.getY() * intersection.along));
+                        vertexOnActiveEdge = active;
+                    }
                 }
             }
         }
         if (activeObjectIndex != oldActiveObjectIndex || activeObjectType != oldActiveObjectType ||
-                (activeObjectIndex >= 0 && activeObjectType == ACTIVE_TYPE_EDGE)) {
+                (activeObjectIndex >= 0 && activeObjectType == ACTIVE_TYPE_EDGE) ||
+                activePolygonIndex != oldActivePolygonIndex) {
             repaint();
         }
     }
