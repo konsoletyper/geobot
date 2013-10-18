@@ -233,7 +233,11 @@ public class PolyEditorComponent extends JComponent {
         }
         if (activeObjectIndex >= 0 && activeObjectType == ACTIVE_TYPE_VERTEX) {
             Vertex v = viewToPoly(event.getX() - activeOffsetX, event.getY() - activeOffsetY);
-            polygon.getVertices().set(activeObjectIndex, v);
+            if (polygon.getVertices().size() == 1) {
+                polygon.getVertices().add(v);
+            } else {
+                polygon.getVertices().set(activeObjectIndex, v);
+            }
             repaint();
         }
     }
