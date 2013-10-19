@@ -159,6 +159,13 @@ public class PolygonalObjectEditor extends JComponent {
         revalidate();
     }
 
+    public void setBackgroundImage(RenderedImage image) {
+        backgroundImage = image;
+        updateBounds();
+        repaint();
+        revalidate();
+    }
+
     @Override
     public Dimension getPreferredSize() {
         return new Dimension((rightBound - leftBound) * scale, (bottomBound - topBound) * scale);
