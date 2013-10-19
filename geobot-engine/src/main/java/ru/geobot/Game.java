@@ -26,7 +26,7 @@ public class Game implements EntryPoint {
     private float mouseY;
     private float originX;
     private float originY;
-    private float scale = 1.3f;
+    private float scale = 1.2f;
     private float naturalScale = 1;
     float width;
     float height;

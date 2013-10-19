@@ -30,8 +30,7 @@ class LargeImageImpl implements Image {
         }
         LargeImageScale scaled = scales[index];
         graphics.scale(intFactor, intFactor);
-        graphics.scale(width / (float)(scaled.width * intFactor),
-                height / (float)(scaled.height * intFactor));
+        graphics.scale(width / (float)(scaled.width * intFactor), height / (float)(scaled.height * intFactor));
         scaled.draw(((AWTGraphics)graphics).getInnerGraphics());
         graphics.setTransform(transformation);
     }

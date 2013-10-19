@@ -16,7 +16,7 @@ public class GeobotGame extends Game {
 
     @Override
     public void start(EntryPointCallback callback) {
-        robot = new Robot(this, 1, 4f);
+        robot = new Robot(this, 2, 4f);
         new Cave1(this);
         images = loadImages(Cave1Images.class);
     }
@@ -35,7 +35,7 @@ public class GeobotGame extends Game {
     protected void paintBackground(Graphics graphics) {
         super.paintBackground(graphics);
         ImageUtil image = new ImageUtil(images.background());
-        image.draw(graphics, 0, 6f, 10.66666f, 6f);
+        image.draw(graphics, 0, 7.5f, 13.3333f, 7.5f);
     }
 
     @Override

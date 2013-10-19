@@ -129,7 +129,7 @@ public class Cave1 {
         }
 
         private Vec2 map(int x, int y) {
-            return new Vec2(x * 10.66666f / 2500, (1406 - y) * 6f / 1406);
+            return new Vec2(x * 13.333f / 2500, (1406 - y) * 7.5f / 1406);
         }
 
         @Override

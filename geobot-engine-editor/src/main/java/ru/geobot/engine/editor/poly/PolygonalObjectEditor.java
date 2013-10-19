@@ -159,6 +159,10 @@ public class PolygonalObjectEditor extends JComponent {
         revalidate();
     }
 
+    public RenderedImage getBackgroundImage() {
+        return backgroundImage;
+    }
+
     public void setBackgroundImage(RenderedImage image) {
         backgroundImage = image;
         updateBounds();

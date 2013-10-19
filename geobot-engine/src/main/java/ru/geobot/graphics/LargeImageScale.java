@@ -41,17 +41,15 @@ class LargeImageScale {
         float right = lastCol * tileWidth;
         float bottom = lastRow * tileHeight;
         float[] points = { left, top, right, top, right, bottom, left, bottom };
-        float[] mappedPoints = new float[points.length];
-        graphics.getTransform().transform(points, 0, mappedPoints, 0, 4);
-        left = mappedPoints[0];
-        right = mappedPoints[0];
-        top = mappedPoints[1];
-        bottom = mappedPoints[1];
-        for (int i = 2; i < mappedPoints.length;) {
-            left = Math.min(left, mappedPoints[i]);
-            right = Math.max(right, mappedPoints[i++]);
-            top = Math.min(top, mappedPoints[i]);
-            bottom = Math.max(bottom, mappedPoints[i++]);
+        left = points[0];
+        right = points[0];
+        top = points[1];
+        bottom = points[1];
+        for (int i = 2; i < points.length; i += 2) {
+            left = Math.min(left, points[i]);
+            right = Math.max(right, points[i]);
+            top = Math.min(top, points[i + 1]);
+            bottom = Math.max(bottom, points[i + 1]);
         }
         java.awt.Rectangle clipRect = graphics.getClipBounds();
         int rowCount = lastRow - firstRow;

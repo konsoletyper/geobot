@@ -2,13 +2,13 @@ package ru.geobot.objects;
 
 import ru.geobot.graphics.Image;
 import ru.geobot.graphics.ImagePath;
-import ru.geobot.graphics.ImageSet;
+import ru.geobot.graphics.ResourceSet;
 
 /**
  *
  * @author Alexey Andreev <konsoletyper@gmail.com>
  */
-@ImageSet
+@ResourceSet
 public interface RobotImages {
     @ImagePath("robot/body.svg")
     Image body();
