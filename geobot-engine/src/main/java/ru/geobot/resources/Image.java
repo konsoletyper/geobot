@@ -1,4 +1,6 @@
-package ru.geobot.graphics;
+package ru.geobot.resources;
+
+import ru.geobot.graphics.Graphics;
 
 
 /**

@@ -1,6 +1,8 @@
-package ru.geobot.graphics;
+package ru.geobot.resources;
 
 import ru.geobot.AWTGraphics;
+import ru.geobot.graphics.AffineTransform;
+import ru.geobot.graphics.Graphics;
 
 /**
  *

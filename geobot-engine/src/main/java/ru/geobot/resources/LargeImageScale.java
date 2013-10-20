@@ -1,4 +1,4 @@
-package ru.geobot.graphics;
+package ru.geobot.resources;
 
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;

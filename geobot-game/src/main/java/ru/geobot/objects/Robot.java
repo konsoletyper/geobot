@@ -50,7 +50,7 @@ public class Robot extends GameObject {
 
     public Robot(Game game, float x, float y) {
         super(game);
-        images = game.loadImages(RobotImages.class);
+        images = game.loadResources(RobotImages.class);
         this.initialX = x;
         this.initialY = y;
         createBody();

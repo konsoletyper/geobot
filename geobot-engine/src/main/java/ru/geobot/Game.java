@@ -7,6 +7,7 @@ import java.util.List;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.World;
 import ru.geobot.graphics.*;
+import ru.geobot.resources.ResourceReader;
 
 /**
  *
@@ -30,7 +31,7 @@ public class Game implements EntryPoint {
     private float naturalScale = 1;
     float width;
     float height;
-    private ImageSource imageSource;
+    private ResourceReader resourceReader;
 
     public Game() {
         currentTime = System.currentTimeMillis();
@@ -142,8 +143,8 @@ public class Game implements EntryPoint {
         this.originY = originY;
     }
 
-    public <T> T loadImages(Class<T> imagesType) {
-        return imageSource.getImages(imagesType);
+    public <T> T loadResources(Class<T> imagesType) {
+        return resourceReader.getResourceSet(imagesType);
     }
 
     @Override
@@ -229,8 +230,8 @@ public class Game implements EntryPoint {
     }
 
     @Override
-    public void setImageSource(ImageSource imageSource) {
-        this.imageSource = imageSource;
+    public void setResourceReader(ResourceReader resourceReader) {
+        this.resourceReader = resourceReader;
     }
 
     @Override

@@ -1,8 +1,8 @@
 package ru.geobot.objects;
 
-import ru.geobot.graphics.Image;
-import ru.geobot.graphics.ImagePath;
-import ru.geobot.graphics.ResourceSet;
+import ru.geobot.ResourceSet;
+import ru.geobot.resources.Image;
+import ru.geobot.resources.ResourcePath;
 
 /**
  *
@@ -10,33 +10,33 @@ import ru.geobot.graphics.ResourceSet;
  */
 @ResourceSet
 public interface RobotImages {
-    @ImagePath("robot/body.svg")
+    @ResourcePath("robot/body.svg")
     Image body();
 
-    @ImagePath("robot/wheel.svg")
+    @ResourcePath("robot/wheel.svg")
     Image wheel();
 
-    @ImagePath("robot/smallWheel.svg")
+    @ResourcePath("robot/smallWheel.svg")
     Image smallWheel();
 
-    @ImagePath("robot/damper.svg")
+    @ResourcePath("robot/damper.svg")
     Image damper();
 
-    @ImagePath("robot/axle.svg")
+    @ResourcePath("robot/axle.svg")
     Image axle();
 
-    @ImagePath("robot/smallDamper.svg")
+    @ResourcePath("robot/smallDamper.svg")
     Image smallDamper();
 
-    @ImagePath("robot/smallAxle.svg")
+    @ResourcePath("robot/smallAxle.svg")
     Image smallAxle();
 
-    @ImagePath("robot/antenna1.svg")
+    @ResourcePath("robot/antenna1.svg")
     Image antenna1();
 
-    @ImagePath("robot/antenna2.svg")
+    @ResourcePath("robot/antenna2.svg")
     Image antenna2();
 
-    @ImagePath("robot/antenna3.svg")
+    @ResourcePath("robot/antenna3.svg")
     Image antenna3();
 }

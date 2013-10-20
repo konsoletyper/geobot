@@ -1,5 +1,7 @@
 package ru.geobot.graphics;
 
+import ru.geobot.resources.Image;
+
 
 /**
  *

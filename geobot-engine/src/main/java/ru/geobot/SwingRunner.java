@@ -10,9 +10,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
-import ru.geobot.graphics.ImageLoader;
-import ru.geobot.graphics.ImageSource;
 import ru.geobot.graphics.Rectangle;
+import ru.geobot.resources.ResourceLoader;
+import ru.geobot.resources.ResourceReader;
 
 /**
  *
@@ -114,7 +114,7 @@ public class SwingRunner extends JComponent {
         gfx.drawRenderedImage(frameBuffer, new AffineTransform());
     }
 
-    private class Execution implements Runnable, EntryPointCallback, ImageSource {
+    private class Execution implements Runnable, EntryPointCallback, ResourceReader {
         private EntryPoint entryPoint;
         private final Object monitor = new Object();
         private boolean stopped;
@@ -130,7 +130,7 @@ public class SwingRunner extends JComponent {
 
         @Override
         public void run() {
-            entryPoint.setImageSource(this);
+            entryPoint.setResourceReader(this);
             entryPoint.start(this);
             entryPoint.resize(Math.max(1, getWidth()), Math.max(1, getHeight()));
             long nextPaintTime = System.currentTimeMillis();
@@ -220,8 +220,8 @@ public class SwingRunner extends JComponent {
         }
 
         @Override
-        public <T> T getImages(Class<T> imageSetType) {
-            return ImageLoader.load(imageSetType);
+        public <T> T getResourceSet(Class<T> imageSetType) {
+            return ResourceLoader.load(imageSetType);
         }
     };
 

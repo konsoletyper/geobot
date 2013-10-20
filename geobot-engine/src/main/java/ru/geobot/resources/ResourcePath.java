@@ -1,4 +1,4 @@
-package ru.geobot.graphics;
+package ru.geobot.resources;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,9 +7,10 @@ import java.lang.annotation.Target;
 
 /**
  *
- * @author Alexey Andreev
+ * @author Alexey Andreev <konsoletyper@gmail.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface ResourceSet {
+@Target(ElementType.METHOD)
+public @interface ResourcePath {
+    String value();
 }

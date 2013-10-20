@@ -1,11 +1,13 @@
-package ru.geobot.graphics;
+package ru.geobot.resources;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -21,16 +23,21 @@ import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.ImageTranscoder;
+import org.apache.commons.lang3.StringUtils;
+import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.common.Vec2;
+import ru.geobot.util.GeometryUtils;
+import ru.geobot.util.Vertex;
 
 /**
  *
  * @author Alexey Andreev <konsoletyper@gmail.com>
  */
-public class ImageLoader {
+public class ResourceLoader {
     private static ConcurrentMap<Class<?>, CachedEntry> cache = new ConcurrentHashMap<>();
 
     private static class CachedEntry {
-        public final CountDownLatch latch = new CountDownLatch(1);
+        public volatile CountDownLatch latch = new CountDownLatch(1);
         public volatile Object value;
     }
 
@@ -41,13 +48,17 @@ public class ImageLoader {
             if (cache.putIfAbsent(type, entry) == null) {
                 entry.value = create(type);
                 entry.latch.countDown();
+                entry.latch = null;
             } else {
                 entry = cache.get(type);
-                try {
-                    entry.latch.await();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return null;
+                CountDownLatch latch = entry.latch;
+                if (latch != null) {
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
                 }
             }
         }
@@ -55,37 +66,74 @@ public class ImageLoader {
     }
 
     private static Object create(Class<?> type) {
-        final Map<Method, Image> imageMap = new HashMap<>();
+        final Map<Method, Object> resourceMap = new HashMap<>();
         for (Method method : type.getMethods()) {
             if (method.getParameterTypes().length > 0) {
-                throw new IllegalArgumentException("Method " +
-                        type.getName() + "." + method.getName() + " has " +
-                        "arguments");
+                throw new IllegalArgumentException("Method " + type.getName() + "." + method.getName() + " has " +
+                        "non-empty argument list");
             }
-            if (!method.getReturnType().equals(Image.class)) {
-                throw new IllegalArgumentException("Method " +
-                        type.getName() + "." + method.getName() + " does not return a " +
-                        Image.class.getName());
-            }
-            ImagePath path = method.getAnnotation(ImagePath.class);
+            ResourcePath path = method.getAnnotation(ResourcePath.class);
             if (path == null) {
-                throw new IllegalArgumentException("Method " +
-                        type.getName() + "." + method.getName() + " does not have " +
-                        ImagePath.class.getName() + " annotation");
+                throw new IllegalArgumentException("Method " + type.getName() + "." + method.getName() +
+                        " does not have " + ResourcePath.class.getName() + " annotation");
             }
-            if (method.isAnnotationPresent(Large.class)) {
-                imageMap.put(method, createLargeImage(type, path.value()));
+            if (method.getReturnType().equals(Image.class)) {
+                if (method.isAnnotationPresent(Large.class)) {
+                    resourceMap.put(method, createLargeImage(type, path.value()));
+                } else {
+                    resourceMap.put(method, createImage(type, path.value()));
+                }
+            } else if (method.getReturnType().equals(PolygonalBodyFactory.class)) {
+                resourceMap.put(method, createPolygonalBody(type, path.value()));
             } else {
-                imageMap.put(method, createImage(type, path.value()));
+                throw new IllegalArgumentException("Method " +  type.getName() + "." + method.getName() +
+                        " returns unexpected type " + method.getReturnType().getName());
             }
         }
         return Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type },
                 new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                return imageMap.get(method);
+                return resourceMap.get(method);
             }
         });
+    }
+
+    private static DefaultPolygonalBodyFactory createPolygonalBody(Class<?> cls, String path) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(cls.getResourceAsStream(path)))) {
+            List<PolygonShape> shapes = new ArrayList<>();
+            while (true) {
+                String line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+                String[] parts = StringUtils.split(line, ' ');
+                List<Vertex> polygon = new ArrayList<>();
+                for (int i = 0; i < parts.length; i += 2) {
+                    Vertex v = new Vertex(Integer.parseInt(parts[i].trim()), Integer.parseInt(parts[i + 1].trim()));
+                    polygon.add(v);
+                }
+                if (polygon.size() >= 3) {
+                    int[] triangles = GeometryUtils.triangulate(polygon);
+                    for (int i = 0; i < triangles.length; i += 3) {
+                        Vertex a = polygon.get(triangles[i]);
+                        Vertex b = polygon.get(triangles[i + 1]);
+                        Vertex c = polygon.get(triangles[i + 2]);
+                        PolygonShape shapePrototype = new PolygonShape();
+                        Vec2[] vertices = { new Vec2(a.x, a.y), new Vec2(b.x, b.y), new Vec2(c.x, c.y) };
+                        shapePrototype.set(vertices, vertices.length);
+                        shapes.add(shapePrototype);
+                    }
+                }
+            }
+            return new DefaultPolygonalBodyFactory(shapes.toArray(new PolygonShape[shapes.size()]));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static ImageImpl createImage(Class<?> cls, String path) {
@@ -180,8 +228,7 @@ public class ImageLoader {
                 array[index++] = tile;
             }
         }
-        return new LargeImageScale(image.getWidth(), image.getHeight(), tileWidth, tileHeight,
-                array, cols);
+        return new LargeImageScale(image.getWidth(), image.getHeight(), tileWidth, tileHeight, array, cols);
     }
 
     private static BufferedImage createVectorImage(InputStream input) throws TranscoderException {

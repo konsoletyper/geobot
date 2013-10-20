@@ -1,7 +1,7 @@
 package ru.geobot;
 
 import ru.geobot.graphics.Graphics;
-import ru.geobot.graphics.ImageSource;
+import ru.geobot.resources.ResourceReader;
 
 /**
  *
@@ -26,7 +26,7 @@ public interface EntryPoint {
 
     void start(EntryPointCallback callback);
 
-    void setImageSource(ImageSource imageSource);
+    void setResourceReader(ResourceReader resourceReader);
 
     void interrupt();
 }

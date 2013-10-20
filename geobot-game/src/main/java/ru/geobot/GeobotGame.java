@@ -1,7 +1,7 @@
 package ru.geobot;
 
 import ru.geobot.caves.Cave1;
-import ru.geobot.caves.Cave1Images;
+import ru.geobot.caves.Cave1Resources;
 import ru.geobot.graphics.Graphics;
 import ru.geobot.graphics.ImageUtil;
 import ru.geobot.objects.Robot;
@@ -11,14 +11,14 @@ import ru.geobot.objects.Robot;
  * @author Alexey Andreev
  */
 public class GeobotGame extends Game {
-    private Cave1Images images;
+    private Cave1Resources images;
     private Robot robot;
 
     @Override
     public void start(EntryPointCallback callback) {
-        robot = new Robot(this, 2, 4f);
+        robot = new Robot(this, 5.1f, 9.5f);
         new Cave1(this);
-        images = loadImages(Cave1Images.class);
+        images = loadResources(Cave1Resources.class);
     }
 
     @Override

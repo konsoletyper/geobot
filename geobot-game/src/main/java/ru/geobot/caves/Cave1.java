@@ -1,5 +1,6 @@
 package ru.geobot.caves;
 
+import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
@@ -8,14 +9,11 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
 import ru.geobot.Game;
 import ru.geobot.GameAdapter;
 import ru.geobot.GameObject;
-import ru.geobot.GameObjectAdapter;
-import ru.geobot.graphics.AffineTransform;
 import ru.geobot.graphics.Color;
 import ru.geobot.graphics.Graphics;
 import ru.geobot.graphics.Rectangle;
 import ru.geobot.objects.Rope;
 import ru.geobot.objects.RopeFactory;
-import ru.geobot.objects.Stone;
 
 /**
  *
@@ -31,6 +29,7 @@ public class Cave1 {
         this.game = game;
         new Environment(game);
         //new Ball(game);
+        new RandomBall(game);
         RopeFactory ropeFactory = new RopeFactory();
         ropeFactory.setResistance(0.01f);
         ropeFactory.setChunkLength(0.2f);
@@ -97,39 +96,19 @@ public class Cave1 {
 
         public Environment(Game game) {
             super(game);
+            Cave1Resources resources = game.loadResources(Cave1Resources.class);
             BodyDef bodyDef = new BodyDef();
             bodyDef.type = BodyType.STATIC;
             body = getWorld().createBody(bodyDef);
-            int[] coords = { 231, 16, 112, 129, 75, 302, 73, 559, 50, 644, 63, 735,
-                    32, 874, 49, 959, 113, 1019, 241, 1095, 389, 1149, 585, 1185, 819, 1166,
-                    937, 1179, 1069, 1148, 1125, 1177, 1235, 1157, 1282, 1175, 1499, 1193,
-                    1589, 1185, 1640, 1202, 1697, 1192, 1731, 1189, 1764, 1172, 1824, 1197,
-                    1844, 1197, 1838, 1170, 1872, 1128, 1861, 1107, 1889, 1052,
-                    1900, 1006, 1935, 968, 1916, 947, 1947, 921, 1943, 892, 1967, 859,
-                    1967, 832, 1948, 816, 1949, 753, 1974, 677 };
-            PolygonShape shape = new PolygonShape();
             FixtureDef fixtureDef = new FixtureDef();
-            fixtureDef.shape = shape;
             fixtureDef.density = 1;
             fixtureDef.restitution = 0.1f;
             fixtureDef.friction = 0.4f;
 
-            for (int i = 2; i < coords.length; i += 2) {
-                Vec2 a = map(coords[i - 2], coords[i - 1]);
-                Vec2 b = map(coords[i], coords[i + 1]);
-                Vec2 dir = a.sub(b);
-                float len = dir.normalize();
-                dir = dir.mul(0.01f / len);
-                Vec2 c = new Vec2(b.x + dir.y, b.y - dir.x);
-                Vec2 d = new Vec2(a.x + dir.y, a.y - dir.x);
-                Vec2[] line = { a, b, c, d };
-                shape.set(line, line.length);
+            for (PolygonShape shape : resources.shape().create(13.333f / 2500)) {
+                fixtureDef.shape = shape;
                 body.createFixture(fixtureDef);
             }
-        }
-
-        private Vec2 map(int x, int y) {
-            return new Vec2(x * 13.333f / 2500, (1406 - y) * 7.5f / 1406);
         }
 
         @Override
@@ -139,27 +118,19 @@ public class Cave1 {
 
         @Override
         protected void paint(Graphics graphics) {
-            /*graphics.setColor(Color.red());
-            graphics.setStrokeWidth(3);
-            for (Fixture fixture = body.getFixtureList(); fixture != null;
-                    fixture = fixture.getNext()) {
-                PolygonShape shape = (PolygonShape)fixture.getShape();
-                boolean first = true;
-                for (Vec2 v : shape.getVertices()) {
-                    if (first) {
-                        graphics.moveTo(v.x, v.y);
-                        first = false;
-                    } else {
-                        graphics.lineTo(v.x, v.y);
-                    }
-                }
-                graphics.fill();
-            }*/
-
-            //graphics.fillRectangle(0, 0, 15, 0.2f);
-            //graphics.fillRectangle(0, 0, 0.2f, 5);
-            //graphics.fillRectangle(14.8f, 0, 0.2f, 5);
             super.paint(graphics);
+
+            for (Fixture fixture = body.getFixtureList(); fixture != null; fixture = fixture.getNext()) {
+                PolygonShape shape = (PolygonShape)fixture.getShape();
+                Vec2[] vertices = shape.getVertices();
+                Vec2 v = vertices[shape.getVertexCount() - 1];
+                graphics.setColor(Color.red());
+                graphics.moveTo(v.x, v.y);
+                for (int i = 0; i < shape.getVertexCount(); ++i) {
+                    graphics.lineTo(vertices[i].x, vertices[i].y);
+                }
+                graphics.stroke();
+            }
         }
 
         @Override
@@ -175,114 +146,57 @@ public class Cave1 {
         }
     }
 
-    private static class Ball extends GameObject {
+    private static class RandomBall extends GameObject {
         private Body body;
-        private Cave1Images images;
 
-        public Ball(Game game) {
+        public RandomBall(Game game) {
             super(game);
-            images = game.loadImages(Cave1Images.class);
             BodyDef bodyDef = new BodyDef();
+            bodyDef.position = new Vec2(4.6f, 4.6f);
             bodyDef.type = BodyType.DYNAMIC;
-            bodyDef.position.set(4, 3);
-            body = getWorld().createBody(bodyDef);
+            body = game.getWorld().createBody(bodyDef);
             FixtureDef fixtureDef = new FixtureDef();
-            PolygonShape shape = new PolygonShape();
-            Vec2[] points = new Vec2[20];
-            for (int i = 0; i < points.length; ++i) {
-                points[i] = new Vec2(0.25f * (float)Math.cos(i * 2 * Math.PI / points.length),
-                        0.25f * (float)Math.sin(i * 2 * Math.PI / points.length));
-            }
-            shape.set(points, points.length);
+            fixtureDef.density = 1;
+            fixtureDef.restitution = 0.7f;
+            CircleShape shape = new CircleShape();
+            shape.m_radius = 0.2f;
             fixtureDef.shape = shape;
-            fixtureDef.restitution = 0.5f;
-            fixtureDef.density = 1f;
             body.createFixture(fixtureDef);
         }
 
         @Override
-        protected void destroy() {
-            getWorld().destroyBody(body);
-        }
-
-        @Override
         protected void paint(Graphics graphics) {
-            graphics.setColor(isUnderMouse() ? Color.blue() : Color.green());
             Vec2 center = body.getPosition();
-            AffineTransform transform = AffineTransform.identity();
-            transform.translate(center.x, center.y);
-            transform.rotate(body.getAngle());
-            transform.translate(-0.25f, 0.25f);
-            transform.scale(0.5f / images.ball().getWidth(), -0.5f / images.ball().getHeight());
-            AffineTransform oldTransform = graphics.getTransform();
-            graphics.transform(transform);
-            images.ball().draw(graphics);
-            graphics.setTransform(oldTransform);
+            graphics.setColor(Color.pink());
+            graphics.fillEllipse(center.x - 0.1f, center.y - 0.1f, 0.2f, 0.2f);
             super.paint(graphics);
         }
 
         @Override
         protected boolean hasPoint(float x, float y) {
-            return body.getFixtureList().testPoint(new Vec2(x, y));
+            return new Vec2(x, y).sub(body.getPosition()).length() < 0.2;
         }
 
         @Override
-        protected void mouseEnter() {
-            body.applyForce(new Vec2(20f, 85f), body.getPosition().addLocal(0.03f, 0.0f));
-            super.mouseEnter();
+        protected void click() {
+            System.out.println("Click");
+            body.setTransform(body.getPosition().add(new Vec2(0.2f, 3)), body.getAngle());
+            body.setLinearVelocity(new Vec2(0, 0));
         }
     }
 
     private static class RopePendant extends GameObject {
-        private Body pendant;
-        private Rope rope;
-        private Joint joint;
-
-        public RopePendant(Game game, float x, float y) {
+        public RopePendant(Game game) {
             super(game);
-            PolygonShape shape = new PolygonShape();
-            shape.setAsBox(0.05f, 0.05f);
-            BodyDef pendantDef = new BodyDef();
-            pendantDef.type = BodyType.STATIC;
-            pendantDef.position = new Vec2(x, y);
-            pendant = getWorld().createBody(pendantDef);
-            FixtureDef pendantFixtureDef = new FixtureDef();
-            pendantFixtureDef.filter.groupIndex = -1;
-            pendantFixtureDef.shape = shape;
-            pendant.createFixture(pendantFixtureDef);
         }
 
         @Override
         protected boolean hasPoint(float x, float y) {
-            Vec2 pt = pendant.getPosition();
-            return new Rectangle(pt.x - 0.05f, pt.y - 0.05f, 0.1f, 0.1f).contains(x, y);
+            return false;
         }
 
         @Override
         protected void paint(Graphics graphics) {
-            graphics.setColor(!isUnderMouse() ? Color.magenta() : Color.blue());
-            Vec2 pt = pendant.getPosition();
-            graphics.fillRectangle(pt.x - 0.05f, pt.y - 0.05f, 0.1f, 0.1f);
-        }
-
-        public void connectRope(Rope rope) {
-            if (this.rope != null) {
-                disconnectRope();
-            }
-            RevoluteJointDef pendantJointDef = new RevoluteJointDef();
-            pendantJointDef.bodyA = pendant;
-            pendantJointDef.localAnchorA.y = -0.15f;
-            pendantJointDef.bodyB = rope.part(0);
-            joint = getWorld().createJoint(pendantJointDef);
-            this.rope = rope;
-        }
-
-        public void disconnectRope() {
-            if (this.rope != null) {
-                getWorld().destroyJoint(joint);
-                joint = null;
-                this.rope = null;
-            }
         }
     }
 
