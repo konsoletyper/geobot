@@ -16,7 +16,7 @@ public class GeobotGame extends Game {
 
     @Override
     public void start(EntryPointCallback callback) {
-        robot = new Robot(this, 5.1f, 9.5f);
+        robot = new Robot(this, 5.1f, 2.5f);
         new Cave1(this);
         images = loadResources(Cave1Resources.class);
     }

@@ -11,10 +11,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -118,13 +115,18 @@ public class ResourceLoader {
                     polygon.add(v);
                 }
                 if (polygon.size() >= 3) {
-                    int[] triangles = GeometryUtils.triangulate(polygon);
-                    for (int i = 0; i < triangles.length; i += 3) {
-                        Vertex a = polygon.get(triangles[i]);
-                        Vertex b = polygon.get(triangles[i + 1]);
-                        Vertex c = polygon.get(triangles[i + 2]);
+                    List<Vertex> triangles = GeometryUtils.triangulate(polygon);
+                    for (int i = 0; i < triangles.size(); i += 3) {
+                        Vertex a = triangles.get(i);
+                        Vertex b = triangles.get(i + 1);
+                        Vertex c = triangles.get(i + 2);
                         PolygonShape shapePrototype = new PolygonShape();
-                        Vec2[] vertices = { new Vec2(a.x, a.y), new Vec2(b.x, b.y), new Vec2(c.x, c.y) };
+                        Vec2[] vertices;
+                        if (GeometryUtils.getOrientation(Arrays.asList(a, b, c)) > 0) {
+                            vertices = new Vec2[] { new Vec2(a.x, a.y), new Vec2(b.x, b.y), new Vec2(c.x, c.y) };
+                        } else {
+                            vertices = new Vec2[] { new Vec2(c.x, c.y), new Vec2(b.x, b.y), new Vec2(a.x, a.y) };
+                        }
                         shapePrototype.set(vertices, vertices.length);
                         shapes.add(shapePrototype);
                     }

@@ -1,6 +1,5 @@
 package ru.geobot.caves;
 
-import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
@@ -29,7 +28,6 @@ public class Cave1 {
         this.game = game;
         new Environment(game);
         //new Ball(game);
-        new RandomBall(game);
         RopeFactory ropeFactory = new RopeFactory();
         ropeFactory.setResistance(0.01f);
         ropeFactory.setChunkLength(0.2f);
@@ -143,45 +141,6 @@ public class Cave1 {
                 fixture = fixture.getNext();
             }
             return false;
-        }
-    }
-
-    private static class RandomBall extends GameObject {
-        private Body body;
-
-        public RandomBall(Game game) {
-            super(game);
-            BodyDef bodyDef = new BodyDef();
-            bodyDef.position = new Vec2(4.6f, 4.6f);
-            bodyDef.type = BodyType.DYNAMIC;
-            body = game.getWorld().createBody(bodyDef);
-            FixtureDef fixtureDef = new FixtureDef();
-            fixtureDef.density = 1;
-            fixtureDef.restitution = 0.7f;
-            CircleShape shape = new CircleShape();
-            shape.m_radius = 0.2f;
-            fixtureDef.shape = shape;
-            body.createFixture(fixtureDef);
-        }
-
-        @Override
-        protected void paint(Graphics graphics) {
-            Vec2 center = body.getPosition();
-            graphics.setColor(Color.pink());
-            graphics.fillEllipse(center.x - 0.1f, center.y - 0.1f, 0.2f, 0.2f);
-            super.paint(graphics);
-        }
-
-        @Override
-        protected boolean hasPoint(float x, float y) {
-            return new Vec2(x, y).sub(body.getPosition()).length() < 0.2;
-        }
-
-        @Override
-        protected void click() {
-            System.out.println("Click");
-            body.setTransform(body.getPosition().add(new Vec2(0.2f, 3)), body.getAngle());
-            body.setLinearVelocity(new Vec2(0, 0));
         }
     }
 

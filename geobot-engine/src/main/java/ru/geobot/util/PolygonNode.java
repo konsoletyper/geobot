@@ -10,13 +10,13 @@ import java.util.List;
  */
 class PolygonNode {
     private Vertex vertex;
-    private int index;
+    private float angle;
+    private boolean ear;
     private PolygonNode next;
     private PolygonNode previous;
 
-    private PolygonNode(Vertex vertex, int index) {
+    private PolygonNode(Vertex vertex) {
         this.vertex = vertex;
-        this.index = index;
     }
 
     public PolygonNode delete() {
@@ -28,10 +28,6 @@ class PolygonNode {
         next.previous = previous;
         previous.next = next;
         return previous;
-    }
-
-    public int getIndex() {
-        return index;
     }
 
     public PolygonNode getNext() {
@@ -46,10 +42,18 @@ class PolygonNode {
         return vertex;
     }
 
+    public float getAngle() {
+        return angle;
+    }
+
+    public boolean isEar() {
+        return ear;
+    }
+
     public static PolygonNode create(List<Vertex> vertices) {
         List<PolygonNode> nodes = new ArrayList<>();
         for (int i = 0; i < vertices.size(); ++i) {
-            nodes.add(new PolygonNode(vertices.get(i), i));
+            nodes.add(new PolygonNode(vertices.get(i)));
         }
         for (int i = 0; i < vertices.size(); ++i) {
             PolygonNode a = nodes.get(i);
@@ -58,6 +62,23 @@ class PolygonNode {
             b.previous = a;
         }
         return nodes.get(0);
+    }
+
+    public void setVertex(Vertex vertex) {
+        this.vertex = vertex;
+        update();
+    }
+
+    public void update() {
+        Vertex a = getVertex().subtract(getPrevious().getVertex());
+        Vertex b = getNext().getVertex().subtract(getVertex());
+        ear = a.crossProduct(b) > 0 && canCut();
+        if (ear) {
+            a = getPrevious().getVertex().subtract(getVertex());
+            angle = a.dotProduct(b) / (float)Math.sqrt((long)a.dotProduct(a) * b.dotProduct(b));
+        } else {
+            angle = -2;
+        }
     }
 
     public boolean canCut() {
