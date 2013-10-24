@@ -27,7 +27,8 @@ public class BodyObject extends GameObject {
         Vec2 pos = body.getPosition();
         graphics.translate(pos.x, pos.y);
         graphics.rotate(body.getAngle());
-        graphics.scale(scale, scale);
+        graphics.scale(scale, -scale);
+        graphics.translate(0, -image.getHeight());
         image.draw(graphics);
         graphics.popTransform();
     }
@@ -38,12 +39,17 @@ public class BodyObject extends GameObject {
 
     @Override
     protected boolean hasPoint(float x, float y) {
-        Vec2 v = body.getWorldPoint(new Vec2(x, y));
+        Vec2 v = new Vec2(x, y);
         for (Fixture fixture = body.getFixtureList(); fixture != null; fixture = fixture.getNext()) {
             if (fixture.testPoint(v)) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    protected void destroy() {
+        getGame().getWorld().destroyBody(body);
     }
 }

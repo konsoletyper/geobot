@@ -62,6 +62,7 @@ public class Robot extends GameObject {
         Vec2 pos = body.getWorldCenter();
         getGame().setOriginX(pos.x);
         getGame().setOriginY(pos.y + vertOffset + 1.4f);
+        setZIndex(256);
     }
 
     private void createBody() {
@@ -73,6 +74,8 @@ public class Robot extends GameObject {
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 5;
+        fixtureDef.filter.categoryBits = 1;
+        fixtureDef.filter.maskBits = 1;
         fixtureDef.shape = scaledRectShape(54.678f, 70.223f, 152.500f, 102.500f);
         body.createFixture(fixtureDef);
 
@@ -97,6 +100,8 @@ public class Robot extends GameObject {
 
         FixtureDef wheelFixtureDef = new FixtureDef();
         wheelFixtureDef.density = 15;
+        wheelFixtureDef.filter.categoryBits = 1;
+        wheelFixtureDef.filter.maskBits = 1;
         CircleShape wheelShape = new CircleShape();
         wheelShape.m_radius = scale(33.17f);
         wheelFixtureDef.shape = wheelShape;
@@ -116,6 +121,8 @@ public class Robot extends GameObject {
         axleFixtureDef.density = 5;
         axleFixtureDef.shape = scaledPoly(new Vec2(0, 3.93f), new Vec2(0, -3.93f),
                 new Vec2(53.54f, -3.93f), new Vec2(53.54f, 3.93f));
+        axleFixtureDef.filter.categoryBits = 1;
+        axleFixtureDef.filter.maskBits = 1;
         leftAxle.createFixture(axleFixtureDef);
 
         PrismaticJointDef axleJointDef = new PrismaticJointDef();
@@ -156,6 +163,8 @@ public class Robot extends GameObject {
 
         FixtureDef wheelFixtureDef = new FixtureDef();
         wheelFixtureDef.density = 15;
+        wheelFixtureDef.filter.categoryBits = 1;
+        wheelFixtureDef.filter.maskBits = 1;
         CircleShape wheelShape = new CircleShape();
         wheelShape.m_radius = scale(33.17f);
         wheelFixtureDef.shape = wheelShape;
@@ -175,6 +184,8 @@ public class Robot extends GameObject {
         axleFixtureDef.density = 5;
         axleFixtureDef.shape = scaledPoly(new Vec2(0, 3.93f), new Vec2(0, -3.93f),
                 new Vec2(53.54f, -3.93f), new Vec2(53.54f, 3.93f));
+        axleFixtureDef.filter.categoryBits = 1;
+        axleFixtureDef.filter.maskBits = 1;
         rightAxle.createFixture(axleFixtureDef);
 
         PrismaticJointDef axleJointDef = new PrismaticJointDef();
@@ -220,6 +231,8 @@ public class Robot extends GameObject {
         wheelFixtureDef.shape = wheelShape;
         wheelFixtureDef.restitution = 0.95f;
         wheelFixtureDef.friction = 0.95f;
+        wheelFixtureDef.filter.categoryBits = 1;
+        wheelFixtureDef.filter.maskBits = 1;
         leftSmallWheel.createFixture(wheelFixtureDef);
 
         BodyDef axleDef = new BodyDef();
@@ -234,6 +247,8 @@ public class Robot extends GameObject {
         axleFixtureDef.density = 5;
         axleFixtureDef.shape = scaledPoly(new Vec2(0, 3.166f), new Vec2(0, -3.166f),
                 new Vec2(46f, -3.166f), new Vec2(46f, 3.166f));
+        axleFixtureDef.filter.categoryBits = 1;
+        axleFixtureDef.filter.maskBits = 1;
         leftSmallAxle.createFixture(axleFixtureDef);
 
         PrismaticJointDef axleJointDef = new PrismaticJointDef();
@@ -285,6 +300,8 @@ public class Robot extends GameObject {
         wheelFixtureDef.shape = wheelShape;
         wheelFixtureDef.restitution = 0.95f;
         wheelFixtureDef.friction = 0.95f;
+        wheelFixtureDef.filter.categoryBits = 1;
+        wheelFixtureDef.filter.maskBits = 1;
         rightSmallWheel.createFixture(wheelFixtureDef);
 
         BodyDef axleDef = new BodyDef();
@@ -299,6 +316,8 @@ public class Robot extends GameObject {
         axleFixtureDef.density = 5;
         axleFixtureDef.shape = scaledPoly(new Vec2(0, 3.166f), new Vec2(0, -3.166f),
                 new Vec2(46f, -3.166f), new Vec2(46f, 3.166f));
+        axleFixtureDef.filter.categoryBits = 1;
+        axleFixtureDef.filter.maskBits = 1;
         rightSmallAxle.createFixture(axleFixtureDef);
 
         PrismaticJointDef axleJointDef = new PrismaticJointDef();
@@ -349,6 +368,8 @@ public class Robot extends GameObject {
         fixtureDef.friction = 0.3f;
         fixtureDef.density = 0.5f;
         fixtureDef.shape = scaledRectShape(0, -9.230f / 2, 23.750f, 9.230f);
+        fixtureDef.filter.categoryBits = 1;
+        fixtureDef.filter.maskBits = 1;
         antenna[0].createFixture(fixtureDef);
 
         partDef.position = antenna[0].getWorldPoint(scale(new Vec2(22f, 0)));

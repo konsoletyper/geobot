@@ -24,9 +24,9 @@ public class GameObject {
         if (game == null) {
             throw new IllegalStateException("Game object is already disposed");
         }
-        game = null;
-        game.hasRemovedObjects = true;
         destroy();
+        game.hasRemovedObjects = true;
+        game = null;
     }
 
     protected void destroy() {

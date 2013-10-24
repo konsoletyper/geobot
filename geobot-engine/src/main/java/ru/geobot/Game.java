@@ -58,6 +58,10 @@ public class Game implements EntryPoint {
         listeners.add(listener);
     }
 
+    public void removeListener(GameListener listener) {
+        listeners.remove(listener);
+    }
+
     public boolean isOutlinePainted() {
         return outlinePainted;
     }
@@ -106,7 +110,7 @@ public class Game implements EntryPoint {
         if (objectUnderMouse != null) {
             objectUnderMouse.click();
         }
-        for (GameListener listener : listeners) {
+        for (GameListener listener : listeners.toArray(new GameListener[0])) {
             listener.objectClicked(objectUnderMouse);
         }
     }
@@ -254,13 +258,12 @@ public class Game implements EntryPoint {
         AffineTransform orig = graphics.getTransform();
         GameObject[] objectArray = objects.toArray(new GameObject[objects.size()]);
         Arrays.sort(objectArray, new Comparator<GameObject>() {
-            @Override
-            public int compare(GameObject o1, GameObject o2) {
-                return o1.zIndex - o2.zIndex;
+            @Override public int compare(GameObject o1, GameObject o2) {
+                return Integer.compare(o1.getZIndex(), o2.getZIndex());
             }
         });
         paintBackground(graphics);
-        for (GameObject object : objects) {
+        for (GameObject object : objectArray) {
             object.paint(graphics);
         }
         graphics.setTransform(orig);
