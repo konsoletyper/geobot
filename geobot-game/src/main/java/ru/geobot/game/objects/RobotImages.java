@@ -1,4 +1,4 @@
-package ru.geobot.objects;
+package ru.geobot.game.objects;
 
 import ru.geobot.ResourceSet;
 import ru.geobot.resources.Image;

@@ -1,4 +1,4 @@
-package ru.geobot.caves;
+package ru.geobot.game.caves;
 
 import ru.geobot.ResourceSet;
 import ru.geobot.resources.Image;

@@ -1,4 +1,4 @@
-package ru.geobot.objects;
+package ru.geobot.game.objects;
 
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
@@ -59,6 +59,9 @@ public class Robot extends GameObject {
         createLeftSmallWheel();
         createRightSmallWheel();
         createAntenna();
+        Vec2 pos = body.getWorldCenter();
+        getGame().setOriginX(pos.x);
+        getGame().setOriginY(pos.y + vertOffset + 1.4f);
     }
 
     private void createBody() {
@@ -473,10 +476,10 @@ public class Robot extends GameObject {
         rightAxleJoint.setMaxMotorForce(10 + 50 * Math.abs(delta));
         delta = leftSmallAxleJoint.getUpperLimit() - leftSmallAxleJoint.getJointTranslation();
         leftSmallAxleJoint.setMotorSpeed(0.2f + 3 * delta);
-        leftSmallAxleJoint.setMaxMotorForce(10 + 50 * Math.abs(delta));
+        leftSmallAxleJoint.setMaxMotorForce(5 + 25 * Math.abs(delta));
         delta = leftSmallAxleJoint.getUpperLimit() - rightSmallAxleJoint.getJointTranslation();
         rightSmallAxleJoint.setMotorSpeed(0.2f + 3 * delta);
-        rightSmallAxleJoint.setMaxMotorForce(10 + 50 * Math.abs(delta));
+        rightSmallAxleJoint.setMaxMotorForce(5 + 25 * Math.abs(delta));
     }
 
     @Override

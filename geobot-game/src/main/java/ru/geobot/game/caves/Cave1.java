@@ -1,4 +1,4 @@
-package ru.geobot.caves;
+package ru.geobot.game.caves;
 
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -8,11 +8,11 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
 import ru.geobot.Game;
 import ru.geobot.GameAdapter;
 import ru.geobot.GameObject;
+import ru.geobot.game.objects.Rope;
+import ru.geobot.game.objects.RopeFactory;
 import ru.geobot.graphics.Color;
 import ru.geobot.graphics.Graphics;
 import ru.geobot.graphics.Rectangle;
-import ru.geobot.objects.Rope;
-import ru.geobot.objects.RopeFactory;
 
 /**
  *
@@ -23,21 +23,28 @@ public class Cave1 {
     private RopePendant firstPendant;
     private boolean connectingRope;
     private RopePendant connectingPendant;
+    private Rope rope;
 
     public Cave1(Game game) {
         this.game = game;
-        new Environment(game);
-        //new Ball(game);
+        Environment env = new Environment(game);
+        Vec2 ropeConn = new Vec2(7.2f, 5.5f);
         RopeFactory ropeFactory = new RopeFactory();
         ropeFactory.setResistance(0.01f);
-        ropeFactory.setChunkLength(0.2f);
         ropeFactory.setWidth(0.05f);
-        ropeFactory.setStartX(4);
-        ropeFactory.setStartY(4.8f);
+        ropeFactory.setStartX(ropeConn.x);
+        ropeFactory.setStartY(ropeConn.y);
         ropeFactory.setDensity(0.9f);
-        for (int i = 0; i < 19; ++i) {
+        for (int i = 0; i < 25; ++i) {
             ropeFactory.addChunk((float)Math.PI);
         }
+        rope = ropeFactory.create(game);
+        RevoluteJointDef ropeJointDef = new RevoluteJointDef();
+        ropeJointDef.bodyA = env.getBody();
+        ropeJointDef.bodyB = rope.part(0);
+        ropeJointDef.localAnchorA = ropeConn;
+        ropeJointDef.localAnchorB = new Vec2(0, 0);
+        game.getWorld().createJoint(ropeJointDef);
         /*final Rope rope = ropeFactory.create(game);
         firstPendant = new RopePendant(game, 4, 4.9f);
         new RopePendant(game, 6, 4f);
@@ -117,18 +124,6 @@ public class Cave1 {
         @Override
         protected void paint(Graphics graphics) {
             super.paint(graphics);
-
-            for (Fixture fixture = body.getFixtureList(); fixture != null; fixture = fixture.getNext()) {
-                PolygonShape shape = (PolygonShape)fixture.getShape();
-                Vec2[] vertices = shape.getVertices();
-                Vec2 v = vertices[shape.getVertexCount() - 1];
-                graphics.setColor(Color.red());
-                graphics.moveTo(v.x, v.y);
-                for (int i = 0; i < shape.getVertexCount(); ++i) {
-                    graphics.lineTo(vertices[i].x, vertices[i].y);
-                }
-                graphics.stroke();
-            }
         }
 
         @Override
@@ -141,6 +136,10 @@ public class Cave1 {
                 fixture = fixture.getNext();
             }
             return false;
+        }
+
+        public Body getBody() {
+            return body;
         }
     }
 

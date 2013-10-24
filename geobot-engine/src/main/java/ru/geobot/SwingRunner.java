@@ -124,7 +124,6 @@ public class SwingRunner extends JComponent {
         private AtomicBoolean sizeChanged = new AtomicBoolean(false);
 
         public Execution(EntryPoint entryPoint) {
-            super();
             this.entryPoint = entryPoint;
         }
 
@@ -150,7 +149,7 @@ public class SwingRunner extends JComponent {
                     for (Event event : events) {
                         event.process(entryPoint);
                     }
-                    boolean shouldWait = entryPoint.idle();
+                    boolean shouldWait = !entryPoint.idle();
                     boolean shouldChangeSize = sizeChanged.compareAndSet(true, false);
                     int currentWidth = Math.max(1, width);
                     int currentHeight = Math.max(1, height);

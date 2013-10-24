@@ -1,10 +1,13 @@
-package ru.geobot;
+package ru.geobot.game;
 
-import ru.geobot.caves.Cave1;
-import ru.geobot.caves.Cave1Resources;
+import ru.geobot.EntryPointCallback;
+import ru.geobot.Game;
+import ru.geobot.Key;
+import ru.geobot.game.caves.Cave1;
+import ru.geobot.game.caves.Cave1Resources;
+import ru.geobot.game.objects.Robot;
 import ru.geobot.graphics.Graphics;
 import ru.geobot.graphics.ImageUtil;
-import ru.geobot.objects.Robot;
 
 /**
  *
@@ -16,7 +19,7 @@ public class GeobotGame extends Game {
 
     @Override
     public void start(EntryPointCallback callback) {
-        robot = new Robot(this, 5.1f, 2.5f);
+        robot = new Robot(this, 2.1f, 1.5f);
         new Cave1(this);
         images = loadResources(Cave1Resources.class);
     }

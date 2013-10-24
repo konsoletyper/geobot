@@ -1,8 +1,9 @@
-package ru.geobot.objects;
+package ru.geobot.game.objects;
 
 import java.util.ArrayList;
 import java.util.List;
 import ru.geobot.Game;
+import ru.geobot.resources.Image;
 
 /**
  *
@@ -10,13 +11,13 @@ import ru.geobot.Game;
  */
 public class RopeFactory {
     float width = 0.05f;
-    float chunkLength = 0.1f;
     float startX;
     float startY;
     List<Float> angles = new ArrayList<>();
     float restitution = 1f;
     float density = 1f;
     float resistance = 0f;
+    Image image;
 
     public void clearChunks() {
         angles.clear();
@@ -24,14 +25,6 @@ public class RopeFactory {
 
     public void addChunk(float angle) {
         angles.add(angle);
-    }
-
-    public float getChunkLength() {
-        return chunkLength;
-    }
-
-    public void setChunkLength(float chunkLength) {
-        this.chunkLength = chunkLength;
     }
 
     public float getWidth() {
@@ -82,10 +75,17 @@ public class RopeFactory {
         this.startY = startY;
     }
 
+    public Image getImage() {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
+    }
+
     public Rope create(Game game) {
-        if (chunkLength < width) {
-            throw new IllegalStateException("Chunk length must be at least as long " +
-                    "as width");
+        if (image == null) {
+            image = game.loadResources(RopeImages.class).texture();
         }
         Rope rope = new Rope(game, this);
         return rope;

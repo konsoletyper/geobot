@@ -1,4 +1,4 @@
-package ru.geobot.objects;
+package ru.geobot.game.objects;
 
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
@@ -7,8 +7,10 @@ import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 import ru.geobot.Game;
 import ru.geobot.GameObject;
+import ru.geobot.graphics.AffineTransform;
 import ru.geobot.graphics.Color;
 import ru.geobot.graphics.Graphics;
+import ru.geobot.resources.Image;
 
 /**
  *
@@ -17,13 +19,17 @@ import ru.geobot.graphics.Graphics;
 public class Rope extends GameObject {
     private Body[] parts;
     private Color color = Color.yellow();
-    private float chunkLength;
     private float width;
+    private Image image;
+    private float chunkLength;
+    private float imageScale;
 
     Rope(Game game, RopeFactory factory) {
         super(game);
-        this.chunkLength = factory.chunkLength;
+        image = factory.image;
+        this.chunkLength = factory.width / image.getHeight() * image.getWidth();
         this.width = factory.width;
+        imageScale = factory.width / image.getHeight();
 
         BodyDef partDef = new BodyDef();
         partDef.type = BodyType.DYNAMIC;
@@ -103,17 +109,15 @@ public class Rope extends GameObject {
     protected void paint(Graphics graphics) {
         graphics.setColor(color);
         graphics.setStrokeWidth(width);
-        Vec2 a = parts[0].getPosition();
-        graphics.moveTo(a.x, a.y);
-        for (int i = 1; i < parts.length; i += 2) {
-            a = parts[i].getPosition();
-            Vec2 b = parts[i + 1].getPosition();
-            graphics.quadraticCurveTo(a.x, a.y, b.x, b.y);
+        AffineTransform transform = graphics.getTransform();
+        for (int i = 0; i < parts.length; i++) {
+            Vec2 v = parts[i].getPosition();
+            graphics.translate(v.x - width / 2, v.y);
+            graphics.rotate((float)Math.PI / 2 + parts[i].getAngle());
+            graphics.scale(imageScale, imageScale);
+            image.draw(graphics);
+            graphics.setTransform(transform);
         }
-        Body lastPart = parts[parts.length - 1];
-        Vec2 lastPt = lastPart.getWorldPoint(new Vec2(0, chunkLength - width));
-        graphics.lineTo(lastPt.x, lastPt.y);
-        graphics.stroke();
     }
 
     public Color getColor() {

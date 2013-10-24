@@ -4,9 +4,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import org.jbox2d.collision.shapes.CircleShape;
+import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.Body;
+import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.World;
-import ru.geobot.graphics.*;
+import ru.geobot.graphics.AffineTransform;
+import ru.geobot.graphics.Color;
+import ru.geobot.graphics.Graphics;
+import ru.geobot.graphics.Rectangle;
 import ru.geobot.resources.ResourceReader;
 
 /**
@@ -32,16 +40,50 @@ public class Game implements EntryPoint {
     float width;
     float height;
     private ResourceReader resourceReader;
+    private boolean suspended;
+    private long timeOffset;
+    private long suspendTime;
+    private volatile boolean outlinePainted;
 
     public Game() {
-        currentTime = System.currentTimeMillis();
         currentSlicedTime = (currentTime / timeSlice) * timeSlice;
         Vec2 gravity = new Vec2(0, -9.8f);
         world = new World(gravity, false);
+        suspendTime = System.currentTimeMillis();
+        timeOffset = suspendTime;
+        suspended = true;
     }
 
     public void addListener(GameListener listener) {
         listeners.add(listener);
+    }
+
+    public boolean isOutlinePainted() {
+        return outlinePainted;
+    }
+
+    public void setOutlinePainted(boolean outlinePainted) {
+        this.outlinePainted = outlinePainted;
+    }
+
+    public boolean isSuspended() {
+        return suspended;
+    }
+
+    public void suspend() {
+        if (suspended) {
+            return;
+        }
+        suspended = true;
+        suspendTime = System.currentTimeMillis();
+    }
+
+    public void resume() {
+        if (!suspended) {
+            return;
+        }
+        suspended = false;
+        timeOffset += System.currentTimeMillis() - suspendTime;
     }
 
     void cleanRemovedObjects() {
@@ -58,6 +100,9 @@ public class Game implements EntryPoint {
     }
 
     private void clickMouse() {
+        if (suspended) {
+            return;
+        }
         if (objectUnderMouse != null) {
             objectUnderMouse.click();
         }
@@ -66,11 +111,8 @@ public class Game implements EntryPoint {
         }
     }
 
-    public boolean actUntil(long time) {
-        if (time < this.currentTime) {
-            throw new IllegalArgumentException("Can't act until past");
-        }
-        if (time == this.currentTime) {
+    private boolean actUntil(long time) {
+        if (time <= this.currentTime) {
             return false;
         }
         boolean acted = false;
@@ -149,6 +191,9 @@ public class Game implements EntryPoint {
 
     @Override
     public void mouseMove(int x, int y) {
+        if (suspended) {
+            return;
+        }
         Rectangle rect = getViewRectangle();
         if (!rect.contains(x, y)) {
             return;
@@ -165,11 +210,17 @@ public class Game implements EntryPoint {
 
     @Override
     public void mouseDown() {
+        if (suspended) {
+            return;
+        }
         clickedObject = objectUnderMouse;
     }
 
     @Override
     public void mouseUp() {
+        if (suspended) {
+            return;
+        }
         if (clickedObject != null) {
             clickMouse();
         }
@@ -177,7 +228,7 @@ public class Game implements EntryPoint {
 
     @Override
     public boolean idle() {
-        return actUntil(System.currentTimeMillis());
+        return !suspended && actUntil(System.currentTimeMillis() - timeOffset);
     }
 
     @Override
@@ -193,6 +244,7 @@ public class Game implements EntryPoint {
 
     @Override
     public void paint(Graphics graphics) {
+        boolean outlinePainted = this.outlinePainted;
         Rectangle rect = getViewRectangle();
         graphics.setColor(Color.gray());
         graphics.fillRectangle(0, 0, width, height);
@@ -212,6 +264,35 @@ public class Game implements EntryPoint {
             object.paint(graphics);
         }
         graphics.setTransform(orig);
+
+        if (outlinePainted) {
+            graphics.setStrokeWidth(0.01f);
+            for (Body body = world.getBodyList(); body != null; body = body.getNext()) {
+                Vec2 pos = body.getPosition();
+                graphics.translate(pos.x, pos.y);
+                graphics.rotate(body.getAngle());
+                for (Fixture fixture = body.getFixtureList(); fixture != null; fixture = fixture.getNext()) {
+                    Shape shape = fixture.getShape();
+                    if (shape instanceof PolygonShape) {
+                        PolygonShape poly = (PolygonShape)fixture.getShape();
+                        Vec2[] vertices = poly.getVertices();
+                        Vec2 v = vertices[poly.getVertexCount() - 1];
+                        graphics.setColor(Color.red());
+                        graphics.moveTo(v.x, v.y);
+                        for (int i = 0; i < poly.getVertexCount(); ++i) {
+                            graphics.lineTo(vertices[i].x, vertices[i].y);
+                        }
+                        graphics.stroke();
+                    } else if (shape instanceof CircleShape) {
+                        CircleShape circle = (CircleShape)shape;
+                        Vec2 v = circle.m_p;
+                        graphics.drawEllipse(v.x - circle.m_radius, v.y - circle.m_radius,
+                                2 * circle.m_radius, 2 * circle.m_radius);
+                    }
+                }
+                graphics.setTransform(orig);
+            }
+        }
     }
 
     protected void paintBackground(@SuppressWarnings("unused") Graphics graphics) {
