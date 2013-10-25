@@ -22,4 +22,13 @@ public interface ObjectResources {
 
     @ResourcePath("bucket2-shape.txt")
     PolygonalBodyFactory bucketOnRopeShape();
+
+    @ResourcePath("bucket2-clickable-shape.txt")
+    PolygonalBodyFactory bucketOnRopeClickableShape();
+
+    @ResourcePath("pick.png")
+    Image pickImage();
+
+    @ResourcePath("pick-shape.txt")
+    PolygonalBodyFactory pickShape();
 }

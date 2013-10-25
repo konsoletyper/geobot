@@ -232,7 +232,7 @@ public class Game implements EntryPoint {
 
     @Override
     public boolean idle() {
-        return !suspended && actUntil(System.currentTimeMillis() - timeOffset);
+        return !suspended && actUntil((System.currentTimeMillis() - timeOffset) / 1);
     }
 
     @Override

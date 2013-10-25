@@ -35,7 +35,7 @@ public class GeometryUtils {
            Vertex b = node.getPrevious().getVertex().subtract(node.getVertex());
            float alen = (float)Math.sqrt(a.dotProduct(a));
            float blen = (float)Math.sqrt(b.dotProduct(b));
-           if (alen >= blen * 2 && blen > 20) {
+           if (alen >= blen * 8 && blen > 20) {
                queue.remove(node.getPrevious());
                int quotient = (int)Math.ceil(alen / blen);
                Vertex v = node.getVertex().add(divide(a, quotient));
@@ -44,7 +44,7 @@ public class GeometryUtils {
                result.add(node.getPrevious().getVertex());
                node.setVertex(v);
                updateNodes(queue, node, node.getPrevious());
-           } else if (blen >= alen * 2 && alen > 20) {
+           } else if (blen >= alen * 8 && alen > 20) {
                queue.remove(node.getNext());
                int quotient = (int)Math.ceil(blen / alen);
                Vertex v = node.getVertex().add(divide(b, quotient));

@@ -184,13 +184,11 @@ public class SwingRunner extends JComponent {
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             awtGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            entryPoint.paint(new AWTGraphics(awtGraphics, new Rectangle(0, 0,
-                    currentWidth, currentHeight)));
+            entryPoint.paint(new AWTGraphics(awtGraphics, new Rectangle(0, 0, currentWidth, currentHeight)));
             awtGraphics.dispose();
             frameBuffer = image;
             EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+                @Override public void run() {
                     SwingRunner.this.repaint();
                 }
             });

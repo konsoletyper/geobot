@@ -1,6 +1,9 @@
 package ru.geobot.game.objects;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.FixtureDef;
 import ru.geobot.Game;
@@ -17,6 +20,7 @@ public class BodyObjectBuilder {
     private FixtureDef fixtureDef = new FixtureDef();
     private Image image;
     private PolygonalBodyFactory shape;
+    private PolygonalBodyFactory selectionShape;
     private float realHeight;
 
     public BodyObjectBuilder(Game game) {
@@ -43,6 +47,10 @@ public class BodyObjectBuilder {
         this.realHeight = realHeight;
     }
 
+    public void setSelectionShape(PolygonalBodyFactory selectionShape) {
+        this.selectionShape = selectionShape;
+    }
+
     public BodyObject build() {
         BodyObject object = new BodyObject(game);
         object.scale = realHeight / image.getHeight();
@@ -51,6 +59,13 @@ public class BodyObjectBuilder {
         for (PolygonShape part : shape.create(object.scale)) {
             fixtureDef.shape = part;
             object.body.createFixture(fixtureDef);
+        }
+        if (selectionShape != null) {
+            List<Shape> shapes = new ArrayList<>();
+            for (Shape shape : selectionShape.create(object.scale)) {
+                shapes.add(shape);
+            }
+            object.selectionShapes = shapes;
         }
         return object;
     }
