@@ -16,10 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import javax.imageio.ImageIO;
-import org.apache.batik.transcoder.TranscoderException;
-import org.apache.batik.transcoder.TranscoderInput;
-import org.apache.batik.transcoder.TranscoderOutput;
-import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.commons.lang3.StringUtils;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -141,12 +137,8 @@ public class ResourceLoader {
     private static ImageImpl createImage(Class<?> cls, String path) {
         BufferedImage image;
         try (InputStream input = cls.getResourceAsStream(path)) {
-            if (path.endsWith(".svg")) {
-                image = createVectorImage(input);
-            } else {
-                image = createRasterImage(input);
-            }
-        } catch (IOException | TranscoderException e) {
+            image = createRasterImage(input);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         int factor = 2;
@@ -176,12 +168,8 @@ public class ResourceLoader {
     private static LargeImageImpl createLargeImage(Class<?> cls, String path) {
         BufferedImage image;
         try (InputStream input = cls.getResourceAsStream(path)) {
-            if (path.endsWith(".svg")) {
-                image = createVectorImage(input);
-            } else {
-                image = createRasterImage(input);
-            }
-        } catch (IOException | TranscoderException e) {
+            image = createRasterImage(input);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         int factor = 2;
@@ -233,28 +221,7 @@ public class ResourceLoader {
         return new LargeImageScale(image.getWidth(), image.getHeight(), tileWidth, tileHeight, array, cols);
     }
 
-    private static BufferedImage createVectorImage(InputStream input) throws TranscoderException {
-        TranscoderInput ti = new TranscoderInput(input);
-        BufferedTranscoder transcoder = new BufferedTranscoder();
-        transcoder.transcode(ti, null);
-        return transcoder.image;
-    }
-
     private static BufferedImage createRasterImage(InputStream input) throws IOException {
         return ImageIO.read(input);
-    }
-
-    private static class BufferedTranscoder extends ImageTranscoder {
-        public BufferedImage image;
-
-        @Override
-        public BufferedImage createImage(int width, int height) {
-            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            return image;
-        }
-
-        @Override
-        public void writeImage(BufferedImage bi, TranscoderOutput to) throws TranscoderException {
-        }
     }
 }

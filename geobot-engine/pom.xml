@@ -24,20 +24,8 @@
       <version>3.1</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.xmlgraphics</groupId>
-      <artifactId>batik-xml</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.xmlgraphics</groupId>
-      <artifactId>batik-swing</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.xmlgraphics</groupId>
-      <artifactId>batik-transcoder</artifactId>
     </dependency>
     <dependency>
       <groupId>ru.geobot</groupId>
