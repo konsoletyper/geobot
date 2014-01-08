@@ -40,6 +40,7 @@ public class Robot extends GameObject {
     private PrismaticJoint rightAxleJoint;
     private PrismaticJoint leftSmallAxleJoint;
     private PrismaticJoint rightSmallAxleJoint;
+    private Joint[] antennaJoints = new Joint[3];
     private boolean movingRight;
     private boolean movingLeft;
     private float initialX;
@@ -47,6 +48,16 @@ public class Robot extends GameObject {
     private static final float SCALE = 1.1f / 800f;
     private boolean movingUp;
     private float vertOffset = 0;
+    private Direction currentDirection = Direction.RIGHT;
+    private Direction desiredDirection;
+    private long directionSetTime = -1;
+    private long currentTime;
+
+    private static enum Direction {
+        LEFT,
+        RIGHT,
+        FACE
+    }
 
     public Robot(Game game, float x, float y) {
         super(game);
@@ -83,7 +94,7 @@ public class Robot extends GameObject {
         fixtureDef.shape = scaledRectShape(104, 201, 122, 37);
         body.createFixture(fixtureDef);
 
-        fixtureDef.shape = scaledRectShape(6, 238, 349, 326);
+        fixtureDef.shape = scaledRectShape(21, 238, 289, 326);
         body.createFixture(fixtureDef);
     }
 
@@ -352,9 +363,23 @@ public class Robot extends GameObject {
         antenna = new Body[3];
         BodyDef partDef = new BodyDef();
         partDef.type = BodyType.DYNAMIC;
-        partDef.angle = 100 / 180f * (float)Math.PI;
-        partDef.position.x = initialX + scale(220);
-        partDef.position.y = initialY + scale(417);
+        switch (currentDirection) {
+            case RIGHT:
+                partDef.angle = 100 / 180f * (float)Math.PI;
+                partDef.position.x = scale(220);
+                break;
+            case LEFT:
+                partDef.angle = 80 / 180f * (float)Math.PI;
+                partDef.position.x = scale(99);
+                break;
+            case FACE:
+                partDef.angle = 90 / 180f * (float)Math.PI;
+                partDef.position.x = scale(15);
+                break;
+        }
+        partDef.position.y = scale(417);
+        Vec2 anchor = partDef.position;
+        partDef.position = body.getWorldPoint(anchor);
         antenna[0] = getWorld().createBody(partDef);
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.restitution = 0.7f;
@@ -383,14 +408,23 @@ public class Robot extends GameObject {
             jointDef.bodyA = antenna[i - 1];
             jointDef.bodyB = antenna[i];
             jointDef.localAnchorA = scale(new Vec2(distances[i - 1], 0));
-            getWorld().createJoint(jointDef);
+            antennaJoints[i] = getWorld().createJoint(jointDef);
         }
         jointDef.bodyA = body;
         jointDef.bodyB = antenna[0];
         jointDef.collideConnected = false;
-        jointDef.localAnchorA = scale(new Vec2(220, 417));
+        jointDef.localAnchorA = anchor;
         jointDef.referenceAngle = partDef.angle;
-        getWorld().createJoint(jointDef);
+        antennaJoints[0] = getWorld().createJoint(jointDef);
+    }
+
+    private void destroyAntenna() {
+        for (Body body : antenna) {
+            getWorld().destroyBody(body);
+        }
+        for (Joint joint : antennaJoints) {
+            getWorld().destroyJoint(joint);
+        }
     }
 
     private PolygonShape scaledRectShape(float x, float y, float w, float h) {
@@ -429,9 +463,23 @@ public class Robot extends GameObject {
         switch (key) {
             case RIGHT:
                 movingRight = true;
+                if (currentDirection == Direction.LEFT) {
+                    currentDirection = Direction.FACE;
+                    desiredDirection = Direction.RIGHT;
+                    directionSetTime = currentTime + 400;
+                    destroyAntenna();
+                    createAntenna();
+                }
                 break;
             case LEFT:
                 movingLeft = true;
+                if (currentDirection == Direction.RIGHT) {
+                    currentDirection = Direction.FACE;
+                    desiredDirection = Direction.LEFT;
+                    directionSetTime = currentTime + 400;
+                    destroyAntenna();
+                    createAntenna();
+                }
                 break;
             case UP:
                 movingUp = true;
@@ -459,6 +507,7 @@ public class Robot extends GameObject {
 
     @Override
     protected void time(long time) {
+        currentTime = time;
         Vec2 velocity = body.getLocalVector(body.getLinearVelocity());
         if (movingRight) {
             if (velocity.x < 1.5f) {
@@ -494,6 +543,15 @@ public class Robot extends GameObject {
         delta = leftSmallAxleJoint.getUpperLimit() - rightSmallAxleJoint.getJointTranslation();
         rightSmallAxleJoint.setMotorSpeed(0.1f + 2 * delta);
         rightSmallAxleJoint.setMaxMotorForce(2 + 10 * Math.abs(delta));
+
+        if (directionSetTime >= 0) {
+            if (time > directionSetTime) {
+                directionSetTime = -1;
+                currentDirection = desiredDirection;
+                destroyAntenna();
+                createAntenna();
+            }
+        }
     }
 
     @Override
@@ -501,11 +559,15 @@ public class Robot extends GameObject {
         Vec2 pos;
         AffineTransform transform = graphics.getTransform();
         ImageUtil bodyImage = new ImageUtil(images.body());
-        ImageUtil headImage = new ImageUtil(images.headRight());
-        ImageUtil wheelImage = new ImageUtil(images.bigLeftWheel());
+        ImageUtil headRightImage = new ImageUtil(images.headRight());
+        ImageUtil headLeftImage = new ImageUtil(images.headLeft());
+        ImageUtil headFaceImage = new ImageUtil(images.headFace());
+        ImageUtil leftWheelImage = new ImageUtil(images.bigLeftWheel());
+        ImageUtil rightWheelImage = new ImageUtil(images.bigRightWheel());
         ImageUtil damperImage = new ImageUtil(images.damper());
         ImageUtil axleImage = new ImageUtil(images.axle());
-        ImageUtil smallWheelImage = new ImageUtil(images.smallLeftWheel());
+        ImageUtil smallLeftWheelImage = new ImageUtil(images.smallLeftWheel());
+        ImageUtil smallRightWheelImage = new ImageUtil(images.smallRightWheel());
 
         graphics.setTransform(transform);
         drawTrack(graphics, leftWheel.getPosition(), scale(71), leftSmallWheel.getPosition(),
@@ -519,7 +581,7 @@ public class Robot extends GameObject {
         graphics.rotate(leftWheel.getAngle());
         graphics.scale(SCALE, SCALE);
         graphics.translate(-168f / 2, -170f / 2);
-        wheelImage.draw(graphics, 0, 0, 168, 170f);
+        leftWheelImage.draw(graphics, 0, 0, 168, 170f);
 
         graphics.setTransform(transform);
         pos = rightWheel.getWorldCenter();
@@ -527,7 +589,7 @@ public class Robot extends GameObject {
         graphics.rotate(rightWheel.getAngle());
         graphics.scale(SCALE, SCALE);
         graphics.translate(-168f / 2, -170f / 2);
-        wheelImage.draw(graphics, 0, 0, 168, 170f);
+        rightWheelImage.draw(graphics, 0, 0, 168, 170f);
 
         graphics.setTransform(transform);
         pos = leftSmallWheel.getPosition();
@@ -535,7 +597,7 @@ public class Robot extends GameObject {
         graphics.rotate(leftSmallWheel.getAngle());
         graphics.scale(SCALE, SCALE);
         graphics.translate(-30, -30);
-        smallWheelImage.draw(graphics, 0, 0, 60, 60);
+        smallLeftWheelImage.draw(graphics, 0, 0, 60, 60);
 
         graphics.setTransform(transform);
         pos = rightSmallWheel.getPosition();
@@ -543,7 +605,7 @@ public class Robot extends GameObject {
         graphics.rotate(rightSmallWheel.getAngle());
         graphics.scale(SCALE, SCALE);
         graphics.translate(-30, -30);
-        smallWheelImage.draw(graphics, 0, 0, 60, 60);
+        smallRightWheelImage.draw(graphics, 0, 0, 60, 60);
 
         graphics.setTransform(transform);
         pos = leftAxle.getPosition();
@@ -579,19 +641,23 @@ public class Robot extends GameObject {
         graphics.rotate(body.getAngle());
         graphics.scale(SCALE, SCALE);
         bodyImage.draw(graphics, 0, -5, 336, 244);
-        headImage.draw(graphics, 6, 238, 349, 326);
-
-        ImageUtil[] antennaImages = { new ImageUtil(images.antenna1()), new ImageUtil(images.antenna2()),
-                new ImageUtil(images.antenna3()) };
-        for (int i = 0; i < antenna.length; ++i) {
-            ImageUtil partImage = antennaImages[i];
-            Body part = antenna[i];
-            pos = part.getPosition();
-            graphics.setTransform(transform);
-            graphics.translate(pos.x, pos.y);
-            graphics.rotate(part.getAngle() - (float)Math.PI / 2);
-            graphics.scale(SCALE, SCALE);
-            partImage.draw(graphics, -partImage.getWidth() / 2, 0, partImage.getWidth(), partImage.getHeight());
+        switch (currentDirection) {
+            case LEFT:
+                drawAntenna(graphics, transform);
+                graphics.setTransform(transform);
+                graphics.translate(pos.x, pos.y);
+                graphics.rotate(body.getAngle());
+                graphics.scale(SCALE, SCALE);
+                headLeftImage.draw(graphics, -21, 238, 349, 326);
+                break;
+            case RIGHT:
+                headRightImage.draw(graphics, 6, 238, 349, 326);
+                drawAntenna(graphics, transform);
+                break;
+            case FACE:
+                headFaceImage.draw(graphics, -12, 238, 360, 328);
+                drawAntenna(graphics, transform);
+                break;
         }
 
         pos = new Vec2();
@@ -673,5 +739,20 @@ public class Robot extends GameObject {
         graphics.drawArc(p1.x - r1, p1.y - r1, r1 * 2, r1 * 2, angle1, angle2 - angle1);
         graphics.drawArc(p2.x - r2, p2.y - r2, r2 * 2, r2 * 2, angle2,
                 2 * (float)Math.PI - (angle2 - angle1));
+    }
+
+    private void drawAntenna(Graphics graphics, AffineTransform transform) {
+        ImageUtil[] antennaImages = { new ImageUtil(images.antenna1()), new ImageUtil(images.antenna2()),
+                new ImageUtil(images.antenna3()) };
+        for (int i = 0; i < antenna.length; ++i) {
+            ImageUtil partImage = antennaImages[i];
+            Body part = antenna[i];
+            Vec2 pos = part.getPosition();
+            graphics.setTransform(transform);
+            graphics.translate(pos.x, pos.y);
+            graphics.rotate(part.getAngle() - (float)Math.PI / 2);
+            graphics.scale(SCALE, SCALE);
+            partImage.draw(graphics, -partImage.getWidth() / 2, 0, partImage.getWidth(), partImage.getHeight());
+        }
     }
 }

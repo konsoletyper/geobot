@@ -94,12 +94,13 @@ public class Rope extends GameObject {
 
     @Override
     protected boolean hasPoint(float x, float y) {
+        float halfWidth = width * 2;
         for (Body part : parts) {
-            for (Fixture fixture = part.getFixtureList(); fixture != null;
-                    fixture = fixture.getNext()) {
-                if (fixture.testPoint(new Vec2(x, y))) {
-                    return true;
-                }
+            PolygonShape poly = new PolygonShape();
+            poly.set(new Vec2[] { new Vec2(-halfWidth, 0), new Vec2(halfWidth, 0), new Vec2(halfWidth, chunkLength),
+                    new Vec2(-halfWidth, chunkLength) }, 4);
+            if (poly.testPoint(part.getTransform(), new Vec2(x, y))) {
+                return true;
             }
         }
         return false;
