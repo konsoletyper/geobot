@@ -52,6 +52,10 @@ public class Robot extends GameObject {
     private Direction desiredDirection;
     private long directionSetTime = -1;
     private long currentTime;
+    private static float ARM_PART_LENGTH = 100;
+    private float armLength = 580;
+    private float armAngle = 20 * (float)Math.PI / 180;
+    private float clawsAngle = 25 * (float)Math.PI / 180;
 
     private static enum Direction {
         LEFT,
@@ -694,6 +698,10 @@ public class Robot extends GameObject {
         damperImage.draw(graphics, -23f / 2, 0, 23f, 71);
 
         graphics.setTransform(transform);
+        pos = body.getPosition();
+        graphics.translate(pos.x, pos.y);
+        graphics.rotate(body.getAngle());
+        drawArm(graphics);
     }
 
     private void drawTrack(Graphics graphics, Vec2 p1, float r1, Vec2 p2, float r2, float thickness) {
@@ -755,5 +763,53 @@ public class Robot extends GameObject {
             graphics.scale(SCALE, SCALE);
             partImage.draw(graphics, -partImage.getWidth() / 2, 0, partImage.getWidth(), partImage.getHeight());
         }
+    }
+
+    private void drawArm(Graphics graphics) {
+        graphics.scale(SCALE, SCALE);
+        graphics.translate(168, 146);
+        graphics.rotate(armAngle);
+        graphics.translate(armLength - ARM_PART_LENGTH, 0);
+        float shiftSize = (armLength - ARM_PART_LENGTH) / 3;
+        float lastWidth = 0;
+        if (shiftSize > ARM_PART_LENGTH) {
+            ImageUtil[] armImages = { new ImageUtil(images.arm4long()), new ImageUtil(images.arm3long()),
+                    new ImageUtil(images.arm2long())};
+            for (ImageUtil armImage : armImages) {
+                graphics.translate(-100, (lastWidth - armImage.getHeight()) / 2);
+                armImage.draw(graphics);
+                graphics.translate(-shiftSize + 100, 0);
+                lastWidth = armImage.getHeight();
+            }
+        } else {
+            ImageUtil[] armImages = { new ImageUtil(images.arm4short()), new ImageUtil(images.arm3short()),
+                    new ImageUtil(images.arm2short())};
+            for (ImageUtil armImage : armImages) {
+                graphics.translate(0, (lastWidth - armImage.getHeight()) / 2);
+                armImage.draw(graphics);
+                graphics.translate(-shiftSize, 0);
+                lastWidth = armImage.getHeight();
+            }
+        }
+        ImageUtil armStartImage = new ImageUtil(images.arm1());
+        graphics.translate(-15, (lastWidth - armStartImage.getHeight()) / 2);
+        armStartImage.draw(graphics);
+
+        graphics.translate(15 + armLength, armStartImage.getHeight() / 2);
+        ImageUtil upperClawImage = new ImageUtil(images.upperClaw());
+        ImageUtil lowerClawImage = new ImageUtil(images.lowerClaw());
+        ImageUtil clawMountImage = new ImageUtil(images.clawMount());
+        graphics.pushTransform();
+        graphics.rotate(clawsAngle / 2);
+        upperClawImage.draw(graphics, 0, 0, upperClawImage.getWidth(), upperClawImage.getHeight());
+        graphics.popTransform();
+        graphics.pushTransform();
+        graphics.rotate(-clawsAngle / 2);
+        lowerClawImage.draw(graphics, 2, -lowerClawImage.getHeight(), lowerClawImage.getWidth(),
+                lowerClawImage.getHeight());
+        graphics.popTransform();
+        clawMountImage.draw(graphics, -clawMountImage.getWidth() / 2f, -clawMountImage.getHeight() / 2,
+                clawMountImage.getWidth(), clawMountImage.getHeight());
+
     }
 }

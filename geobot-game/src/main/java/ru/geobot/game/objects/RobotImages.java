@@ -48,4 +48,34 @@ public interface RobotImages {
 
     @ResourcePath("robot/antenna3.png")
     Image antenna3();
+
+    @ResourcePath("robot/arm1.png")
+    Image arm1();
+
+    @ResourcePath("robot/arm2-short.png")
+    Image arm2short();
+
+    @ResourcePath("robot/arm2-long.png")
+    Image arm2long();
+
+    @ResourcePath("robot/arm3-short.png")
+    Image arm3short();
+
+    @ResourcePath("robot/arm3-long.png")
+    Image arm3long();
+
+    @ResourcePath("robot/arm4-short.png")
+    Image arm4short();
+
+    @ResourcePath("robot/arm4-long.png")
+    Image arm4long();
+
+    @ResourcePath("robot/upper-claw.png")
+    Image upperClaw();
+
+    @ResourcePath("robot/lower-claw.png")
+    Image lowerClaw();
+
+    @ResourcePath("robot/claw-mount.png")
+    Image clawMount();
 }
