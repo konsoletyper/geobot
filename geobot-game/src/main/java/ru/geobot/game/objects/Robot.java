@@ -380,6 +380,7 @@ public class Robot extends GameObject {
         partDef.position.y = scale(417);
         Vec2 anchor = partDef.position;
         partDef.position = body.getWorldPoint(anchor);
+        partDef.angle += body.getAngle();
         antenna[0] = getWorld().createBody(partDef);
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.restitution = 0.7f;
@@ -414,7 +415,7 @@ public class Robot extends GameObject {
         jointDef.bodyB = antenna[0];
         jointDef.collideConnected = false;
         jointDef.localAnchorA = anchor;
-        jointDef.referenceAngle = partDef.angle;
+        jointDef.referenceAngle = partDef.angle - body.getAngle();
         antennaJoints[0] = getWorld().createJoint(jointDef);
     }
 
