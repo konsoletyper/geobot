@@ -45,4 +45,10 @@ public class GeobotGame extends Game {
     public boolean idle() {
         return super.idle();
     }
+
+    @Override
+    public void mouseDown() {
+        super.mouseDown();
+        robot.pointAt(getMouseX(), getMouseY());
+    }
 }

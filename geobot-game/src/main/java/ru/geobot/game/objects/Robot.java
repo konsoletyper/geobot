@@ -15,6 +15,7 @@ import ru.geobot.graphics.AffineTransform;
 import ru.geobot.graphics.Color;
 import ru.geobot.graphics.Graphics;
 import ru.geobot.graphics.ImageUtil;
+import ru.geobot.resources.Image;
 
 /**
  *
@@ -41,6 +42,9 @@ public class Robot extends GameObject {
     private PrismaticJoint leftSmallAxleJoint;
     private PrismaticJoint rightSmallAxleJoint;
     private Joint[] antennaJoints = new Joint[3];
+    private Body[] armParts;
+    private PrismaticJoint[] armJoints;
+    private RevoluteJoint shoulderJoint;
     private boolean movingRight;
     private boolean movingLeft;
     private float initialX;
@@ -52,10 +56,10 @@ public class Robot extends GameObject {
     private Direction desiredDirection;
     private long directionSetTime = -1;
     private long currentTime;
-    private static float ARM_PART_LENGTH = 100;
-    private float armLength = 580;
-    private float armAngle = 20 * (float)Math.PI / 180;
     private float clawsAngle = 25 * (float)Math.PI / 180;
+    private float targetArmAngle;
+    private float targetArmLength;
+    private boolean freeArm;
 
     private static enum Direction {
         LEFT,
@@ -74,6 +78,7 @@ public class Robot extends GameObject {
         createLeftSmallWheel();
         createRightSmallWheel();
         createAntenna();
+        createArm();
         Vec2 pos = body.getWorldCenter();
         getGame().setOriginX(pos.x);
         getGame().setOriginY(pos.y + vertOffset + 1.4f);
@@ -91,6 +96,7 @@ public class Robot extends GameObject {
         fixtureDef.density = 5;
         fixtureDef.filter.categoryBits = 1;
         fixtureDef.filter.maskBits = 1;
+        fixtureDef.filter.groupIndex = -1;
         fixtureDef.shape = scaledRectShape(0, 0, 336, 201);
         body.createFixture(fixtureDef);
 
@@ -113,6 +119,7 @@ public class Robot extends GameObject {
         FixtureDef wheelFixtureDef = new FixtureDef();
         wheelFixtureDef.density = 15;
         wheelFixtureDef.filter.categoryBits = 1;
+        wheelFixtureDef.filter.groupIndex = -1;
         wheelFixtureDef.filter.maskBits = 1;
         CircleShape wheelShape = new CircleShape();
         wheelShape.m_radius = scale(170f / 2);
@@ -134,6 +141,7 @@ public class Robot extends GameObject {
         axleFixtureDef.shape = scaledPoly(new Vec2(0, 7), new Vec2(0, -7), new Vec2(170, -7), new Vec2(170, 7));
         axleFixtureDef.filter.categoryBits = 1;
         axleFixtureDef.filter.maskBits = 1;
+        axleFixtureDef.filter.groupIndex = -1;
         leftAxle.createFixture(axleFixtureDef);
 
         PrismaticJointDef axleJointDef = new PrismaticJointDef();
@@ -176,6 +184,7 @@ public class Robot extends GameObject {
         wheelFixtureDef.density = 15;
         wheelFixtureDef.filter.categoryBits = 1;
         wheelFixtureDef.filter.maskBits = 1;
+        wheelFixtureDef.filter.groupIndex = -1;
         CircleShape wheelShape = new CircleShape();
         wheelShape.m_radius = scale(170f / 2);
         wheelFixtureDef.shape = wheelShape;
@@ -196,6 +205,7 @@ public class Robot extends GameObject {
         axleFixtureDef.shape = scaledPoly(new Vec2(0, 7), new Vec2(0, -7), new Vec2(170, -7), new Vec2(170, 7));
         axleFixtureDef.filter.categoryBits = 1;
         axleFixtureDef.filter.maskBits = 1;
+        axleFixtureDef.filter.groupIndex = -1;
         rightAxle.createFixture(axleFixtureDef);
 
         PrismaticJointDef axleJointDef = new PrismaticJointDef();
@@ -243,6 +253,7 @@ public class Robot extends GameObject {
         wheelFixtureDef.friction = 0.99f;
         wheelFixtureDef.filter.categoryBits = 1;
         wheelFixtureDef.filter.maskBits = 1;
+        wheelFixtureDef.filter.groupIndex = -1;
         leftSmallWheel.createFixture(wheelFixtureDef);
 
         BodyDef axleDef = new BodyDef();
@@ -258,6 +269,7 @@ public class Robot extends GameObject {
         axleFixtureDef.shape = scaledPoly(new Vec2(0, 7), new Vec2(0, -7), new Vec2(166, -7), new Vec2(166, 7));
         axleFixtureDef.filter.categoryBits = 1;
         axleFixtureDef.filter.maskBits = 1;
+        axleFixtureDef.filter.groupIndex = -1;
         leftSmallAxle.createFixture(axleFixtureDef);
 
         PrismaticJointDef axleJointDef = new PrismaticJointDef();
@@ -311,6 +323,7 @@ public class Robot extends GameObject {
         wheelFixtureDef.friction = 0.99f;
         wheelFixtureDef.filter.categoryBits = 1;
         wheelFixtureDef.filter.maskBits = 1;
+        wheelFixtureDef.filter.groupIndex = -1;
         rightSmallWheel.createFixture(wheelFixtureDef);
 
         BodyDef axleDef = new BodyDef();
@@ -326,6 +339,7 @@ public class Robot extends GameObject {
         axleFixtureDef.shape = scaledPoly(new Vec2(0, 7), new Vec2(0, -7), new Vec2(166, -7), new Vec2(166, 7));
         axleFixtureDef.filter.categoryBits = 1;
         axleFixtureDef.filter.maskBits = 1;
+        axleFixtureDef.filter.groupIndex = -1;
         rightSmallAxle.createFixture(axleFixtureDef);
 
         PrismaticJointDef axleJointDef = new PrismaticJointDef();
@@ -391,8 +405,10 @@ public class Robot extends GameObject {
         fixtureDef.friction = 0.3f;
         fixtureDef.density = 0.5f;
         fixtureDef.shape = scaledRectShape(0, -16f / 2, 66, 16);
-        fixtureDef.filter.categoryBits = 0;
-        fixtureDef.filter.maskBits = 0;
+        fixtureDef.filter.categoryBits = 1;
+        fixtureDef.filter.maskBits = 1;
+        fixtureDef.filter.groupIndex = -1;
+        fixtureDef.filter.groupIndex = -1;
         antenna[0].createFixture(fixtureDef);
 
         partDef.position = antenna[0].getWorldPoint(scale(new Vec2(66f, 0)));
@@ -430,6 +446,56 @@ public class Robot extends GameObject {
         for (Joint joint : antennaJoints) {
             getWorld().destroyJoint(joint);
         }
+    }
+
+    private void createArm() {
+        Image[] partImages = { images.arm2(), images.arm3(), images.arm4() };
+        armParts = new Body[3];
+        BodyDef armPartDef = new BodyDef();
+        armPartDef.angle = -(float)Math.PI / 2;
+        armPartDef.position = body.getWorldPoint(new Vec2(scale(168), scale(146)));
+        armPartDef.type = BodyType.DYNAMIC;
+        armPartDef.active = true;
+        armPartDef.bullet = true;
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 0.05f;
+        fixtureDef.filter.maskBits = 1;
+        fixtureDef.filter.categoryBits = 1;
+        fixtureDef.filter.groupIndex = -1;
+        PolygonShape shape = new PolygonShape();
+        fixtureDef.shape = shape;
+        for (int i = 0; i < 3; ++i) {
+            armParts[i] = getWorld().createBody(armPartDef);
+            Image partImage = partImages[i];
+            float height = scale(partImage.getHeight()) / 2;
+            float width = scale(partImage.getWidth());
+            shape.set(new Vec2[] { new Vec2(0, -height), new Vec2(width, -height), new Vec2(width, height),
+                    new Vec2(0, height)}, 4);
+            armParts[i].createFixture(fixtureDef);
+            armPartDef.position = armParts[i].getWorldPoint(new Vec2(scale(20), 0));
+        }
+
+        PrismaticJointDef armJointDef = new PrismaticJointDef();
+        armJoints = new PrismaticJoint[2];
+        for (int i = 0; i < 2; ++i) {
+            armJointDef.bodyA = armParts[i];
+            armJointDef.bodyB = armParts[i + 1];
+            armJointDef.localAxis1.x = 1;
+            armJointDef.localAxis1.y = 0;
+            armJointDef.lowerTranslation = 0;
+            armJointDef.upperTranslation = scale(250);
+            armJointDef.enableLimit = true;
+            armJointDef.enableMotor = true;
+            armJoints[i] = (PrismaticJoint)getWorld().createJoint(armJointDef);
+        }
+
+        RevoluteJointDef shoulderJointDef = new RevoluteJointDef();
+        shoulderJointDef.bodyA = body;
+        shoulderJointDef.bodyB = armParts[0];
+        shoulderJointDef.localAnchorA = new Vec2(scale(168), scale(146));
+        shoulderJointDef.lowerAngle = -95f * (float)Math.PI / 180f;
+        shoulderJointDef.upperAngle = -85f * (float)Math.PI / 180f;
+        shoulderJoint = (RevoluteJoint)getWorld().createJoint(shoulderJointDef);
     }
 
     private PolygonShape scaledRectShape(float x, float y, float w, float h) {
@@ -557,6 +623,64 @@ public class Robot extends GameObject {
                 createAntenna();
             }
         }
+
+        fixArm();
+    }
+
+    private void fixArm() {
+        if (freeArm) {
+            shoulderJoint.enableMotor(false);
+            for (PrismaticJoint armJoint : armJoints) {
+                armJoint.setMotorSpeed(-10);
+                armJoint.setMaxMotorForce(50000);
+            }
+            return;
+        }
+        float actualAngle = shoulderJoint.getJointAngle();
+        if (Math.abs(actualAngle - targetArmAngle) > (float)Math.PI) {
+            if (actualAngle > targetArmAngle) {
+                actualAngle -= 2 * (float)Math.PI;
+            } else {
+                actualAngle += 2 * (float)Math.PI;
+            }
+        }
+        if (actualAngle < targetArmAngle) {
+            shoulderJoint.setMotorSpeed(1200 * Math.min((targetArmAngle - actualAngle) / 50, 0.001f));
+        } else {
+            shoulderJoint.setMotorSpeed(-1200 * Math.min((actualAngle - targetArmAngle) / 50, 0.001f));
+        }
+        shoulderJoint.setMaxMotorTorque(5000);
+
+        float targetLength = (targetArmLength - scale(250)) / 2;
+        for (PrismaticJoint armJoint : armJoints) {
+            float actualLength = armJoint.getJointTranslation();
+            if (actualLength < targetLength) {
+                armJoint.setMotorSpeed(300 * Math.min((targetLength - actualLength) / 10, 0.001f));
+            } else {
+                armJoint.setMotorSpeed(-300 * Math.min((actualLength - targetLength) / 10, 0.001f));
+            }
+            armJoint.setMaxMotorForce(8000000);
+        }
+    }
+
+    public void pointAt(float x, float y) {
+        Vec2 armTarget = new Vec2(x, y).sub(armParts[0].getPosition());
+        targetArmLength = armTarget.length();
+        if (Math.abs(armTarget.y) < Math.abs(armTarget.x)) {
+            targetArmAngle = (float)Math.asin(armTarget.y / armTarget.length());
+            if (armTarget.x < 0) {
+                targetArmAngle = (float)Math.PI - targetArmAngle;
+            }
+        } else {
+            targetArmAngle = (float)Math.acos(armTarget.x / armTarget.length());
+            if (armTarget.y < 0) {
+                targetArmAngle = -targetArmAngle;
+            }
+        }
+        targetArmAngle = targetArmAngle - body.getAngle();
+        targetArmLength = Math.max(scale(250), Math.min(scale(750), armTarget.length() - scale(35)));
+        freeArm = false;
+        shoulderJoint.enableMotor(true);
     }
 
     @Override
@@ -698,10 +822,7 @@ public class Robot extends GameObject {
         damperImage.draw(graphics, -23f / 2, 0, 23f, 71);
 
         graphics.setTransform(transform);
-        pos = body.getPosition();
-        graphics.translate(pos.x, pos.y);
-        graphics.rotate(body.getAngle());
-        drawArm(graphics);
+        drawArm(graphics, transform);
     }
 
     private void drawTrack(Graphics graphics, Vec2 p1, float r1, Vec2 p2, float r2, float thickness) {
@@ -765,40 +886,33 @@ public class Robot extends GameObject {
         }
     }
 
-    private void drawArm(Graphics graphics) {
-        graphics.scale(SCALE, SCALE);
-        graphics.translate(168, 146);
-        graphics.rotate(armAngle);
-        graphics.translate(armLength - ARM_PART_LENGTH, 0);
-        float shiftSize = (armLength - ARM_PART_LENGTH) / 3;
-        float lastWidth = 0;
-        if (shiftSize > ARM_PART_LENGTH) {
-            ImageUtil[] armImages = { new ImageUtil(images.arm4long()), new ImageUtil(images.arm3long()),
-                    new ImageUtil(images.arm2long())};
-            for (ImageUtil armImage : armImages) {
-                graphics.translate(-100, (lastWidth - armImage.getHeight()) / 2);
-                armImage.draw(graphics);
-                graphics.translate(-shiftSize + 100, 0);
-                lastWidth = armImage.getHeight();
-            }
-        } else {
-            ImageUtil[] armImages = { new ImageUtil(images.arm4short()), new ImageUtil(images.arm3short()),
-                    new ImageUtil(images.arm2short())};
-            for (ImageUtil armImage : armImages) {
-                graphics.translate(0, (lastWidth - armImage.getHeight()) / 2);
-                armImage.draw(graphics);
-                graphics.translate(-shiftSize, 0);
-                lastWidth = armImage.getHeight();
-            }
+    private void drawArm(Graphics graphics, AffineTransform transform) {
+        ImageUtil[] armImages = { new ImageUtil(images.arm2()), new ImageUtil(images.arm3()),
+                new ImageUtil(images.arm4())};
+        for (int i = armParts.length - 1; i >= 0; --i) {
+            Body armPart = armParts[i];
+            graphics.setTransform(transform);
+            Vec2 pos = armPart.getPosition();
+            graphics.translate(pos.x, pos.y);
+            graphics.rotate(armPart.getAngle());
+            ImageUtil partImage = armImages[i];
+            graphics.scale(SCALE, SCALE);
+            partImage.draw(graphics, 0, -partImage.getHeight() / 2, partImage.getWidth(), partImage.getHeight());
         }
-        ImageUtil armStartImage = new ImageUtil(images.arm1());
-        graphics.translate(-15, (lastWidth - armStartImage.getHeight()) / 2);
-        armStartImage.draw(graphics);
 
-        graphics.translate(15 + armLength, armStartImage.getHeight() / 2);
+        ImageUtil armStartImage = new ImageUtil(images.arm1());
+        armStartImage.draw(graphics, -15, -armStartImage.getHeight() / 2, armStartImage.getWidth(),
+                armStartImage.getHeight());
+
         ImageUtil upperClawImage = new ImageUtil(images.upperClaw());
         ImageUtil lowerClawImage = new ImageUtil(images.lowerClaw());
         ImageUtil clawMountImage = new ImageUtil(images.clawMount());
+        graphics.setTransform(transform);
+        Vec2 pos = armParts[2].getPosition();
+        graphics.translate(pos.x, pos.y);
+        graphics.rotate(armParts[2].getAngle());
+        graphics.scale(SCALE, SCALE);
+        graphics.translate(armImages[2].getWidth(), 0);
         graphics.pushTransform();
         graphics.rotate(clawsAngle / 2);
         upperClawImage.draw(graphics, 0, 0, upperClawImage.getWidth(), upperClawImage.getHeight());

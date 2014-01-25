@@ -138,29 +138,35 @@ public class SwingRunner extends JComponent {
                     if (stopped) {
                         break;
                     }
-                    boolean shouldRepaint = false;
-                    if (System.currentTimeMillis() > nextPaintTime) {
-                        shouldRepaint = true;
-                        long count = (System.currentTimeMillis() - nextPaintTime) / paintRatio;
-                        nextPaintTime += (1 + count) * paintRatio;
-                    }
-                    List<Event> events = new ArrayList<>();
-                    eventQueue.drainTo(events);
-                    for (Event event : events) {
+                }
+                boolean shouldRepaint = false;
+                if (System.currentTimeMillis() > nextPaintTime) {
+                    shouldRepaint = true;
+                    long count = (System.currentTimeMillis() - nextPaintTime) / paintRatio;
+                    nextPaintTime += (1 + count) * paintRatio;
+                }
+                List<Event> events = new ArrayList<>();
+                eventQueue.drainTo(events);
+                for (Event event : events) {
+                    synchronized (monitor) {
                         event.process(entryPoint);
                     }
-                    boolean shouldWait = !entryPoint.idle();
-                    boolean shouldChangeSize = sizeChanged.compareAndSet(true, false);
-                    int currentWidth = Math.max(1, width);
-                    int currentHeight = Math.max(1, height);
-                    if (shouldChangeSize) {
+                }
+                boolean shouldWait = !entryPoint.idle();
+                boolean shouldChangeSize = sizeChanged.compareAndSet(true, false);
+                int currentWidth = Math.max(1, width);
+                int currentHeight = Math.max(1, height);
+                if (shouldChangeSize) {
+                    synchronized (monitor) {
                         entryPoint.resize(currentWidth, currentHeight);
                     }
-                    if (shouldRepaint) {
-                        paint(currentWidth, currentHeight);
-                        shouldWait = false;
-                    }
-                    if (shouldWait) {
+                }
+                if (shouldRepaint) {
+                    paint(currentWidth, currentHeight);
+                    shouldWait = false;
+                }
+                if (shouldWait) {
+                    synchronized (monitor) {
                         try {
                             monitor.wait(2);
                         } catch (InterruptedException e) {

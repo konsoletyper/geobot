@@ -212,6 +212,14 @@ public class Game implements EntryPoint {
         }
     }
 
+    protected float getMouseX() {
+        return mouseX;
+    }
+
+    protected float getMouseY() {
+        return mouseY;
+    }
+
     @Override
     public void mouseDown() {
         if (suspended) {
