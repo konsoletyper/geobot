@@ -6,7 +6,11 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.joints.DistanceJointDef;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
-import ru.geobot.*;
+import ru.geobot.Game;
+import ru.geobot.GameAdapter;
+import ru.geobot.GameObject;
+import ru.geobot.GameObjectAdapter;
+import ru.geobot.game.GeobotGame;
 import ru.geobot.game.objects.*;
 import ru.geobot.graphics.Graphics;
 
@@ -20,7 +24,7 @@ public class Cave1 {
     private static final Vec2 pickPos = new Vec2(4.4f, 1.25f);
     private static final float bucketSize = 0.45f;
     private static final float pickSize = 0.6f;
-    private Game game;
+    private GeobotGame game;
     private Environment env;
     private Rope rope;
     private BodyObject bucket;
@@ -28,7 +32,7 @@ public class Cave1 {
     private ObjectResources resources;
     private GameObject selectedObject;
 
-    public Cave1(Game game) {
+    public Cave1(GeobotGame game) {
         this.game = game;
         resources = game.loadResources(ObjectResources.class);
         env = new Environment(game);
@@ -55,12 +59,12 @@ public class Cave1 {
         ropeJointDef.localAnchorB = new Vec2(0, 0);
         game.getWorld().createJoint(ropeJointDef);
         rope.addListener(new GameObjectAdapter() {
-            @Override public void click() {
+            @Override public boolean click() {
                 if (selectedObject == bucket) {
                     bucket.dispose();
                     bucket = null;
-                    createBucketOnRope();
                 }
+                return true;
             }
         });
     }
@@ -74,10 +78,12 @@ public class Cave1 {
         builder.getBodyDef().type = BodyType.DYNAMIC;
         builder.getFixtureDef().filter.categoryBits = 2;
         builder.getFixtureDef().filter.maskBits = 2;
+        builder.getFixtureDef().density = 0.005f;
         bucket = builder.build();
         bucket.addListener(new GameObjectAdapter() {
-            @Override public void click() {
-                select(bucket);
+            @Override public boolean click() {
+                game.getRobot().pickAt(bucket, bucket.getBody(), 0.1f, 0.5f);
+                return true;
             }
         });
     }
@@ -93,43 +99,6 @@ public class Cave1 {
         }
     };
 
-    private void createBucketOnRope() {
-        BodyObjectBuilder builder = new BodyObjectBuilder(game);
-        builder.setImage(resources.bucketOnRopeImage());
-        builder.setShape(resources.bucketOnRopeShape());
-        builder.setSelectionShape(resources.bucketOnRopeClickableShape());
-        float bucketHeight = bucketSize * resources.bucketOnRopeImage().getHeight() /
-                resources.bucketImage().getHeight();
-        builder.setRealHeight(bucketHeight);
-        Body ropePart = rope.part(rope.partCount() - 1);
-        Vec2 pos = ropePart.getPosition().add(new Vec2(0, -rope.getChunkLength()));
-        float bucketWidth = resources.bucketOnRopeImage().getWidth() * bucketHeight /
-                resources.bucketOnRopeImage().getHeight();
-        pos = pos.add(new Vec2(-bucketWidth / 2, -bucketHeight));
-        builder.getBodyDef().position = pos;
-        builder.getBodyDef().type = BodyType.DYNAMIC;
-        builder.getFixtureDef().filter.categoryBits = 3;
-        builder.getFixtureDef().filter.maskBits = 3;
-        builder.getFixtureDef().density = 1.2f;
-        bucket = builder.build();
-
-        RevoluteJointDef jointDef = new RevoluteJointDef();
-        jointDef.collideConnected = false;
-        jointDef.bodyA = ropePart;
-        jointDef.bodyB = bucket.getBody();
-        jointDef.localAnchorA = new Vec2(0, rope.getChunkLength());
-        jointDef.localAnchorB = new Vec2(new Vec2(bucketWidth / 2, bucketHeight));
-        game.getWorld().createJoint(jointDef);
-        bucket.changeZIndex(2);
-
-        bucket.addListener(new GameObjectAdapter() {
-            @Override public void click() {
-                if (selectedObject == pick) {
-                    movePickIntoBucket();
-                }
-            }
-        });
-    }
 
     private void createPick() {
         BodyObjectBuilder builder = new BodyObjectBuilder(game);
@@ -144,8 +113,8 @@ public class Cave1 {
         pick = builder.build();
 
         pick.addListener(new GameObjectAdapter() {
-            @Override public void click() {
-                select(pick);
+            @Override public boolean click() {
+                return true;
             }
         });
     }
@@ -172,13 +141,6 @@ public class Cave1 {
 
     public Game getGame() {
         return game;
-    }
-
-    private void select(GameObject object) {
-        if (selectedObject == null) {
-            game.addListener(gameAdapter);
-        }
-        selectedObject = object;
     }
 
     private static class Environment extends GameObject {

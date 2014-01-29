@@ -6,4 +6,6 @@ package ru.geobot;
  */
 public interface GameListener {
     void objectClicked(GameObject object);
+
+    void emptyAreaClicked(float x, float y);
 }

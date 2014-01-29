@@ -2,6 +2,7 @@ package ru.geobot.game;
 
 import ru.geobot.EntryPointCallback;
 import ru.geobot.Game;
+import ru.geobot.GameAdapter;
 import ru.geobot.Key;
 import ru.geobot.game.caves.Cave1;
 import ru.geobot.game.caves.Cave1Resources;
@@ -22,6 +23,11 @@ public class GeobotGame extends Game {
         robot = new Robot(this, 2.1f, 1.7f);
         new Cave1(this);
         images = loadResources(Cave1Resources.class);
+        addListener(new GameAdapter() {
+            @Override public void emptyAreaClicked(float x, float y) {
+                robot.pointAt(getMouseX(), getMouseY());
+            }
+        });
     }
 
     @Override
@@ -46,9 +52,7 @@ public class GeobotGame extends Game {
         return super.idle();
     }
 
-    @Override
-    public void mouseDown() {
-        super.mouseDown();
-        robot.pointAt(getMouseX(), getMouseY());
+    public Robot getRobot() {
+        return robot;
     }
 }

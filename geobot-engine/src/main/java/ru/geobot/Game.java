@@ -27,7 +27,6 @@ public class Game implements EntryPoint {
     private List<GameListener> listeners = new ArrayList<>();
     boolean hasRemovedObjects;
     GameObject objectUnderMouse;
-    GameObject clickedObject;
     private long timeSlice = 17;
     private long currentTime;
     private long currentSlicedTime;
@@ -100,18 +99,6 @@ public class Game implements EntryPoint {
                 objects.remove(i);
                 --i;
             }
-        }
-    }
-
-    private void clickMouse() {
-        if (suspended) {
-            return;
-        }
-        if (objectUnderMouse != null) {
-            objectUnderMouse.click();
-        }
-        for (GameListener listener : listeners.toArray(new GameListener[0])) {
-            listener.objectClicked(objectUnderMouse);
         }
     }
 
@@ -207,9 +194,6 @@ public class Game implements EntryPoint {
         mouseX = tx / (scale * naturalScale);
         mouseY = ty / (scale * naturalScale);
         updateMouse();
-        if (clickedObject != objectUnderMouse) {
-            clickedObject = null;
-        }
     }
 
     protected float getMouseX() {
@@ -225,16 +209,29 @@ public class Game implements EntryPoint {
         if (suspended) {
             return;
         }
-        clickedObject = objectUnderMouse;
-    }
-
-    @Override
-    public void mouseUp() {
-        if (suspended) {
-            return;
+        GameObject[] objectArray = objects.toArray(new GameObject[objects.size()]);
+        Arrays.sort(objectArray, new Comparator<GameObject>() {
+            @Override public int compare(GameObject o1, GameObject o2) {
+                return o2.zIndex - o1.zIndex;
+            }
+        });
+        GameObject clickedObject = null;
+        for (GameObject object : objectArray) {
+            if (object.hasPoint(mouseX, mouseY)) {
+                if (object.click()) {
+                    clickedObject = object;
+                    break;
+                }
+            }
         }
         if (clickedObject != null) {
-            clickMouse();
+            for (GameListener listener : listeners) {
+                listener.objectClicked(clickedObject);
+            }
+        } else {
+            for (GameListener listener : listeners) {
+                listener.emptyAreaClicked(mouseX, mouseY);
+            }
         }
     }
 
@@ -344,5 +341,9 @@ public class Game implements EntryPoint {
 
     public void setScale(float scale) {
         this.scale = scale;
+    }
+
+    @Override
+    public void mouseUp() {
     }
 }

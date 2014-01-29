@@ -70,12 +70,16 @@ public class GameObject {
         listeners.remove(listener);
     }
 
-    protected void click() {
+    protected boolean click() {
+        boolean handled = false;
         if (listeners != null) {
             for (GameObjectListener listener : listeners) {
-                listener.click();
+                if (listener.click()) {
+                    handled = true;
+                }
             }
         }
+        return handled;
     }
 
     protected void time(@SuppressWarnings("unused") long time) {

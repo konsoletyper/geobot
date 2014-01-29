@@ -6,7 +6,8 @@ package ru.geobot;
  */
 public abstract class GameObjectAdapter implements GameObjectListener {
     @Override
-    public void click() {
+    public boolean click() {
+        return false;
     }
 
     @Override

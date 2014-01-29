@@ -59,7 +59,11 @@ public class Robot extends GameObject {
     private float clawsAngle = 25 * (float)Math.PI / 180;
     private float targetArmAngle;
     private float targetArmLength;
-    private boolean freeArm;
+    private boolean freeArm = true;
+    private GameObject pickedObject;
+    private Body bodyToPick;
+    private Vec2 bodyPointToPick;
+    private RevoluteJoint pickJoint;
 
     private static enum Direction {
         LEFT,
@@ -493,8 +497,9 @@ public class Robot extends GameObject {
         shoulderJointDef.bodyA = body;
         shoulderJointDef.bodyB = armParts[0];
         shoulderJointDef.localAnchorA = new Vec2(scale(168), scale(146));
-        shoulderJointDef.lowerAngle = -95f * (float)Math.PI / 180f;
-        shoulderJointDef.upperAngle = -85f * (float)Math.PI / 180f;
+        shoulderJointDef.lowerAngle = -60f * (float)Math.PI / 180f;
+        shoulderJointDef.upperAngle = -120f * (float)Math.PI / 180f;
+        shoulderJointDef.enableLimit = true;
         shoulderJoint = (RevoluteJoint)getWorld().createJoint(shoulderJointDef);
     }
 
@@ -534,6 +539,7 @@ public class Robot extends GameObject {
         switch (key) {
             case RIGHT:
                 movingRight = true;
+                bodyToPick = null;
                 if (currentDirection == Direction.LEFT) {
                     currentDirection = Direction.FACE;
                     desiredDirection = Direction.RIGHT;
@@ -544,6 +550,7 @@ public class Robot extends GameObject {
                 break;
             case LEFT:
                 movingLeft = true;
+                bodyToPick = null;
                 if (currentDirection == Direction.RIGHT) {
                     currentDirection = Direction.FACE;
                     desiredDirection = Direction.LEFT;
@@ -630,7 +637,10 @@ public class Robot extends GameObject {
     private void fixArm() {
         if (freeArm) {
             shoulderJoint.enableMotor(false);
+            shoulderJoint.enableLimit(true);
             for (PrismaticJoint armJoint : armJoints) {
+                armJoint.enableLimit(true);
+                armJoint.setLimits(0, scale(200));
                 armJoint.setMotorSpeed(-10);
                 armJoint.setMaxMotorForce(50000);
             }
@@ -644,23 +654,50 @@ public class Robot extends GameObject {
                 actualAngle += 2 * (float)Math.PI;
             }
         }
+        shoulderJoint.enableLimit(true);
         if (actualAngle < targetArmAngle) {
-            shoulderJoint.setMotorSpeed(1200 * Math.min((targetArmAngle - actualAngle) / 50, 0.001f));
+            float angle = Math.min(targetArmAngle, actualAngle + 0.03f);
+            shoulderJoint.setLimits(angle, angle + 0.01f);
         } else {
-            shoulderJoint.setMotorSpeed(-1200 * Math.min((actualAngle - targetArmAngle) / 50, 0.001f));
+            float angle = Math.max(targetArmAngle, actualAngle - 0.03f);
+            shoulderJoint.setLimits(angle - 0.01f, angle);
         }
-        shoulderJoint.setMaxMotorTorque(5000);
 
         float targetLength = (targetArmLength - scale(250)) / 2;
+        float fullArmLength = scale(250);
         for (PrismaticJoint armJoint : armJoints) {
             float actualLength = armJoint.getJointTranslation();
-            if (actualLength < targetLength) {
-                armJoint.setMotorSpeed(300 * Math.min((targetLength - actualLength) / 10, 0.001f));
+            if (Math.abs(actualLength - targetLength) < 0.02) {
+                armJoint.setLimits(targetLength - 0.011f, targetLength + 0.011f);
             } else {
-                armJoint.setMotorSpeed(-300 * Math.min((actualLength - targetLength) / 10, 0.001f));
+                if (actualLength < targetLength) {
+                    float angle = Math.min(targetLength, actualLength + 0.01f);
+                    armJoint.setLimits(angle, angle + 0.02f);
+                } else {
+                    float angle = Math.max(targetLength, actualLength - 0.01f);
+                    armJoint.setLimits(angle - 0.02f, angle);
+                }
             }
-            armJoint.setMaxMotorForce(8000000);
+            armJoint.enableLimit(true);
+            armJoint.enableMotor(false);
+            fullArmLength += armJoint.getJointTranslation();
         }
+        if (bodyToPick != null && Math.abs(targetArmLength - fullArmLength) < 0.02f &&
+                Math.abs(targetArmAngle - actualAngle) < 0.005f) {
+            RevoluteJointDef jointDef = new RevoluteJointDef();
+            jointDef.bodyA = armParts[2];
+            jointDef.bodyB = bodyToPick;
+            jointDef.localAnchorA.x = scale(270);
+            jointDef.localAnchorA.y = 0;
+            jointDef.localAnchorB.set(bodyPointToPick);
+            jointDef.collideConnected = false;
+            pickJoint = (RevoluteJoint)getWorld().createJoint(jointDef);
+            bodyToPick = null;
+        }
+    }
+
+    public GameObject getPickedObject() {
+        return pickJoint != null ? pickedObject : null;
     }
 
     public void pointAt(float x, float y) {
@@ -680,7 +717,25 @@ public class Robot extends GameObject {
         targetArmAngle = targetArmAngle - body.getAngle();
         targetArmLength = Math.max(scale(250), Math.min(scale(750), armTarget.length() - scale(35)));
         freeArm = false;
-        shoulderJoint.enableMotor(true);
+    }
+
+    public void pickAt(GameObject object, Body body, float x, float y) {
+        if (movingRight || movingLeft) {
+            return;
+        }
+        pickedObject = object;
+        bodyToPick = body;
+        bodyPointToPick = new Vec2(x, y);
+        Vec2 worldPointToPick = body.getWorldPoint(bodyPointToPick);
+        pointAt(worldPointToPick.x, worldPointToPick.y);
+    }
+
+    public void throwAwayCurrentObject() {
+        if (pickedObject != null && pickJoint != null) {
+            getWorld().destroyJoint(pickJoint);
+            pickJoint = null;
+            bodyToPick = null;
+        }
     }
 
     @Override
