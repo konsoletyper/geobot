@@ -60,6 +60,14 @@ public class BodyObject extends GameObject {
         return false;
     }
 
+    public Image getImage() {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
+    }
+
     @Override
     protected void destroy() {
         getGame().getWorld().destroyBody(body);

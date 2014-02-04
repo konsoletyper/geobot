@@ -82,10 +82,27 @@ public class Cave1 {
         bucket = builder.build();
         bucket.addListener(new GameObjectAdapter() {
             @Override public boolean click() {
-                game.getRobot().pickAt(bucket, bucket.getBody(), 0.1f, 0.5f);
+                Vec2 pickPoint = bucket.getBody().getWorldPoint(new Vec2(0.2083f, 0.6815f));
+                game.getRobot().pickAt(pickPoint.x, pickPoint.y, new Runnable() {
+                    @Override public void run() {
+                        pickBucket();
+                    }
+                });
                 return true;
             }
         });
+    }
+
+    private void pickBucket() {
+        RevoluteJointDef jointDef = new RevoluteJointDef();
+        jointDef.bodyA = bucket.getBody();
+        jointDef.bodyB = game.getRobot().getHand();
+        jointDef.collideConnected = false;
+        jointDef.localAnchorA.x = 0.2083f;
+        jointDef.localAnchorA.y = 0.6815f;
+        jointDef.localAnchorB.set(game.getRobot().getHandPickPoint());
+        bucket.setImage(resources.bucketOnRopeImage());
+        game.getWorld().createJoint(jointDef);
     }
 
     private GameAdapter gameAdapter = new GameAdapter() {

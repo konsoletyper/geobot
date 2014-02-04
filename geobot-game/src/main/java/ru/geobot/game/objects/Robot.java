@@ -60,10 +60,7 @@ public class Robot extends GameObject {
     private float targetArmAngle;
     private float targetArmLength;
     private boolean freeArm = true;
-    private GameObject pickedObject;
-    private Body bodyToPick;
-    private Vec2 bodyPointToPick;
-    private RevoluteJoint pickJoint;
+    private Runnable pickAction;
 
     private static enum Direction {
         LEFT,
@@ -539,7 +536,7 @@ public class Robot extends GameObject {
         switch (key) {
             case RIGHT:
                 movingRight = true;
-                bodyToPick = null;
+                pickAction = null;
                 if (currentDirection == Direction.LEFT) {
                     currentDirection = Direction.FACE;
                     desiredDirection = Direction.RIGHT;
@@ -550,7 +547,7 @@ public class Robot extends GameObject {
                 break;
             case LEFT:
                 movingLeft = true;
-                bodyToPick = null;
+                pickAction = null;
                 if (currentDirection == Direction.RIGHT) {
                     currentDirection = Direction.FACE;
                     desiredDirection = Direction.LEFT;
@@ -682,22 +679,11 @@ public class Robot extends GameObject {
             armJoint.enableMotor(false);
             fullArmLength += armJoint.getJointTranslation();
         }
-        if (bodyToPick != null && Math.abs(targetArmLength - fullArmLength) < 0.02f &&
-                Math.abs(targetArmAngle - actualAngle) < 0.005f) {
-            RevoluteJointDef jointDef = new RevoluteJointDef();
-            jointDef.bodyA = armParts[2];
-            jointDef.bodyB = bodyToPick;
-            jointDef.localAnchorA.x = scale(270);
-            jointDef.localAnchorA.y = 0;
-            jointDef.localAnchorB.set(bodyPointToPick);
-            jointDef.collideConnected = false;
-            pickJoint = (RevoluteJoint)getWorld().createJoint(jointDef);
-            bodyToPick = null;
+        if (pickAction != null && Math.abs(targetArmLength - fullArmLength) < 0.03f &&
+                Math.abs(targetArmAngle - actualAngle) < 0.007f) {
+            pickAction.run();
+            pickAction = null;
         }
-    }
-
-    public GameObject getPickedObject() {
-        return pickJoint != null ? pickedObject : null;
     }
 
     public void pointAt(float x, float y) {
@@ -719,23 +705,13 @@ public class Robot extends GameObject {
         freeArm = false;
     }
 
-    public void pickAt(GameObject object, Body body, float x, float y) {
+    public void pickAt(float x, float y, Runnable action) {
         if (movingRight || movingLeft) {
             return;
         }
-        pickedObject = object;
-        bodyToPick = body;
-        bodyPointToPick = new Vec2(x, y);
-        Vec2 worldPointToPick = body.getWorldPoint(bodyPointToPick);
+        pickAction = action;
+        Vec2 worldPointToPick = new Vec2(x, y);
         pointAt(worldPointToPick.x, worldPointToPick.y);
-    }
-
-    public void throwAwayCurrentObject() {
-        if (pickedObject != null && pickJoint != null) {
-            getWorld().destroyJoint(pickJoint);
-            pickJoint = null;
-            bodyToPick = null;
-        }
     }
 
     @Override
@@ -980,5 +956,13 @@ public class Robot extends GameObject {
         clawMountImage.draw(graphics, -clawMountImage.getWidth() / 2f, -clawMountImage.getHeight() / 2,
                 clawMountImage.getWidth(), clawMountImage.getHeight());
 
+    }
+
+    public Body getHand() {
+        return armParts[armParts.length - 1];
+    }
+
+    public Vec2 getHandPickPoint() {
+        return new Vec2(scale(280), 0);
     }
 }
