@@ -880,7 +880,8 @@ public class World {
 
 	private void solve(TimeStep step) {
 		// Size the island for the worst case.
-		island.init(m_bodyCount, m_contactManager.m_contactCount, m_jointCount, m_contactManager.m_contactListener);
+		island.init(m_bodyCount * 4, m_contactManager.m_contactCount * 4, m_jointCount * 4,
+		        m_contactManager.m_contactListener);
 
 		// Clear all the island flags.
 		for (Body b = m_bodyList; b != null; b = b.m_next) {

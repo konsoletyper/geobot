@@ -52,6 +52,8 @@ public class Rope extends GameObject {
         FixtureDef partFixtureDef = new FixtureDef();
         partFixtureDef.density = factory.density;
         partFixtureDef.restitution = factory.restitution;
+        partFixtureDef.filter.categoryBits = factory.categoryBits;
+        partFixtureDef.filter.maskBits = factory.maskBits;
         parts = new Body[factory.angles.size()];
         for (int i = 0; i < parts.length; ++i) {
             partDef.angle = factory.angles.get(i);

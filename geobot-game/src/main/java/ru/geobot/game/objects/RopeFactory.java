@@ -17,6 +17,8 @@ public class RopeFactory {
     float restitution = 1f;
     float density = 1f;
     float resistance = 0f;
+    int maskBits;
+    int categoryBits;
     Image image;
 
     public void clearChunks() {
@@ -89,5 +91,21 @@ public class RopeFactory {
         }
         Rope rope = new Rope(game, this);
         return rope;
+    }
+
+    public int getMaskBits() {
+        return maskBits;
+    }
+
+    public void setMaskBits(int maskBits) {
+        this.maskBits = maskBits;
+    }
+
+    public int getCategoryBits() {
+        return categoryBits;
+    }
+
+    public void setCategoryBits(int categoryBits) {
+        this.categoryBits = categoryBits;
     }
 }

@@ -652,12 +652,22 @@ public class Robot extends GameObject {
             }
         }
         shoulderJoint.enableLimit(true);
+        if (Math.abs(actualAngle - targetArmAngle) < 0.01f) {
+            shoulderJoint.setLimits(targetArmAngle - 0.006f, targetArmAngle + 0.006f);
+            shoulderJoint.enableMotor(false);
+        }
         if (actualAngle < targetArmAngle) {
             float angle = Math.min(targetArmAngle, actualAngle + 0.03f);
-            shoulderJoint.setLimits(angle, angle + 0.01f);
+            shoulderJoint.setLimits(angle, angle + 0.015f);
+            shoulderJoint.setMotorSpeed(2f);
+            shoulderJoint.setMaxMotorTorque(500000);
+            shoulderJoint.enableMotor(true);
         } else {
             float angle = Math.max(targetArmAngle, actualAngle - 0.03f);
-            shoulderJoint.setLimits(angle - 0.01f, angle);
+            shoulderJoint.setLimits(angle - 0.015f, angle);
+            shoulderJoint.setMotorSpeed(-2f);
+            shoulderJoint.setMaxMotorTorque(500000);
+            shoulderJoint.enableMotor(true);
         }
 
         float targetLength = (targetArmLength - scale(250)) / 2;
@@ -679,8 +689,8 @@ public class Robot extends GameObject {
             armJoint.enableMotor(false);
             fullArmLength += armJoint.getJointTranslation();
         }
-        if (pickAction != null && Math.abs(targetArmLength - fullArmLength) < 0.03f &&
-                Math.abs(targetArmAngle - actualAngle) < 0.007f) {
+        if (pickAction != null && Math.abs(targetArmLength - fullArmLength) < 0.04f &&
+                Math.abs(targetArmAngle - actualAngle) < 0.015f) {
             pickAction.run();
             pickAction = null;
         }
