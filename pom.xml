@@ -61,7 +61,7 @@
           <configuration>
             <archive>
               <manifest>
-                <mainClass>ru.geobot.Starter</mainClass>
+                <mainClass>ru.geobot.game.Starter</mainClass>
                 <packageName>ru.geobot</packageName>
                 <addClasspath>true</addClasspath>
                 <classpathPrefix>lib/</classpathPrefix>

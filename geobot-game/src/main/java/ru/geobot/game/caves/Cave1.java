@@ -32,7 +32,6 @@ public class Cave1 {
     private ObjectResources resources;
     private Joint bucketPickJoint;
     private Joint ropeBucketJoint;
-    private Joint pickBucketJoint;
     private Joint pickHandJoint;
 
     public Cave1(GeobotGame game) {
@@ -87,7 +86,9 @@ public class Cave1 {
             if (bucketPickJoint != null) {
                 game.getWorld().destroyJoint(bucketPickJoint);
                 bucketPickJoint = null;
-                bucket.setImage(resources.bucketImage());
+                if (ropeBucketJoint == null) {
+                    bucket.setImage(resources.bucketImage());
+                }
             } else if (pickHandJoint != null) {
                 game.getRobot().pickAt(pickPoint.x, pickPoint.y, new Runnable() {
                     @Override public void run() {
@@ -96,10 +97,17 @@ public class Cave1 {
                         putPickIntoBucket();
                     }
                 });
-            } else if (ropeBucketJoint == null) {
+            } else if (ropeBucketJoint != null) {
+                pickPoint = bucket.getBody().getWorldPoint(new Vec2(0.2083f, 0.2f));
                 game.getRobot().pickAt(pickPoint.x, pickPoint.y, new Runnable() {
                     @Override public void run() {
-                        pickBucket();
+                        pickBucket(new Vec2(0.2083f, 0.2f));
+                    }
+                });
+            } else {
+                game.getRobot().pickAt(pickPoint.x, pickPoint.y, new Runnable() {
+                    @Override public void run() {
+                        pickBucket(new Vec2(0.2083f, 0.6815f));
                     }
                 });
             }
@@ -125,13 +133,13 @@ public class Cave1 {
         }
     };
 
-    private void pickBucket() {
+    private void pickBucket(Vec2 pt) {
         RevoluteJointDef jointDef = new RevoluteJointDef();
         jointDef.bodyA = bucket.getBody();
         jointDef.bodyB = game.getRobot().getHand();
         jointDef.collideConnected = false;
-        jointDef.localAnchorA.x = 0.2083f;
-        jointDef.localAnchorA.y = 0.6815f;
+        jointDef.localAnchorA.x = pt.x;
+        jointDef.localAnchorA.y = pt.y;
         jointDef.localAnchorB.set(game.getRobot().getHandPickPoint());
         bucket.setImage(resources.bucketOnRopeImage());
         bucketPickJoint = game.getWorld().createJoint(jointDef);
@@ -166,16 +174,20 @@ public class Cave1 {
 
     private GameObjectAdapter pickListener = new GameObjectAdapter() {
         @Override public boolean click() {
-            if (pickHandJoint == null) {
+            if (bucketPickJoint != null) {
+                return false;
+            } else if (pickHandJoint == null) {
                 Vec2 pickPoint = pick.getBody().getWorldPoint(new Vec2(1135 * pickSize / 1200, 591 * pickSize / 1200));
                 game.getRobot().pickAt(pickPoint.x, pickPoint.y, new Runnable() {
                     @Override public void run() {
                         carryPick();
                     }
                 });
-                return true;
+            } else {
+                game.getWorld().destroyJoint(pickHandJoint);
+                pickHandJoint = null;
             }
-            return false;
+            return true;
         }
     };
 
@@ -187,7 +199,6 @@ public class Cave1 {
         jointDef.localAnchorA.x = 1135 * pickSize / 1200;
         jointDef.localAnchorA.y = 591 * pickSize / 1200;
         jointDef.localAnchorB.set(game.getRobot().getHandPickPoint());
-        bucket.setImage(resources.bucketOnRopeImage());
         pickHandJoint = game.getWorld().createJoint(jointDef);
     }
 
@@ -206,7 +217,7 @@ public class Cave1 {
         jointDef.localAnchorA.x = 850 * pickSize / 1200;
         jointDef.localAnchorA.y = 591 * pickSize / 1200;
         jointDef.referenceAngle = (float)Math.PI / 180 * 80;
-        pickBucketJoint = game.getWorld().createJoint(jointDef);
+        game.getWorld().createJoint(jointDef);
     }
 
     public Game getGame() {

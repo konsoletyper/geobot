@@ -646,9 +646,9 @@ public class Robot extends GameObject {
         float actualAngle = shoulderJoint.getJointAngle();
         if (Math.abs(actualAngle - targetArmAngle) > (float)Math.PI) {
             if (actualAngle > targetArmAngle) {
-                actualAngle -= 2 * (float)Math.PI;
+                targetArmAngle += 2 * (float)Math.PI;
             } else {
-                actualAngle += 2 * (float)Math.PI;
+                targetArmAngle -= 2 * (float)Math.PI;
             }
         }
         shoulderJoint.enableLimit(true);
