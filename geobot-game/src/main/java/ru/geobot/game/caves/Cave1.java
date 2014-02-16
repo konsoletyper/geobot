@@ -1,9 +1,13 @@
 package ru.geobot.game.caves;
 
+import org.jbox2d.callbacks.ContactImpulse;
+import org.jbox2d.callbacks.ContactListener;
+import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Transform;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
+import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 import org.jbox2d.dynamics.joints.WeldJointDef;
@@ -13,6 +17,7 @@ import ru.geobot.GameObjectAdapter;
 import ru.geobot.game.GeobotGame;
 import ru.geobot.game.objects.*;
 import ru.geobot.graphics.Graphics;
+import ru.geobot.graphics.ImageUtil;
 
 /**
  *
@@ -24,9 +29,12 @@ public class Cave1 {
     private static final Vec2 pickPos = new Vec2(4.4f, 1.25f);
     private static final float bucketSize = 0.45f;
     private static final float pickSize = 0.6f;
+    private boolean columnDestroyed;
+    private Cave1Resources caveResources;
     private GeobotGame game;
     private Environment env;
     private Rope rope;
+    private Body stoneColumn;
     private BodyObject bucket;
     private BodyObject pick;
     private ObjectResources resources;
@@ -36,11 +44,62 @@ public class Cave1 {
 
     public Cave1(GeobotGame game) {
         this.game = game;
+        caveResources = game.loadResources(Cave1Resources.class);
         resources = game.loadResources(ObjectResources.class);
         env = new Environment(game);
+        createWall();
         createRope();
         createPick();
         createBucket();
+    }
+
+    private void createWall() {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyType.STATIC;
+        stoneColumn = getGame().getWorld().createBody(bodyDef);
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.filter.categoryBits = 0xFFF;
+        fixtureDef.filter.maskBits = 0xFFF;
+        fixtureDef.density = 1;
+        fixtureDef.restitution = 0.1f;
+        fixtureDef.friction = 0.4f;
+
+        for (PolygonShape shape : caveResources.columnShape().create(13.333f / 2500)) {
+            fixtureDef.shape = shape;
+            stoneColumn.createFixture(fixtureDef);
+        }
+
+        getGame().addContactListener(new ContactListener() {
+            @Override
+            public void preSolve(Contact contact, Manifold oldManifold) {
+            }
+
+            @Override
+            public void postSolve(Contact contact, ContactImpulse impulse) {
+            }
+
+            @Override
+            public void endContact(Contact contact) {
+            }
+
+            @Override
+            public void beginContact(Contact contact) {
+                if (contact.getFixtureA().getBody() != stoneColumn &&
+                        contact.getFixtureB().getBody() != stoneColumn) {
+                    return;
+                }
+                Body body = contact.getFixtureA().getBody();
+                if (body == stoneColumn) {
+                    body = contact.getFixtureB().getBody();
+                }
+                if (body == stoneColumn) {
+                    return;
+                }
+                if (body == bucket.getBody() && ropeBucketJoint != null) {
+                    columnDestroyed = true;
+                }
+            }
+        });
     }
 
     private void createRope() {
@@ -152,7 +211,7 @@ public class Cave1 {
         jointDef.collideConnected = false;
         jointDef.localAnchorA.x = 0.2083f;
         jointDef.localAnchorA.y = 0.6815f;
-        jointDef.localAnchorB.y = rope.getChunkLength();
+        jointDef.localAnchorB.y = rope.getChunkLength() * 1.2f;
         bucket.setImage(resources.bucketOnRopeImage());
         ropeBucketJoint = game.getWorld().createJoint(jointDef);
     }
@@ -224,12 +283,11 @@ public class Cave1 {
         return game;
     }
 
-    private static class Environment extends GameObject {
+    private class Environment extends GameObject {
         private Body body;
 
         public Environment(Game game) {
             super(game);
-            Cave1Resources resources = game.loadResources(Cave1Resources.class);
             BodyDef bodyDef = new BodyDef();
             bodyDef.type = BodyType.STATIC;
             body = getWorld().createBody(bodyDef);
@@ -240,10 +298,11 @@ public class Cave1 {
             fixtureDef.restitution = 0.1f;
             fixtureDef.friction = 0.4f;
 
-            for (PolygonShape shape : resources.shape().create(13.333f / 2500)) {
+            for (PolygonShape shape : caveResources.shape().create(13.333f / 2500)) {
                 fixtureDef.shape = shape;
                 body.createFixture(fixtureDef);
             }
+            setZIndex(-1);
         }
 
         @Override
@@ -253,7 +312,9 @@ public class Cave1 {
 
         @Override
         protected void paint(Graphics graphics) {
-            super.paint(graphics);
+            ImageUtil image = new ImageUtil(stoneColumn == null ? caveResources.backgroundWithoutColumn() :
+                    caveResources.background());
+            image.draw(graphics, 0, 7.5f, 13.3333f, 7.5f);
         }
 
         @Override
@@ -266,6 +327,16 @@ public class Cave1 {
                 fixture = fixture.getNext();
             }
             return false;
+        }
+
+        @Override
+        protected void time(long time) {
+            if (stoneColumn != null && columnDestroyed) {
+                getGame().getWorld().destroyBody(stoneColumn);
+                stoneColumn = null;
+                new StoneExplosion(game);
+            }
+            super.time(time);
         }
 
         public Body getBody() {

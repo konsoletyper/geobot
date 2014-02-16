@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import org.jbox2d.callbacks.ContactImpulse;
+import org.jbox2d.callbacks.ContactListener;
+import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.collision.shapes.Shape;
@@ -11,6 +14,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.World;
+import org.jbox2d.dynamics.contacts.Contact;
 import ru.geobot.graphics.AffineTransform;
 import ru.geobot.graphics.Color;
 import ru.geobot.graphics.Graphics;
@@ -25,6 +29,7 @@ public class Game implements EntryPoint {
     private World world;
     List<GameObject> objects = new ArrayList<>();
     private List<GameListener> listeners = new ArrayList<>();
+    private List<ContactListener> contactListeners = new ArrayList<>();
     boolean hasRemovedObjects;
     GameObject objectUnderMouse;
     private long timeSlice = 17;
@@ -51,6 +56,35 @@ public class Game implements EntryPoint {
         suspendTime = System.currentTimeMillis();
         timeOffset = suspendTime;
         suspended = true;
+        world.setContactListener(new ContactListener() {
+            @Override
+            public void preSolve(Contact contact, Manifold oldManifold) {
+                for (ContactListener listener : contactListeners) {
+                    listener.preSolve(contact, oldManifold);
+                }
+            }
+
+            @Override
+            public void postSolve(Contact contact, ContactImpulse impulse) {
+                for (ContactListener listener : contactListeners) {
+                    listener.postSolve(contact, impulse);
+                }
+            }
+
+            @Override
+            public void endContact(Contact contact) {
+                for (ContactListener listener : contactListeners) {
+                    listener.endContact(contact);
+                }
+            }
+
+            @Override
+            public void beginContact(Contact contact) {
+                for (ContactListener listener : contactListeners) {
+                    listener.beginContact(contact);
+                }
+            }
+        });
     }
 
     public void addListener(GameListener listener) {
@@ -59,6 +93,14 @@ public class Game implements EntryPoint {
 
     public void removeListener(GameListener listener) {
         listeners.remove(listener);
+    }
+
+    public void addContactListener(ContactListener listener) {
+        contactListeners.add(listener);
+    }
+
+    public void removeContactListener(ContactListener listener) {
+        contactListeners.remove(listener);
     }
 
     public boolean isOutlinePainted() {
@@ -116,7 +158,7 @@ public class Game implements EntryPoint {
             world.clearForces();
             updateMouse();
             acted = true;
-            for (GameObject object : objects) {
+            for (GameObject object : new ArrayList<>(objects)) {
                 object.time(nextTime);
             }
             currentSlicedTime = nextTime;

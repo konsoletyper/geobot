@@ -5,27 +5,22 @@ import ru.geobot.Game;
 import ru.geobot.GameAdapter;
 import ru.geobot.Key;
 import ru.geobot.game.caves.Cave1;
-import ru.geobot.game.caves.Cave1Resources;
 import ru.geobot.game.objects.Robot;
-import ru.geobot.graphics.Graphics;
-import ru.geobot.graphics.ImageUtil;
 
 /**
  *
  * @author Alexey Andreev
  */
 public class GeobotGame extends Game {
-    private Cave1Resources images;
     private Robot robot;
 
     @Override
     public void start(EntryPointCallback callback) {
         robot = new Robot(this, 2.1f, 1.7f);
         new Cave1(this);
-        images = loadResources(Cave1Resources.class);
         addListener(new GameAdapter() {
             @Override public void emptyAreaClicked(float x, float y) {
-                robot.pointAt(getMouseX(), getMouseY());
+                robot.pointAt(x, y);
             }
         });
     }
@@ -38,13 +33,6 @@ public class GeobotGame extends Game {
     @Override
     public void keyUp(Key key) {
         robot.keyUp(key);
-    }
-
-    @Override
-    protected void paintBackground(Graphics graphics) {
-        super.paintBackground(graphics);
-        ImageUtil image = new ImageUtil(images.background());
-        image.draw(graphics, 0, 7.5f, 13.3333f, 7.5f);
     }
 
     @Override

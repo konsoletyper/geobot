@@ -263,8 +263,8 @@ public class PolygonalObjectEditor extends JComponent {
     }
 
     private Vertex viewToPoly(int x, int y) {
-        y = (bottomBound - y) / scale;
-        x = (x + leftBound) / scale;
+        y = bottomBound - (y / scale);
+        x = leftBound + (x / scale);
         Vertex r = new Vertex();
         r.setX(x);
         r.setY(y);

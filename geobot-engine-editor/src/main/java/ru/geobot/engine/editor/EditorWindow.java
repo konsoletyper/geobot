@@ -31,6 +31,7 @@ public class EditorWindow extends JFrame {
     public EditorWindow() {
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
         getContentPane().add(new JScrollPane(editor));
+        editor.setScale(2);
         setJMenuBar(menuBar);
         menuBar.add(fileMenu);
         fileMenu.add(openFileMenuItem);

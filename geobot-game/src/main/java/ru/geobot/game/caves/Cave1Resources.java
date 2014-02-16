@@ -16,6 +16,13 @@ public interface Cave1Resources {
     @Large
     Image background();
 
+    @ResourcePath("cave-without-column.png")
+    @Large
+    Image backgroundWithoutColumn();
+
     @ResourcePath("cave1-shape.txt")
     PolygonalBodyFactory shape();
+
+    @ResourcePath("column.txt")
+    PolygonalBodyFactory columnShape();
 }

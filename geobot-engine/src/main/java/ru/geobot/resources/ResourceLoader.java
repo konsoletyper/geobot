@@ -93,6 +93,9 @@ public class ResourceLoader {
     }
 
     private static DefaultPolygonalBodyFactory createPolygonalBody(Class<?> cls, String path) {
+        if (cls.getResource(path) == null) {
+            throw new RuntimeException("Resource not found: " + path);
+        }
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(cls.getResourceAsStream(path)))) {
             List<PolygonShape> shapes = new ArrayList<>();
             while (true) {
