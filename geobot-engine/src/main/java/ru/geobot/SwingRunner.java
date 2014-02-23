@@ -114,7 +114,17 @@ public class SwingRunner extends JComponent {
         gfx.drawRenderedImage(frameBuffer, new AffineTransform());
     }
 
-    private class Execution implements Runnable, EntryPointCallback, ResourceReader {
+    public ResourceReader getResourceReader() {
+        return resourceReader;
+    }
+
+    private ResourceReader resourceReader = new ResourceReader() {
+        @Override public <T> T getResourceSet(Class<T> resourceSetType) {
+            return ResourceLoader.load(resourceSetType);
+        }
+    };
+
+    private class Execution implements Runnable, EntryPointCallback {
         private EntryPoint entryPoint;
         private final Object monitor = new Object();
         private boolean stopped;
@@ -129,7 +139,7 @@ public class SwingRunner extends JComponent {
 
         @Override
         public void run() {
-            entryPoint.setResourceReader(this);
+            entryPoint.setResourceReader(resourceReader);
             entryPoint.start(this);
             entryPoint.resize(Math.max(1, getWidth()), Math.max(1, getHeight()));
             long nextPaintTime = System.currentTimeMillis();
@@ -220,11 +230,6 @@ public class SwingRunner extends JComponent {
                 interrupted = true;
                 monitor.notifyAll();
             }
-        }
-
-        @Override
-        public <T> T getResourceSet(Class<T> imageSetType) {
-            return ResourceLoader.load(imageSetType);
         }
     };
 

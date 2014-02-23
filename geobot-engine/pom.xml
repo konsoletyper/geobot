@@ -31,5 +31,10 @@
       <groupId>ru.geobot</groupId>
       <artifactId>jbox2d-library</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-debug-all</artifactId>
+      <version>4.2</version>
+    </dependency>
   </dependencies>
 </project>

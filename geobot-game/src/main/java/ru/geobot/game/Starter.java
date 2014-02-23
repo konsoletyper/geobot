@@ -6,6 +6,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.*;
 import org.jbox2d.common.Settings;
+import ru.geobot.ResourcePreloader;
 import ru.geobot.SwingRunner;
 
 /**
@@ -23,10 +24,12 @@ public class Starter {
                 debugMode = true;
             }
         }
+
         final JFrame frame = new JFrame("Geobot");
         frame.setSize(600, 400);
         frame.setFocusable(true);
         final SwingRunner component = new SwingRunner();
+        new ResourcePreloader(component.getResourceReader()).preloadResources();
         frame.add(component);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.PAGE_AXIS));
         frame.setVisible(true);
