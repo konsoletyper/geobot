@@ -228,9 +228,6 @@ public class Game implements EntryPoint {
             return;
         }
         Rectangle rect = getViewRectangle();
-        if (!rect.contains(x, y)) {
-            return;
-        }
         float tx = x - rect.x;
         float ty = this.height - y - rect.y;
         mouseX = tx / (scale * naturalScale);

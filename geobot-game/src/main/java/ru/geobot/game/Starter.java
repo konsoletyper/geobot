@@ -1,5 +1,7 @@
 package ru.geobot.game;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -25,16 +27,44 @@ public class Starter {
             }
         }
 
+        final SwingRunner component = new SwingRunner();
+        new ResourcePreloader(component.getResourceReader()).preloadResources();
+        game = new GeobotGame();
+        component.run(game);
+        if (debugMode) {
+            startInWindow(component);
+        } else {
+            startInFullScreen(component);
+        }
+    }
+
+    private static void startInFullScreen(final SwingRunner component) {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice graphicsDevice = ge.getDefaultScreenDevice();
+        final JFrame window = new JFrame();
+        window.setSize(600, 400);
+        window.setUndecorated(true);
+        window.setFocusable(true);
+        window.add(component);
+        window.setLayout(new BoxLayout(window.getContentPane(), BoxLayout.PAGE_AXIS));
+        graphicsDevice.setFullScreenWindow(window);
+        window.setVisible(true);
+        game.resume();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() {
+                window.requestFocusInWindow();
+                component.requestFocus();
+            }
+        });
+    }
+
+    private static void startInWindow(final SwingRunner component) {
         final JFrame frame = new JFrame("Geobot");
         frame.setSize(600, 400);
         frame.setFocusable(true);
-        final SwingRunner component = new SwingRunner();
-        new ResourcePreloader(component.getResourceReader()).preloadResources();
         frame.add(component);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.PAGE_AXIS));
         frame.setVisible(true);
-        game = new GeobotGame();
-        component.run(game);
         if (!debugMode) {
             game.resume();
         } else {
