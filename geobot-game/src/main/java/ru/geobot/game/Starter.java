@@ -17,12 +17,12 @@ public class Starter {
     private static GeobotGame game;
 
     public static void main(String[] args) {
+        Settings.maxPolygonVertices = 30;
         if (args.length > 0) {
             if (args[0].equals("debug")) {
                 debugMode = true;
             }
         }
-        Settings.maxPolygonVertices = 20;
         final JFrame frame = new JFrame("Geobot");
         frame.setSize(600, 400);
         frame.setFocusable(true);

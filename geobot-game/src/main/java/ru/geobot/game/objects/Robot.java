@@ -711,7 +711,11 @@ public class Robot extends GameObject {
             }
         }
         targetArmAngle = targetArmAngle - body.getAngle();
-        targetArmLength = Math.max(scale(250), Math.min(scale(750), armTarget.length() - scale(35)));
+        float requiredDistance = armTarget.length() - scale(35);
+        targetArmLength = Math.max(scale(250), Math.min(scale(750), requiredDistance));
+        if (requiredDistance < scale(250) || requiredDistance > scale(750)) {
+            pickAction = null;
+        }
         freeArm = false;
     }
 
