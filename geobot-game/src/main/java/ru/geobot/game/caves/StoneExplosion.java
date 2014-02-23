@@ -6,9 +6,12 @@ import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.FixtureDef;
-import ru.geobot.Game;
-import ru.geobot.GameObject;
-import ru.geobot.graphics.Graphics;
+import org.jbox2d.dynamics.joints.RevoluteJoint;
+import org.jbox2d.dynamics.joints.RevoluteJointDef;
+import ru.geobot.GameObjectAdapter;
+import ru.geobot.game.GeobotGame;
+import ru.geobot.game.objects.BodyObject;
+import ru.geobot.game.objects.BodyObjectBuilder;
 import ru.geobot.resources.Image;
 import ru.geobot.resources.PolygonalBodyFactory;
 
@@ -20,21 +23,6 @@ public class StoneExplosion {
     private StoneWallResources resources;
     private Image[] images;
     private PolygonalBodyFactory[] shapes;
-    /*
-     *  61stone.png (567, 679)
-60stone.png (504, 671)
-59stone.png (432, 674)
-58stone.png (351, 719)
-57stone.png (407, 683)
-56stone.png (354, 706)
-55stone.png (264, 709)
-54stone.png (363, 646)
-53stone.png (242, 735)
-52stone.png (215, 701)
-51stone.png (166, 733)
-50stone.png (479, 627)
-49stone.png (481, 603)
-     */
     private int[] offsets = { 145, 293, 149, 238, 156, 174, 219, 180, 140, 149, 191, 141, 255, 152, 262, 216,
             125, 69, 206, 109, 80, 76, 232, 81, 256, 74, 12, 21, -1, 3, 51, 2, 204, 36, 293, 35, 212, 262,
             157, 321, 291, 307, 345, 334, 139, 408, 116, 479, 169, 458, 94, 533, 77, 599, 35, 683,
@@ -42,8 +30,12 @@ public class StoneExplosion {
             265, 554, 340, 548, 406, 575, 207, 604, 139, 641, 471, 576, 233, 669, 329, 604, 287, 623, 396, 539,
             481, 603, 479, 627, 166, 733, 215, 701, 242, 735, 363, 646, 264, 709, 354, 706, 407, 683, 351, 719,
             432, 674, 504, 671, 567, 679 };
+    private BodyObject stoneInHand;
+    private RevoluteJoint stoneJoint;
+    private GeobotGame game;
 
-    public StoneExplosion(Game game) {
+    public StoneExplosion(GeobotGame game) {
+        this.game = game;
         resources = game.loadResources(StoneWallResources.class);
         images = new Image[] { resources.stoneImage1(), resources.stoneImage2(), resources.stoneImage3(),
                 resources.stoneImage4(), resources.stoneImage5(), resources.stoneImage6(), resources.stoneImage7(),
@@ -85,28 +77,43 @@ public class StoneExplosion {
                 resources.stoneShape53(), resources.stoneShape54(), resources.stoneShape55(),
                 resources.stoneShape56(), resources.stoneShape57(), resources.stoneShape58(),
                 resources.stoneShape59(), resources.stoneShape60(), resources.stoneShape61() };
-        BodyDef stoneDef = new BodyDef();
-        stoneDef.type = BodyType.DYNAMIC;
-        FixtureDef stoneFixtureDef = new FixtureDef();
-        stoneFixtureDef.density = 0.3f;
-        stoneFixtureDef.restitution = 0.2f;
-        stoneFixtureDef.friction = 0.97f;
+        BodyObjectBuilder stoneBuilder = new BodyObjectBuilder(game);
+        stoneBuilder.getFixtureDef().density = 0.3f;
+        stoneBuilder.getFixtureDef().restitution = 0.2f;
+        stoneBuilder.getFixtureDef().friction = 0.97f;
         for (int i = 0; i < 61; ++i) {
             int offsetX = 1795 + offsets[i * 2];
             int offsetY = (1406 - 437) - offsets[i * 2 + 1];
-            stoneFixtureDef.filter.maskBits = offsets[i * 2 + 1] > 600 ? 0x10FF : 0x1000;
-            stoneFixtureDef.filter.categoryBits = stoneFixtureDef.filter.maskBits;
+            stoneBuilder.getFixtureDef().filter.maskBits = offsets[i * 2 + 1] > 700 ? 0x10F0 : 0x1000;
+            stoneBuilder.getFixtureDef().filter.categoryBits = stoneBuilder.getFixtureDef().filter.maskBits;
             PolygonShape[] fixtures = shapes[i].create(13.333f / 2500);
             float height = height(fixtures);
-            stoneDef.position.x = offsetX * (13.333f / 2500);
-            stoneDef.position.y = (offsetY - height) * (13.333f / 2500);
-            Body stone = game.getWorld().createBody(stoneDef);
-            for (PolygonShape shape : fixtures) {
-                stoneFixtureDef.shape = shape;
-                stone.createFixture(stoneFixtureDef);
-            }
-            new Stone(game, stone, images[i]);
+            stoneBuilder.getBodyDef().position.x = offsetX * (13.333f / 2500);
+            stoneBuilder.getBodyDef().position.y = (offsetY - height) * (13.333f / 2500);
+            stoneBuilder.setImage(images[i]);
+            stoneBuilder.setRealHeight(images[i].getHeight() * 13.333f / 2500);
+            stoneBuilder.setShape(shapes[i]);
+            stoneBuilder.getBodyDef().type = BodyType.DYNAMIC;
+            final BodyObject stone = stoneBuilder.build();
+            stone.addListener(new GameObjectAdapter() {
+                @Override public boolean click() {
+                    stoneClicked(stone);
+                    return true;
+                }
+            });
         }
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyType.STATIC;
+        bodyDef.position.x = 0;
+        bodyDef.position.y = -3f;
+        final Body body = game.getWorld().createBody(bodyDef);
+        FixtureDef fixtureDef = new FixtureDef();
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(15, 0.1f);
+        fixtureDef.shape = shape;
+        fixtureDef.filter.maskBits = 0x1000;
+        fixtureDef.filter.categoryBits = 0x1000;
+        body.createFixture(fixtureDef);
     }
 
     private float height(PolygonShape[] shapes) {
@@ -119,24 +126,30 @@ public class StoneExplosion {
         return height;
     }
 
-    private class Stone extends GameObject {
-        private Body body;
-        private Image image;
-        public Stone(Game game, Body body, Image image) {
-            super(game);
-            this.body = body;
-            this.image = image;
+    private void stoneClicked(BodyObject stone) {
+        if (stoneInHand == stone) {
+            game.getWorld().destroyJoint(stoneJoint);
+            stoneJoint = null;
+            game.getRobot().setCarriesObject(false);
+            stoneInHand = null;
+        } else if (!game.getRobot().isCarriesObject()) {
+            pickStone(stone);
         }
-        @Override protected void paint(Graphics graphics) {
-            super.paint(graphics);
-            graphics.pushTransform();
-            Vec2 pos = body.getPosition();
-            graphics.translate(pos.x, pos.y);
-            graphics.rotate(body.getAngle());
-            graphics.scale(13.333f / 2500, -13.333f / 2500);
-            graphics.translate(0, -image.getHeight());
-            image.draw(graphics);
-            graphics.popTransform();
-        }
+    }
+
+    private void pickStone(final BodyObject stone) {
+        Vec2 worldCenter = stone.getBody().getWorldCenter();
+        game.getRobot().pickAt(worldCenter.x, worldCenter.y, new Runnable() {
+            @Override public void run() {
+                stoneInHand = stone;
+                game.getRobot().setCarriesObject(true);
+                RevoluteJointDef jointDef = new RevoluteJointDef();
+                jointDef.bodyA = game.getRobot().getHand();
+                jointDef.localAnchorA.set(game.getRobot().getHandPickPoint());
+                jointDef.bodyB = stone.getBody();
+                jointDef.localAnchorB.set(stone.getBody().getLocalCenter());
+                stoneJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
+            }
+        });
     }
 }

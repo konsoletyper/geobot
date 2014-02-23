@@ -145,6 +145,7 @@ public class Cave1 {
             if (bucketPickJoint != null) {
                 game.getWorld().destroyJoint(bucketPickJoint);
                 bucketPickJoint = null;
+                game.getRobot().setCarriesObject(false);
                 if (ropeBucketJoint == null) {
                     bucket.setImage(resources.bucketImage());
                 }
@@ -154,6 +155,7 @@ public class Cave1 {
                         game.getWorld().destroyJoint(pickHandJoint);
                         pickHandJoint = null;
                         putPickIntoBucket();
+                        game.getRobot().setCarriesObject(true);
                     }
                 });
             } else if (ropeBucketJoint != null) {
@@ -193,6 +195,9 @@ public class Cave1 {
     };
 
     private void pickBucket(Vec2 pt) {
+        if (game.getRobot().isCarriesObject()) {
+            return;
+        }
         RevoluteJointDef jointDef = new RevoluteJointDef();
         jointDef.bodyA = bucket.getBody();
         jointDef.bodyB = game.getRobot().getHand();
@@ -202,9 +207,11 @@ public class Cave1 {
         jointDef.localAnchorB.set(game.getRobot().getHandPickPoint());
         bucket.setImage(resources.bucketOnRopeImage());
         bucketPickJoint = game.getWorld().createJoint(jointDef);
+        game.getRobot().setCarriesObject(true);
     }
 
     private void hangBucket() {
+        game.getRobot().setCarriesObject(false);
         RevoluteJointDef jointDef = new RevoluteJointDef();
         jointDef.bodyA = bucket.getBody();
         jointDef.bodyB = rope.part(rope.partCount() - 1);
@@ -245,12 +252,16 @@ public class Cave1 {
             } else {
                 game.getWorld().destroyJoint(pickHandJoint);
                 pickHandJoint = null;
+                game.getRobot().setCarriesObject(false);
             }
             return true;
         }
     };
 
     private void carryPick() {
+        if (game.getRobot().isCarriesObject()) {
+            return;
+        }
         RevoluteJointDef jointDef = new RevoluteJointDef();
         jointDef.bodyA = pick.getBody();
         jointDef.bodyB = game.getRobot().getHand();
@@ -259,6 +270,7 @@ public class Cave1 {
         jointDef.localAnchorA.y = 591 * pickSize / 1200;
         jointDef.localAnchorB.set(game.getRobot().getHandPickPoint());
         pickHandJoint = game.getWorld().createJoint(jointDef);
+        game.getRobot().setCarriesObject(true);
     }
 
     private void putPickIntoBucket() {

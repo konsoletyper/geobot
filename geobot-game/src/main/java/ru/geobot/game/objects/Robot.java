@@ -61,6 +61,7 @@ public class Robot extends GameObject {
     private float targetArmLength;
     private boolean freeArm = true;
     private Runnable pickAction;
+    private boolean carriesObject;
 
     private static enum Direction {
         LEFT,
@@ -978,5 +979,13 @@ public class Robot extends GameObject {
 
     public Vec2 getHandPickPoint() {
         return new Vec2(scale(280), 0);
+    }
+
+    public boolean isCarriesObject() {
+        return carriesObject;
+    }
+
+    public void setCarriesObject(boolean carriesObject) {
+        this.carriesObject = carriesObject;
     }
 }
