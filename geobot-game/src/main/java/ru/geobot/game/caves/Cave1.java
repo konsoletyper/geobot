@@ -349,6 +349,9 @@ public class Cave1 {
                 stoneColumn = null;
                 new StoneExplosion(game);
             }
+            if (game.getRobot().getPosition().x > 12.0f) {
+                game.getGameManager().setGame(null);
+            }
             super.time(time);
         }
 

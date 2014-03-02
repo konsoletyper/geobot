@@ -24,6 +24,9 @@ public class SwingRunner extends JComponent {
     private Execution currentExecution;
     private BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>();
     private volatile BufferedImage frameBuffer;
+    private boolean suspended;
+    private long timeOffset = System.currentTimeMillis();
+    private long suspendTime = timeOffset;
 
     public SwingRunner() {
         addMouseMotionListener(new MouseMotionAdapter() {
@@ -106,6 +109,26 @@ public class SwingRunner extends JComponent {
         }
     }
 
+    public boolean isSuspended() {
+        return suspended;
+    }
+
+    public void suspend() {
+        if (suspended) {
+            return;
+        }
+        suspended = true;
+        suspendTime = System.currentTimeMillis();
+    }
+
+    public void resume() {
+        if (!suspended) {
+            return;
+        }
+        suspended = false;
+        timeOffset += System.currentTimeMillis() - suspendTime;
+    }
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);
@@ -162,7 +185,7 @@ public class SwingRunner extends JComponent {
                         event.process(entryPoint);
                     }
                 }
-                boolean shouldWait = !entryPoint.idle();
+                boolean shouldWait = suspended || !entryPoint.idle((System.currentTimeMillis() - timeOffset));
                 boolean shouldChangeSize = sizeChanged.compareAndSet(true, false);
                 int currentWidth = Math.max(1, width);
                 int currentHeight = Math.max(1, height);
@@ -196,10 +219,10 @@ public class SwingRunner extends JComponent {
             BufferedImage image = new BufferedImage(currentWidth, currentHeight,
                     BufferedImage.TYPE_INT_RGB);
             Graphics2D awtGraphics = image.createGraphics();
-            awtGraphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            awtGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
+            awtGraphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            awtGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            awtGraphics.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                    RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
             entryPoint.paint(new AWTGraphics(awtGraphics, new Rectangle(0, 0, currentWidth, currentHeight)));
             awtGraphics.dispose();
             frameBuffer = image;

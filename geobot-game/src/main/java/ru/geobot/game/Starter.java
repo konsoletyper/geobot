@@ -8,8 +8,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.*;
 import org.jbox2d.common.Settings;
+import ru.geobot.Game;
 import ru.geobot.ResourcePreloader;
 import ru.geobot.SwingRunner;
+import ru.geobot.game.caves.Cave1Game;
 
 /**
  *
@@ -17,7 +19,7 @@ import ru.geobot.SwingRunner;
  */
 public class Starter {
     private static boolean debugMode;
-    private static GeobotGame game;
+    private static SwingRunner component;
 
     public static void main(String[] args) {
         Settings.maxPolygonVertices = 30;
@@ -29,8 +31,9 @@ public class Starter {
 
         final SwingRunner component = new SwingRunner();
         new ResourcePreloader(component.getResourceReader()).preloadResources();
-        game = new GeobotGame();
-        component.run(game);
+        GeobotEntryPoint entryPoint = new GeobotEntryPoint();
+        entryPoint.setGame(new Cave1Game(entryPoint));
+        component.run(entryPoint);
         if (debugMode) {
             startInWindow(component);
         } else {
@@ -49,7 +52,7 @@ public class Starter {
         window.setLayout(new BoxLayout(window.getContentPane(), BoxLayout.PAGE_AXIS));
         graphicsDevice.setFullScreenWindow(window);
         window.setVisible(true);
-        game.resume();
+        component.resume();
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
                 window.requestFocusInWindow();
@@ -66,7 +69,7 @@ public class Starter {
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.PAGE_AXIS));
         frame.setVisible(true);
         if (!debugMode) {
-            game.resume();
+            component.resume();
         } else {
             JMenuBar menu = new JMenuBar();
             initMenu(menu);
@@ -94,11 +97,11 @@ public class Starter {
         final JMenuItem resumeSuspendItem = new JMenuItem("Продолжить");
         resumeSuspendItem.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                if (game.isSuspended()) {
-                    game.resume();
+                if (component.isSuspended()) {
+                    component.resume();
                     resumeSuspendItem.setText("Приостановить");
                 } else {
-                    game.suspend();
+                    component.suspend();
                     resumeSuspendItem.setText("Продолжить");
                 }
             }
@@ -108,8 +111,8 @@ public class Starter {
         final JMenuItem outlinePaintedItem = new JMenuItem("Обводить границы объектов");
         outlinePaintedItem.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                game.setOutlinePainted(!game.isOutlinePainted());
-                outlinePaintedItem.setSelected(game.isOutlinePainted());
+                Game.setOutlinePainted(!Game.isOutlinePainted());
+                outlinePaintedItem.setSelected(Game.isOutlinePainted());
             }
         });
         gameMenu.add(outlinePaintedItem);

@@ -8,6 +8,7 @@ public class Color {
     public short r;
     public short g;
     public short b;
+    public short a = 255;
 
     public Color copy() {
         Color other = new Color();

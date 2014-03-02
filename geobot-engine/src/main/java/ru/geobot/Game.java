@@ -46,18 +46,12 @@ public class Game implements EntryPoint {
     float width;
     float height;
     private ResourceReader resourceReader;
-    private boolean suspended;
-    private long timeOffset;
-    private long suspendTime;
-    private volatile boolean outlinePainted;
+    private static volatile boolean outlinePainted;
 
     public Game() {
         currentSlicedTime = (currentTime / timeSlice) * timeSlice;
         Vec2 gravity = new Vec2(0, -9.8f);
         world = new World(gravity, false);
-        suspendTime = System.currentTimeMillis();
-        timeOffset = suspendTime;
-        suspended = true;
         world.setContactListener(new ContactListener() {
             @Override
             public void preSolve(Contact contact, Manifold oldManifold) {
@@ -105,32 +99,12 @@ public class Game implements EntryPoint {
         contactListeners.remove(listener);
     }
 
-    public boolean isOutlinePainted() {
+    public static boolean isOutlinePainted() {
         return outlinePainted;
     }
 
-    public void setOutlinePainted(boolean outlinePainted) {
-        this.outlinePainted = outlinePainted;
-    }
-
-    public boolean isSuspended() {
-        return suspended;
-    }
-
-    public void suspend() {
-        if (suspended) {
-            return;
-        }
-        suspended = true;
-        suspendTime = System.currentTimeMillis();
-    }
-
-    public void resume() {
-        if (!suspended) {
-            return;
-        }
-        suspended = false;
-        timeOffset += System.currentTimeMillis() - suspendTime;
+    public static void setOutlinePainted(boolean outlinePainted) {
+        Game.outlinePainted = outlinePainted;
     }
 
     void cleanRemovedObjects() {
@@ -226,9 +200,6 @@ public class Game implements EntryPoint {
 
     @Override
     public void mouseMove(int x, int y) {
-        if (suspended) {
-            return;
-        }
         Rectangle rect = getViewRectangle();
         float tx = x - rect.x;
         float ty = this.height - y - rect.y;
@@ -247,9 +218,6 @@ public class Game implements EntryPoint {
 
     @Override
     public void mouseDown() {
-        if (suspended) {
-            return;
-        }
         GameObject[] objectArray = objects.toArray(new GameObject[objects.size()]);
         Arrays.sort(objectArray, new Comparator<GameObject>() {
             @Override public int compare(GameObject o1, GameObject o2) {
@@ -277,8 +245,8 @@ public class Game implements EntryPoint {
     }
 
     @Override
-    public boolean idle() {
-        return !suspended && actUntil((System.currentTimeMillis() - timeOffset) / 1);
+    public boolean idle(long time) {
+        return actUntil(time);
     }
 
     @Override
@@ -302,7 +270,7 @@ public class Game implements EntryPoint {
 
     @Override
     public void paint(Graphics graphics) {
-        boolean outlinePainted = this.outlinePainted;
+        boolean outlinePainted = Game.outlinePainted;
         Rectangle rect = getViewRectangle();
         graphics.setColor(Color.gray());
         graphics.fillRectangle(0, 0, width, height);

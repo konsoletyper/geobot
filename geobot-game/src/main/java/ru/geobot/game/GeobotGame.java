@@ -1,29 +1,39 @@
 package ru.geobot.game;
 
+import org.jbox2d.common.Vec2;
 import ru.geobot.EntryPointCallback;
 import ru.geobot.Game;
 import ru.geobot.GameAdapter;
 import ru.geobot.Key;
-import ru.geobot.game.caves.Cave1;
 import ru.geobot.game.objects.Robot;
 
 /**
  *
  * @author Alexey Andreev
  */
-public class GeobotGame extends Game {
+public abstract class GeobotGame extends Game {
+    private GeobotGameManager gameManager;
     private Robot robot;
+
+    public GeobotGame(GeobotGameManager gameManager) {
+        this.gameManager = gameManager;
+    }
 
     @Override
     public void start(EntryPointCallback callback) {
-        robot = new Robot(this, 2.1f, 1.7f);
-        new Cave1(this);
+        Vec2 loc = getInitialRobotLocation();
+        robot = new Robot(this, loc.x, loc.y);
+        initCave();
         addListener(new GameAdapter() {
             @Override public void emptyAreaClicked(float x, float y) {
                 robot.pointAt(x, y);
             }
         });
     }
+
+    protected abstract Vec2 getInitialRobotLocation();
+
+    protected abstract void initCave();
 
     @Override
     public void keyDown(Key key) {
@@ -35,12 +45,11 @@ public class GeobotGame extends Game {
         robot.keyUp(key);
     }
 
-    @Override
-    public boolean idle() {
-        return super.idle();
-    }
-
     public Robot getRobot() {
         return robot;
+    }
+
+    public GeobotGameManager getGameManager() {
+        return gameManager;
     }
 }

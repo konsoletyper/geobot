@@ -37,7 +37,7 @@ public class AWTGraphics implements Graphics {
 
     @Override
     public void setColor(Color color) {
-        innerGraphics.setColor(new java.awt.Color(color.r, color.g, color.b));
+        innerGraphics.setColor(new java.awt.Color(color.r, color.g, color.b, color.a));
     }
 
     @Override

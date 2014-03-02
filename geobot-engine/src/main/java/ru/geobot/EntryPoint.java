@@ -18,7 +18,7 @@ public interface EntryPoint {
 
     void keyUp(Key key);
 
-    boolean idle();
+    boolean idle(long time);
 
     void resize(int width, int height);
 

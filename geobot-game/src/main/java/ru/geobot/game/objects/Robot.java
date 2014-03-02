@@ -988,4 +988,8 @@ public class Robot extends GameObject {
     public void setCarriesObject(boolean carriesObject) {
         this.carriesObject = carriesObject;
     }
+
+    public Vec2 getPosition() {
+        return body.getPosition();
+    }
 }
