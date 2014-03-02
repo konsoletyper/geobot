@@ -350,7 +350,9 @@ public class Cave1 {
                 new StoneExplosion(game);
             }
             if (game.getRobot().getPosition().x > 12.0f) {
-                game.getGameManager().setGame(null);
+                if (game.getGameManager().getGame() == game) {
+                    game.getGameManager().setGame(new Cave2Game(game.getGameManager()));
+                }
             }
             super.time(time);
         }

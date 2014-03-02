@@ -8,4 +8,6 @@ import ru.geobot.EntryPoint;
  */
 public interface GeobotGameManager {
     void setGame(EntryPoint game);
+
+    EntryPoint getGame();
 }

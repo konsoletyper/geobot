@@ -63,19 +63,20 @@ public class GeobotEntryPoint implements EntryPoint, GeobotGameManager {
             timeOffset = time;
         }
         currentTime = time;
-        if (game == null || oldGame != null) {
+        if (oldGame != null) {
             if (fadeLevel < 255) {
                 fadeLevel = Math.min(255, (time - timeOffset) / 6);
             }
             if (oldGame != null && fadeLevel == 255) {
                 oldGame = null;
+                timeOffset = time;
             }
             return false;
         } else {
             if (fadeLevel > 0) {
                 fadeLevel = Math.max(0, 255 - (time - timeOffset) / 6);
             }
-            return game.idle(time - timeOffset);
+            return game != null ? game.idle(time - timeOffset) : false;
         }
     }
 
@@ -96,14 +97,14 @@ public class GeobotEntryPoint implements EntryPoint, GeobotGameManager {
         if (fadeLevel == 255) {
             graphics.setColor(Color.black());
             graphics.fillRectangle(0, 0, width, height);
-            oldGame = null;
             return;
         }
-        if (game != null) {
-            game.paint(graphics);
-        } else if (oldGame != null) {
+        if (oldGame != null) {
             oldGame.paint(graphics);
+        } else if (game != null) {
+            game.paint(graphics);
         }
+
         if (fadeLevel > 0) {
             Color color = Color.black();
             color.a = (short)fadeLevel;
@@ -117,6 +118,7 @@ public class GeobotEntryPoint implements EntryPoint, GeobotGameManager {
         if (game != null) {
             game.start(callback);
         }
+        started = true;
     }
 
     @Override
@@ -134,6 +136,7 @@ public class GeobotEntryPoint implements EntryPoint, GeobotGameManager {
         }
     }
 
+    @Override
     public EntryPoint getGame() {
         return game;
     }
@@ -151,10 +154,12 @@ public class GeobotEntryPoint implements EntryPoint, GeobotGameManager {
                 game.setResourceReader(resourceReader);
             }
             if (started) {
+                game.resize(width, height);
                 game.start(new EntryPointCallback() {
                     @Override public void stop() {
                     }
                 });
+                game.idle(0);
             }
         }
     }
