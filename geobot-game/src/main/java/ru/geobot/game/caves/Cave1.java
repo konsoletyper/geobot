@@ -110,7 +110,7 @@ public class Cave1 {
         ropeFactory.setStartY(ropeConn.y);
         ropeFactory.setCategoryBits(2);
         ropeFactory.setMaskBits(2);
-        ropeFactory.setDensity(0.9f);
+        ropeFactory.setDensity(0.2f);
         for (int i = 0; i < 22; ++i) {
             ropeFactory.addChunk((float)Math.PI);
         }
@@ -133,7 +133,7 @@ public class Cave1 {
         builder.getBodyDef().type = BodyType.DYNAMIC;
         builder.getFixtureDef().filter.categoryBits = 2;
         builder.getFixtureDef().filter.maskBits = 2;
-        builder.getFixtureDef().density = 0.005f;
+        builder.getFixtureDef().density = 0.01f;
         bucket = builder.build();
         bucket.addListener(bucketPickListener);
         bucket.changeZIndex(2);
@@ -155,7 +155,6 @@ public class Cave1 {
                         game.getWorld().destroyJoint(pickHandJoint);
                         pickHandJoint = null;
                         putPickIntoBucket();
-                        game.getRobot().setCarriesObject(true);
                     }
                 });
             } else if (ropeBucketJoint != null) {
@@ -289,6 +288,7 @@ public class Cave1 {
         jointDef.localAnchorA.y = 591 * pickSize / 1200;
         jointDef.referenceAngle = (float)Math.PI / 180 * 80;
         game.getWorld().createJoint(jointDef);
+        game.getRobot().setCarriesObject(false);
     }
 
     public Game getGame() {

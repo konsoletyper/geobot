@@ -495,8 +495,8 @@ public class Robot extends GameObject {
         shoulderJointDef.bodyA = body;
         shoulderJointDef.bodyB = armParts[0];
         shoulderJointDef.localAnchorA = new Vec2(scale(168), scale(146));
-        shoulderJointDef.lowerAngle = -60f * (float)Math.PI / 180f;
-        shoulderJointDef.upperAngle = -120f * (float)Math.PI / 180f;
+        shoulderJointDef.lowerAngle = -120f * (float)Math.PI / 180f;
+        shoulderJointDef.upperAngle = -60f * (float)Math.PI / 180f;
         shoulderJointDef.enableLimit = true;
         shoulderJoint = (RevoluteJoint)getWorld().createJoint(shoulderJointDef);
     }
@@ -634,14 +634,6 @@ public class Robot extends GameObject {
 
     private void fixArm() {
         if (freeArm) {
-            shoulderJoint.enableMotor(false);
-            shoulderJoint.enableLimit(true);
-            for (PrismaticJoint armJoint : armJoints) {
-                armJoint.enableLimit(true);
-                armJoint.setLimits(0, scale(200));
-                armJoint.setMotorSpeed(-10);
-                armJoint.setMaxMotorForce(50000);
-            }
             return;
         }
         float actualAngle = shoulderJoint.getJointAngle();
@@ -658,13 +650,13 @@ public class Robot extends GameObject {
             shoulderJoint.enableMotor(false);
         }
         if (actualAngle < targetArmAngle) {
-            float angle = Math.min(targetArmAngle, actualAngle + 0.03f);
+            float angle = Math.min(targetArmAngle, actualAngle + 0.05f);
             shoulderJoint.setLimits(angle, angle + 0.015f);
             shoulderJoint.setMotorSpeed(2f);
             shoulderJoint.setMaxMotorTorque(500000);
             shoulderJoint.enableMotor(true);
         } else {
-            float angle = Math.max(targetArmAngle, actualAngle - 0.03f);
+            float angle = Math.max(targetArmAngle, actualAngle - 0.05f);
             shoulderJoint.setLimits(angle - 0.015f, angle);
             shoulderJoint.setMotorSpeed(-2f);
             shoulderJoint.setMaxMotorTorque(500000);
@@ -690,10 +682,12 @@ public class Robot extends GameObject {
             armJoint.enableMotor(false);
             fullArmLength += armJoint.getJointTranslation();
         }
-        if (pickAction != null && Math.abs(targetArmLength - fullArmLength) < 0.04f &&
-                Math.abs(targetArmAngle - actualAngle) < 0.015f) {
-            pickAction.run();
-            pickAction = null;
+        if ( Math.abs(targetArmLength - fullArmLength) < 0.04f && Math.abs(targetArmAngle - actualAngle) < 0.015f) {
+            if (pickAction != null) {
+                pickAction.run();
+                pickAction = null;
+            }
+            freeArm = true;
         }
     }
 
