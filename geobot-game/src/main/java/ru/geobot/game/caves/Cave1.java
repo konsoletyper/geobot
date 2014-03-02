@@ -51,6 +51,7 @@ public class Cave1 {
         createRope();
         createPick();
         createBucket();
+        game.resizeWorld(13.333f, 7.5f);
     }
 
     private void createWall() {

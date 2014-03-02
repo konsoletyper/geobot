@@ -58,8 +58,8 @@ public class Robot extends GameObject {
     private long currentTime;
     private float clawsAngle = 25 * (float)Math.PI / 180;
     private float targetArmAngle;
-    private float targetArmLength;
-    private boolean freeArm = true;
+    private float targetArmLength = scale(250);
+    private boolean freeArm;
     private Runnable pickAction;
     private boolean carriesObject;
 
@@ -633,6 +633,12 @@ public class Robot extends GameObject {
     }
 
     private void fixArm() {
+        if (carriesObject) {
+            clawsAngle = Math.max(0, clawsAngle - (float)Math.PI / 30);
+        } else {
+            clawsAngle = Math.min((float)Math.PI * 35 / 180, clawsAngle + (float)Math.PI / 30);
+        }
+
         if (freeArm) {
             return;
         }
@@ -682,7 +688,7 @@ public class Robot extends GameObject {
             armJoint.enableMotor(false);
             fullArmLength += armJoint.getJointTranslation();
         }
-        if ( Math.abs(targetArmLength - fullArmLength) < 0.04f && Math.abs(targetArmAngle - actualAngle) < 0.015f) {
+        if (Math.abs(targetArmLength - fullArmLength) < 0.04f && Math.abs(targetArmAngle - actualAngle) < 0.015f) {
             if (pickAction != null) {
                 pickAction.run();
                 pickAction = null;

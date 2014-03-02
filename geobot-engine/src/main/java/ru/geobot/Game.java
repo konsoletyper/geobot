@@ -41,6 +41,8 @@ public class Game implements EntryPoint {
     private float originY;
     private float scale = 1.2f;
     private float naturalScale = 1;
+    private float worldWidth = 1;
+    private float worldHeight = 1;
     float width;
     float height;
     private ResourceReader resourceReader;
@@ -283,11 +285,19 @@ public class Game implements EntryPoint {
     public void resize(int width, int height) {
         this.width = width;
         this.height = height;
-        float worldWidth = 10.6666f;
-        float worldHeight = 6f;
+        rescale();
+    }
+
+    public void resizeWorld(float width, float height) {
+        this.worldWidth = width;
+        this.worldHeight = height;
+        rescale();
+    }
+
+    private void rescale() {
         float horzScale = width / worldWidth;
         float vertScale = height / worldHeight;
-        naturalScale = Math.min(horzScale, vertScale);
+        naturalScale = Math.min(horzScale, vertScale) * 1.25f;
     }
 
     @Override
@@ -350,6 +360,8 @@ public class Game implements EntryPoint {
         float height = this.height;
         float x = this.width / 2f - (originX * scale * naturalScale);
         float y = this.height / 2f - (originY * scale * naturalScale);
+        x = Math.min(0, Math.max(x, -this.worldWidth * scale * naturalScale + this.width));
+        y = Math.min(0, Math.max(y, -this.worldHeight * scale * naturalScale + this.height));
         return new Rectangle(x, y, width, height);
     }
 
