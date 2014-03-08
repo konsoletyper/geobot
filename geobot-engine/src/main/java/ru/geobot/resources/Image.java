@@ -10,6 +10,8 @@ import ru.geobot.graphics.Graphics;
 public interface Image {
     void draw(Graphics graphics);
 
+    void draw(Graphics graphics, float alpha);
+
     int getWidth();
 
     int getHeight();

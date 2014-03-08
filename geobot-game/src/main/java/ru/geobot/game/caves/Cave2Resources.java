@@ -16,6 +16,15 @@ public interface Cave2Resources {
     @Large
     Image background();
 
+    @ResourcePath("hole.png")
+    Image hole();
+
+    @ResourcePath("hole-patch.png")
+    Image holePatch();
+
     @ResourcePath("cave2-shape.txt")
     PolygonalBodyFactory shape();
+
+    @ResourcePath("bridge-shape.txt")
+    PolygonalBodyFactory bridgeShape();
 }

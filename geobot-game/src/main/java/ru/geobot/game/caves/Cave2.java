@@ -14,6 +14,7 @@ import ru.geobot.graphics.ImageUtil;
  * @author Alexey Andreev <konsoletyper@gmail.com>
  */
 public class Cave2 {
+    private static final float SCALE = 13.333f / 2500;
     private GeobotGame game;
     private Cave2Resources caveResources;
 
@@ -21,6 +22,7 @@ public class Cave2 {
         this.game = game;
         caveResources = game.loadResources(Cave2Resources.class);
         new Environment(game);
+        game.setScale(1);
         game.resizeWorld(13.333f, 7.5f);
     }
 
@@ -39,7 +41,14 @@ public class Cave2 {
             fixtureDef.restitution = 0.1f;
             fixtureDef.friction = 0.4f;
 
-            for (PolygonShape shape : caveResources.shape().create(13.333f / 2500)) {
+            for (PolygonShape shape : caveResources.shape().create(SCALE)) {
+                fixtureDef.shape = shape;
+                body.createFixture(fixtureDef);
+            }
+
+            fixtureDef.filter.categoryBits = 1;
+            fixtureDef.filter.maskBits = 1;
+            for (PolygonShape shape : caveResources.bridgeShape().create(SCALE)) {
                 fixtureDef.shape = shape;
                 body.createFixture(fixtureDef);
             }
@@ -53,8 +62,17 @@ public class Cave2 {
 
         @Override
         protected void paint(Graphics graphics) {
+            graphics.pushTransform();
+            graphics.scale(SCALE, SCALE);
             ImageUtil image = new ImageUtil(caveResources.background());
-            image.draw(graphics, 0, 7.5f, 13.3333f, 7.5f);
+            image.draw(graphics, 0, 0, 2500, 1406);
+            ImageUtil hole = new ImageUtil(caveResources.hole());
+            hole.draw(graphics, 514, 1406 - 912 - 494, 233, 494);
+            ImageUtil patch = new ImageUtil(caveResources.holePatch());
+            float alpha = -0.8f + Math.abs(game.getRobot().getPosition().x - 600 * SCALE) / 1.5f;
+            alpha = Math.max(0f, Math.min(1f, alpha));
+            patch.draw(graphics, 494, 1406 - 904 - 500, 278, 500, alpha);
+            graphics.popTransform();
         }
 
         @Override

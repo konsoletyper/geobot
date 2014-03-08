@@ -20,6 +20,11 @@ public class ImageUtil implements Image {
     }
 
     @Override
+    public void draw(Graphics graphics, float alpha) {
+        image.draw(graphics, alpha);
+    }
+
+    @Override
     public int getHeight() {
         return image.getHeight();
     }
@@ -35,6 +40,15 @@ public class ImageUtil implements Image {
         graphics.scale(w / getWidth(), -h / getHeight());
         graphics.translate(0, -h);
         draw(graphics);
+        graphics.setTransform(transform);
+    }
+
+    public void draw(Graphics graphics, float x, float y, float w, float h, float alpha) {
+        AffineTransform transform = graphics.getTransform();
+        graphics.translate(x, y);
+        graphics.scale(w / getWidth(), -h / getHeight());
+        graphics.translate(0, -h);
+        draw(graphics, alpha);
         graphics.setTransform(transform);
     }
 }
