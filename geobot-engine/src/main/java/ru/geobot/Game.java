@@ -206,6 +206,9 @@ public class Game implements EntryPoint {
         mouseX = tx / (scale * naturalScale);
         mouseY = ty / (scale * naturalScale);
         updateMouse();
+        for (GameListener listener : listeners) {
+            listener.mouseMoved(mouseX, mouseY);
+        }
     }
 
     protected float getMouseX() {
@@ -311,8 +314,13 @@ public class Game implements EntryPoint {
                     } else if (shape instanceof CircleShape) {
                         CircleShape circle = (CircleShape)shape;
                         Vec2 v = circle.m_p;
+                        graphics.setColor(Color.red());
                         graphics.drawEllipse(v.x - circle.m_radius, v.y - circle.m_radius,
                                 2 * circle.m_radius, 2 * circle.m_radius);
+                        Vec2 dir = new Vec2((float)Math.cos(body.getAngle()), (float)Math.sin(body.getAngle()));
+                        dir.mulLocal(circle.m_radius);
+                        graphics.moveTo(v.x, v.y);
+                        graphics.lineTo(v.x + dir.x, v.y + dir.y);
                     }
                 }
                 graphics.setTransform(orig);

@@ -29,7 +29,7 @@ public class Starter {
             }
         }
 
-        final SwingRunner component = new SwingRunner();
+        component = new SwingRunner();
         new ResourcePreloader(component.getResourceReader()).preloadResources();
         GeobotEntryPoint entryPoint = new GeobotEntryPoint();
         entryPoint.setGame(new Cave1Game(entryPoint));

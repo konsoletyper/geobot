@@ -60,6 +60,7 @@ public class Robot extends GameObject {
     private float targetArmAngle;
     private float targetArmLength = scale(250);
     private boolean freeArm;
+    private boolean armForced = true;
     private Runnable pickAction;
     private boolean carriesObject;
 
@@ -639,7 +640,7 @@ public class Robot extends GameObject {
             clawsAngle = Math.min((float)Math.PI * 35 / 180, clawsAngle + (float)Math.PI / 30);
         }
 
-        if (freeArm) {
+        if (freeArm || !armForced) {
             return;
         }
         float actualAngle = shoulderJoint.getJointAngle();
@@ -991,5 +992,22 @@ public class Robot extends GameObject {
 
     public Vec2 getPosition() {
         return body.getPosition();
+    }
+
+    public boolean isArmForced() {
+        return armForced;
+    }
+
+    public void setArmForced(boolean armForced) {
+        if (this.armForced == armForced) {
+            return;
+        }
+        this.armForced = armForced;
+        if (!armForced) {
+            for (PrismaticJoint joint : armJoints) {
+                joint.setLimits(0, SCALE * 250);
+            }
+        }
+        shoulderJoint.enableLimit(armForced);
     }
 }

@@ -3,9 +3,12 @@ package ru.geobot.game.caves;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
+import org.jbox2d.dynamics.joints.RevoluteJointDef;
 import ru.geobot.Game;
 import ru.geobot.GameObject;
 import ru.geobot.game.GeobotGame;
+import ru.geobot.game.objects.ControlPanelHandle;
+import ru.geobot.game.objects.ControlPanelResources;
 import ru.geobot.graphics.Graphics;
 import ru.geobot.graphics.ImageUtil;
 
@@ -14,16 +17,27 @@ import ru.geobot.graphics.ImageUtil;
  * @author Alexey Andreev <konsoletyper@gmail.com>
  */
 public class Cave2 {
-    private static final float SCALE = 13.333f / 2500;
+    public static final float SCALE = 10f / 2500;
     private GeobotGame game;
     private Cave2Resources caveResources;
+    private Environment environment;
 
     public Cave2(GeobotGame game) {
         this.game = game;
         caveResources = game.loadResources(Cave2Resources.class);
-        new Environment(game);
-        game.setScale(1);
-        game.resizeWorld(13.333f, 7.5f);
+        environment = new Environment(game);
+        initControlPanel();
+        game.setScale(1.1f);
+        game.resizeWorld(2500 * SCALE, 1406 * SCALE);
+    }
+
+    private void initControlPanel() {
+        ControlPanelHandle handle = new ControlPanelHandle(game, SCALE * 861, SCALE * 760);
+        RevoluteJointDef jointDef = new RevoluteJointDef();
+        jointDef.bodyA = environment.getBody();
+        jointDef.bodyB = handle.getBody();
+        jointDef.localAnchorA.set(handle.getBody().getPosition());
+        game.getWorld().createJoint(jointDef);
     }
 
     private class Environment extends GameObject {
@@ -72,6 +86,9 @@ public class Cave2 {
             float alpha = -0.8f + Math.abs(game.getRobot().getPosition().x - 600 * SCALE) / 1.5f;
             alpha = Math.max(0f, Math.min(1f, alpha));
             patch.draw(graphics, 494, 1406 - 904 - 500, 278, 500, alpha);
+            ControlPanelResources controlPanelRes = game.loadResources(ControlPanelResources.class);
+            ImageUtil controlPanel = new ImageUtil(controlPanelRes.panel());
+            controlPanel.draw(graphics, 831, 1406 - 633, 180, 149);
             graphics.popTransform();
         }
 
@@ -85,6 +102,10 @@ public class Cave2 {
                 fixture = fixture.getNext();
             }
             return false;
+        }
+
+        public Body getBody() {
+            return body;
         }
     }
 }
