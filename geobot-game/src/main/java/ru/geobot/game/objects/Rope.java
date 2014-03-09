@@ -23,6 +23,7 @@ public class Rope extends GameObject {
     private Image image;
     private float chunkLength;
     private float imageScale;
+    private DrawFilter[] filters;
 
     Rope(Game game, RopeFactory factory) {
         super(game);
@@ -30,6 +31,7 @@ public class Rope extends GameObject {
         this.chunkLength = factory.width / image.getHeight() * image.getWidth();
         this.width = factory.width;
         imageScale = factory.width / image.getHeight();
+        filters = !factory.drawFilters.isEmpty() ? factory.drawFilters.toArray(new Rope.DrawFilter[0]) : null;
 
         BodyDef partDef = new BodyDef();
         partDef.type = BodyType.DYNAMIC;
@@ -54,6 +56,7 @@ public class Rope extends GameObject {
         partFixtureDef.restitution = factory.restitution;
         partFixtureDef.filter.categoryBits = factory.categoryBits;
         partFixtureDef.filter.maskBits = factory.maskBits;
+        partFixtureDef.filter.groupIndex = 1;
         parts = new Body[factory.angles.size()];
         for (int i = 0; i < parts.length; ++i) {
             partDef.angle = factory.angles.get(i);
@@ -113,7 +116,14 @@ public class Rope extends GameObject {
         graphics.setColor(color);
         graphics.setStrokeWidth(width);
         AffineTransform transform = graphics.getTransform();
-        for (int i = 0; i < parts.length; i++) {
+        outer: for (int i = 0; i < parts.length; i++) {
+            if (filters != null) {
+                for (DrawFilter filter : filters) {
+                    if (!filter.filter(parts[i])) {
+                        continue outer;
+                    }
+                }
+            }
             Vec2 v = parts[i].getPosition();
             graphics.translate(v.x - width / 2, v.y);
             graphics.rotate((float)Math.PI / 2 + parts[i].getAngle());
@@ -129,5 +139,9 @@ public class Rope extends GameObject {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public interface DrawFilter {
+        boolean filter(Body body);
     }
 }

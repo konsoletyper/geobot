@@ -11,7 +11,7 @@ import org.jbox2d.common.Settings;
 import ru.geobot.Game;
 import ru.geobot.ResourcePreloader;
 import ru.geobot.SwingRunner;
-import ru.geobot.game.caves.Cave1Game;
+import ru.geobot.game.caves.Cave2Game;
 
 /**
  *
@@ -32,10 +32,11 @@ public class Starter {
         component = new SwingRunner();
         new ResourcePreloader(component.getResourceReader()).preloadResources();
         GeobotEntryPoint entryPoint = new GeobotEntryPoint();
-        entryPoint.setGame(new Cave1Game(entryPoint));
+        entryPoint.setGame(new Cave2Game(entryPoint));
         component.run(entryPoint);
         if (debugMode) {
             startInWindow(component);
+            component.suspend();
         } else {
             startInFullScreen(component);
         }

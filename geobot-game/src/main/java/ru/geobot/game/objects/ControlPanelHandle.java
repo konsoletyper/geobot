@@ -24,6 +24,7 @@ public class ControlPanelHandle extends GameObject {
     private GeobotGame game;
     private Body body;
     private RevoluteJoint robotArmJoint;
+    private float angle;
 
     public ControlPanelHandle(GeobotGame game, float x, float y) {
         super(game);
@@ -32,6 +33,7 @@ public class ControlPanelHandle extends GameObject {
         bodyDef.type = BodyType.DYNAMIC;
         bodyDef.position.x = x;
         bodyDef.position.y = y;
+        bodyDef.fixedRotation = true;
         body = game.getWorld().createBody(bodyDef);
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 0.1f;
@@ -56,8 +58,7 @@ public class ControlPanelHandle extends GameObject {
         graphics.translate(pos.x, pos.y);
         graphics.scale(Cave2.SCALE, Cave2.SCALE);
         graphics.rotate(body.getAngle());
-        graphics.moveTo(0, 6);
-        image.draw(graphics, 0, -7, 14, 14);
+        image.draw(graphics, 7, 4, 14, 14);
         graphics.popTransform();
     }
 
@@ -92,7 +93,7 @@ public class ControlPanelHandle extends GameObject {
                 jointDef.bodyA = game.getRobot().getHand();
                 jointDef.bodyB = body;
                 jointDef.localAnchorA.set(game.getRobot().getHandPickPoint());
-                jointDef.localAnchorB.set(rel);
+                jointDef.localAnchorB.set(new Vec2(Cave2.SCALE * 14, 0));
                 robotArmJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
                 game.getRobot().setArmForced(false);
                 game.addListener(mouseMotionListener);
@@ -108,8 +109,20 @@ public class ControlPanelHandle extends GameObject {
             if (dir.length() < 1E-5f) {
                 return;
             }
-            float angle = (float)Math.atan2(dir.y, dir.x);
+            float newAngle = (float)Math.atan2(dir.y, dir.x);
+            float partialCurrentAngle = (float)Math.IEEEremainder(angle, Math.PI * 2);
+            float delta = newAngle - partialCurrentAngle;
+            if (delta < -Math.PI) {
+                delta += Math.PI * 2;
+            } else if (delta > Math.PI) {
+                delta -= Math.PI * 2;
+            }
+            angle += delta;
             body.setTransform(body.getPosition(), angle);
         };
     };
+
+    public float getAngle() {
+        return angle;
+    }
 }

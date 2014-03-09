@@ -1006,8 +1006,10 @@ public class Robot extends GameObject {
         if (!armForced) {
             for (PrismaticJoint joint : armJoints) {
                 joint.setLimits(0, SCALE * 250);
+                joint.enableMotor(false);
             }
         }
         shoulderJoint.enableLimit(armForced);
+        shoulderJoint.enableMotor(false);
     }
 }

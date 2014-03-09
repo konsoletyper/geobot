@@ -14,6 +14,7 @@ public class RopeFactory {
     float startX;
     float startY;
     List<Float> angles = new ArrayList<>();
+    List<Rope.DrawFilter> drawFilters = new ArrayList<>();
     float restitution = 1f;
     float density = 1f;
     float resistance = 0f;
@@ -107,5 +108,9 @@ public class RopeFactory {
 
     public void setCategoryBits(int categoryBits) {
         this.categoryBits = categoryBits;
+    }
+
+    public List<Rope.DrawFilter> getDrawFilters() {
+        return drawFilters;
     }
 }
