@@ -189,7 +189,7 @@ public class SwingRunner extends JComponent {
                         event.process(entryPoint);
                     }
                 }
-                boolean shouldWait = suspended || !entryPoint.idle((System.currentTimeMillis() - timeOffset));
+                boolean shouldWait = suspended || !entryPoint.idle(System.currentTimeMillis() - timeOffset);
                 boolean shouldChangeSize = sizeChanged.compareAndSet(true, false);
                 int currentWidth = Math.max(1, width);
                 int currentHeight = Math.max(1, height);

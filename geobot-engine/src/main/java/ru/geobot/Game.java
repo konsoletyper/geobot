@@ -47,6 +47,7 @@ public class Game implements EntryPoint {
     float height;
     private ResourceReader resourceReader;
     private static volatile boolean outlinePainted;
+    private GameObject clickedObject;
 
     public Game() {
         currentSlicedTime = (currentTime / timeSlice) * timeSlice;
@@ -227,7 +228,7 @@ public class Game implements EntryPoint {
                 return o2.zIndex - o1.zIndex;
             }
         });
-        GameObject clickedObject = null;
+        clickedObject = null;
         for (GameObject object : objectArray) {
             if (object.hasPoint(mouseX, mouseY)) {
                 if (object.click()) {
@@ -372,5 +373,8 @@ public class Game implements EntryPoint {
 
     @Override
     public void mouseUp() {
+        if (clickedObject != null) {
+            clickedObject.release();
+        }
     }
 }

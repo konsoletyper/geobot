@@ -12,6 +12,7 @@ import ru.geobot.game.GeobotGame;
 import ru.geobot.game.objects.*;
 import ru.geobot.graphics.Graphics;
 import ru.geobot.graphics.ImageUtil;
+import ru.geobot.graphics.Rectangle;
 
 /**
  *
@@ -35,6 +36,9 @@ public class Cave2 {
     private RevoluteJoint hangerJoint;
     private RevoluteJoint leftCraneRollerJoint;
     private RevoluteJoint rightCraneRollerJoint;
+    private Bobbler bobbler;
+    private float waterLevel = 0;
+    private boolean waterLevelGrowing;
 
     public Cave2(GeobotGame game) {
         this.game = game;
@@ -44,8 +48,11 @@ public class Cave2 {
         initControlPanel();
         game.setScale(1.1f);
         game.resizeWorld(2500 * SCALE, 1406 * SCALE);
+        bobbler = new Bobbler(game);
+        bobbler.setWaterLevel(0);
         initCrane();
         new Crane();
+        new WaterTap();
     }
 
     private void initControlPanel() {
@@ -223,10 +230,14 @@ public class Cave2 {
 
             graphics.pushTransform();
             graphics.scale(SCALE, SCALE);
+            graphics.clip(new Rectangle(514, 0, 233, waterLevel));
+            ImageUtil water = new ImageUtil(caveResources.water());
+            water.draw(graphics, 514, 0, 233, 494, 0.4f);
+            graphics.popClip();
             ImageUtil patch = new ImageUtil(caveResources.holePatch());
             float alpha = -0.5f + Math.abs(game.getRobot().getPosition().x - 600 * SCALE) / 1.2f;
             alpha = Math.max(0f, Math.min(1f, alpha));
-            patch.draw(graphics, 494, 1406 - 904 - 500, 278, 500, alpha);
+            patch.draw(graphics, 494, 2, 278, 500, alpha);
             graphics.popTransform();
         }
 
@@ -282,7 +293,7 @@ public class Cave2 {
             ImageUtil image = new ImageUtil(caveResources.background());
             image.draw(graphics, 0, 0, 2500, 1406);
             ImageUtil hole = new ImageUtil(caveResources.hole());
-            hole.draw(graphics, 514, 1406 - 912 - 494, 233, 494);
+            hole.draw(graphics, 514, 0, 233, 494);
             ControlPanelResources controlPanelRes = game.loadResources(ControlPanelResources.class);
             ImageUtil controlPanel = new ImageUtil(controlPanelRes.panel());
             controlPanel.draw(graphics, 831, 1406 - 633, 180, 149);
@@ -303,6 +314,36 @@ public class Cave2 {
 
         public Body getBody() {
             return body;
+        }
+    }
+
+    private class WaterTap extends GameObject {
+        public WaterTap() {
+            super(game);
+        }
+
+        @Override
+        protected boolean hasPoint(float x, float y) {
+            return x >= SCALE * 140 && y >= SCALE * 560 && x <= SCALE * 210 && y <= SCALE * 680;
+        }
+
+        @Override
+        protected boolean click() {
+            waterLevelGrowing = true;
+            return true;
+        }
+
+        @Override
+        protected void release() {
+            waterLevelGrowing = false;
+        }
+
+        @Override
+        protected void time(long time) {
+            if (waterLevelGrowing) {
+                waterLevel = Math.min(waterLevel + 0.1f, 120);
+                bobbler.setWaterLevel(waterLevel * SCALE);
+            }
         }
     }
 }

@@ -40,6 +40,9 @@ public class GameObject {
         return false;
     }
 
+    protected void release() {
+    }
+
     protected void mouseEnter() {
         if (listeners != null) {
             for (GameObjectListener listener : listeners) {

@@ -47,7 +47,5 @@ public interface Graphics {
 
     void clip(Rectangle rectangle);
 
-    Rectangle getClip();
-
-    void setClip(Rectangle rectangle);
+    void popClip();
 }

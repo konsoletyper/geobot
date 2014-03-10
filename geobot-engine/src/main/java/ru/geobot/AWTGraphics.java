@@ -2,7 +2,9 @@ package ru.geobot;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedList;
 import ru.geobot.graphics.AffineTransform;
@@ -18,21 +20,12 @@ public class AWTGraphics implements Graphics {
     private Graphics2D innerGraphics;
     private Deque<AffineTransform> transformStack = new LinkedList<>();
     private java.awt.geom.Path2D.Float currentPath;
-    private Rectangle clipRectangle;
+    private Deque<Shape> clipStack = new ArrayDeque<>();
 
     public AWTGraphics(Graphics2D innerGraphics, Rectangle clipRectangle) {
         this.innerGraphics = innerGraphics;
-        this.clipRectangle = clipRectangle != null ? clipRectangle.copy() : null;
-        updateClip();
-    }
-
-    private void updateClip() {
-        if (clipRectangle != null) {
-            innerGraphics.clip(new Rectangle2D.Float(clipRectangle.x, clipRectangle.y,
-                    clipRectangle.width, clipRectangle.height));
-        } else {
-            innerGraphics.clipRect(0, 0, 0, 0);
-        }
+        innerGraphics.clip(new Rectangle2D.Float(clipRectangle.x, clipRectangle.y,
+                clipRectangle.width, clipRectangle.height));
     }
 
     @Override
@@ -175,29 +168,18 @@ public class AWTGraphics implements Graphics {
 
     @Override
     public void clip(Rectangle rectangle) {
-        if (clipRectangle == null) {
-            return;
-        }
-        float left = Math.max(clipRectangle.x, rectangle.x);
-        float top = Math.max(clipRectangle.y, rectangle.y);
-        float right = Math.min(clipRectangle.right(), rectangle.right());
-        float bottom = Math.min(clipRectangle.bottom(), rectangle.bottom());
-        if (left > right || top > bottom) {
-            clipRectangle = null;
-        } else {
-            clipRectangle = new Rectangle(left, top, right - left, bottom - top);
-        }
-        updateClip();
+        java.awt.geom.AffineTransform oldTransform = innerGraphics.getTransform();
+        innerGraphics.setTransform(new java.awt.geom.AffineTransform());
+        clipStack.push(innerGraphics.getClip());
+        innerGraphics.setTransform(oldTransform);
+        innerGraphics.clip(new Rectangle2D.Float(rectangle.x, rectangle.y, rectangle.width, rectangle.height));
     }
 
     @Override
-    public Rectangle getClip() {
-        return clipRectangle != null ? clipRectangle.copy() : null;
-    }
-
-    @Override
-    public void setClip(Rectangle rectangle) {
-        clipRectangle = rectangle != null ? rectangle.copy() : null;
-        updateClip();
+    public void popClip() {
+        java.awt.geom.AffineTransform oldTransform = innerGraphics.getTransform();
+        innerGraphics.setTransform(new java.awt.geom.AffineTransform());
+        innerGraphics.setClip(clipStack.pop());
+        innerGraphics.setTransform(oldTransform);
     }
 }

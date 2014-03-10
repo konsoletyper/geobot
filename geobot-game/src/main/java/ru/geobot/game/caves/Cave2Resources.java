@@ -19,6 +19,9 @@ public interface Cave2Resources {
     @ResourcePath("hole.png")
     Image hole();
 
+    @ResourcePath("hole-water.png")
+    Image water();
+
     @ResourcePath("hole-patch.png")
     Image holePatch();
 
