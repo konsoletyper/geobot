@@ -51,6 +51,7 @@ public class Robot extends GameObject {
     private float initialY;
     private static final float SCALE = 1.1f / 800f;
     private boolean movingUp;
+    private boolean movingDown;
     private float vertOffset = 0;
     private Direction currentDirection = Direction.RIGHT;
     private Direction desiredDirection;
@@ -561,6 +562,9 @@ public class Robot extends GameObject {
             case UP:
                 movingUp = true;
                 break;
+            case DOWN:
+                movingDown = true;
+                break;
             default:
                 break;
         }
@@ -576,6 +580,9 @@ public class Robot extends GameObject {
                 break;
             case UP:
                 movingUp = false;
+                break;
+            case DOWN:
+                movingDown = false;
                 break;
             default:
                 break;
@@ -602,8 +609,12 @@ public class Robot extends GameObject {
         }
         if (movingUp) {
             vertOffset = Math.min(vertOffset + 0.1f, 4);
-        } else {
+        } else if (movingDown) {
+            vertOffset = Math.max(vertOffset - 0.1f, -4);
+        } else if (vertOffset > 0) {
             vertOffset = Math.max(vertOffset - 0.1f, 0);
+        } else if (vertOffset < 0) {
+            vertOffset = Math.min(vertOffset + 0.1f, 0);
         }
         Vec2 pos = body.getWorldCenter();
         getGame().setOriginX(pos.x);

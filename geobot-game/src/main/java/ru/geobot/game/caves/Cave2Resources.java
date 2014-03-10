@@ -25,6 +25,6 @@ public interface Cave2Resources {
     @ResourcePath("cave2-shape.txt")
     PolygonalBodyFactory shape();
 
-    @ResourcePath("bridge-shape.txt")
-    PolygonalBodyFactory bridgeShape();
+    @ResourcePath("cave2-hole-shape.txt")
+    PolygonalBodyFactory holeShape();
 }

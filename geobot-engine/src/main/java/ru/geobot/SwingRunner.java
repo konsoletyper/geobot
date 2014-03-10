@@ -79,6 +79,10 @@ public class SwingRunner extends JComponent {
                         return Key.LEFT;
                     case KeyEvent.VK_RIGHT:
                         return Key.RIGHT;
+                    case KeyEvent.VK_UP:
+                        return Key.UP;
+                    case KeyEvent.VK_DOWN:
+                        return Key.DOWN;
                     default:
                         return null;
                 }

@@ -124,8 +124,8 @@ public class Cave2 {
         for (PolygonShape shape : craneResources.hangerShape().create(SCALE)) {
             fixtureDef.shape = shape;
             fixtureDef.density = 0.0001f;
-            fixtureDef.filter.categoryBits = 0x102;
-            fixtureDef.filter.maskBits = 0x102;
+            fixtureDef.filter.categoryBits = 0x100;
+            fixtureDef.filter.maskBits = 0x100;
             hanger.createFixture(fixtureDef);
         }
 
@@ -220,6 +220,14 @@ public class Cave2 {
             graphics.rotate(hanger.getAngle());
             hangerImage.draw(graphics, 0, SCALE * 72, SCALE * 53, SCALE * 72);
             graphics.popTransform();
+
+            graphics.pushTransform();
+            graphics.scale(SCALE, SCALE);
+            ImageUtil patch = new ImageUtil(caveResources.holePatch());
+            float alpha = -0.5f + Math.abs(game.getRobot().getPosition().x - 600 * SCALE) / 1.2f;
+            alpha = Math.max(0f, Math.min(1f, alpha));
+            patch.draw(graphics, 494, 1406 - 904 - 500, 278, 500, alpha);
+            graphics.popTransform();
         }
 
         @Override
@@ -253,9 +261,9 @@ public class Cave2 {
                 body.createFixture(fixtureDef);
             }
 
-            fixtureDef.filter.categoryBits = 1;
-            fixtureDef.filter.maskBits = 1;
-            for (PolygonShape shape : caveResources.bridgeShape().create(SCALE)) {
+            fixtureDef.filter.categoryBits = 0x100;
+            fixtureDef.filter.maskBits = 0x100;
+            for (PolygonShape shape : caveResources.holeShape().create(SCALE)) {
                 fixtureDef.shape = shape;
                 body.createFixture(fixtureDef);
             }
@@ -275,10 +283,6 @@ public class Cave2 {
             image.draw(graphics, 0, 0, 2500, 1406);
             ImageUtil hole = new ImageUtil(caveResources.hole());
             hole.draw(graphics, 514, 1406 - 912 - 494, 233, 494);
-            ImageUtil patch = new ImageUtil(caveResources.holePatch());
-            float alpha = -0.5f + Math.abs(game.getRobot().getPosition().x - 600 * SCALE) / 1.2f;
-            alpha = Math.max(0f, Math.min(1f, alpha));
-            patch.draw(graphics, 494, 1406 - 904 - 500, 278, 500, alpha);
             ControlPanelResources controlPanelRes = game.loadResources(ControlPanelResources.class);
             ImageUtil controlPanel = new ImageUtil(controlPanelRes.panel());
             controlPanel.draw(graphics, 831, 1406 - 633, 180, 149);
