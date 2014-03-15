@@ -8,6 +8,7 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
 import org.jbox2d.dynamics.joints.WeldJointDef;
 import ru.geobot.Game;
 import ru.geobot.GameObject;
+import ru.geobot.GameObjectAdapter;
 import ru.geobot.game.GeobotGame;
 import ru.geobot.game.objects.*;
 import ru.geobot.graphics.Graphics;
@@ -23,6 +24,8 @@ public class Cave2 {
     private GeobotGame game;
     private Cave2Resources caveResources;
     private CraneResources craneResources;
+    private BobblerResources bobblerResources;
+    private SafeResources safeResources;
     private Environment environment;
     private Body leftCraneRoller;
     private Body rightCraneRoller;
@@ -37,6 +40,9 @@ public class Cave2 {
     private RevoluteJoint leftCraneRollerJoint;
     private RevoluteJoint rightCraneRollerJoint;
     private Bobbler bobbler;
+    private BodyObject secretCode;
+    private RevoluteJoint secretCodeJoint;
+    private RevoluteJoint secretCodeHandJoint;
     private float waterLevel = 0;
     private boolean waterLevelGrowing;
     private float vertCraneOffset;
@@ -46,12 +52,16 @@ public class Cave2 {
         this.game = game;
         caveResources = game.loadResources(Cave2Resources.class);
         craneResources = game.loadResources(CraneResources.class);
+        bobblerResources = game.loadResources(BobblerResources.class);
+        safeResources = game.loadResources(SafeResources.class);
         environment = new Environment(game);
         initControlPanel();
         game.setScale(1.1f);
         game.resizeWorld(2500 * SCALE, 1406 * SCALE);
         bobbler = new Bobbler(game);
         bobbler.setWaterLevel(0);
+        new Safe();
+        initSecretCode();
         initCrane();
         new Crane();
         new WaterTap();
@@ -202,6 +212,63 @@ public class Cave2 {
             return body.getPosition().y < crane.getPosition().y + SCALE * 30;
         }
     };
+
+    private void initSecretCode() {
+        BodyObjectBuilder builder = new BodyObjectBuilder(game);
+        builder.setImage(bobblerResources.secretCodeImage());
+        builder.setShape(bobblerResources.secretCodeShape());
+        builder.setRealHeight(SCALE * 26);
+        Vec2 vec = bobbler.getBody().getWorldPoint(new Vec2(SCALE * 26, 0));
+        vec.y -= SCALE * 13;
+        builder.getBodyDef().position.set(vec);
+        builder.getBodyDef().type = BodyType.DYNAMIC;
+        builder.getFixtureDef().density = 0.0001f;
+        builder.getFixtureDef().filter.maskBits = 0x100;
+        builder.getFixtureDef().filter.categoryBits = 0x100;
+        secretCode = builder.build();
+        RevoluteJointDef jointDef = new RevoluteJointDef();
+        jointDef.bodyA = bobbler.getBody();
+        jointDef.bodyB = secretCode.getBody();
+        jointDef.localAnchorA.set(SCALE * 26, 0);
+        jointDef.localAnchorB.set(0, 13 * SCALE);
+        secretCodeJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
+
+        secretCode.addListener(new GameObjectAdapter() {
+            @Override public boolean click() {
+                return beginPickSecretCode();
+            }
+        });
+    }
+
+    private boolean beginPickSecretCode() {
+        Robot robot = game.getRobot();
+        if (robot.isCarriesObject()) {
+            return false;
+        }
+        Vec2 pt = new Vec2(0, SCALE * 13);
+        pt = secretCode.getBody().getWorldPoint(pt);
+        robot.pickAt(pt.x, pt.y, new Runnable() {
+            @Override public void run() {
+                pickSecretCode();
+            }
+        });
+        return true;
+    }
+
+    private void pickSecretCode() {
+        if (secretCodeJoint == null) {
+            return;
+        }
+        game.getWorld().destroyJoint(secretCodeJoint);
+        secretCodeJoint = null;
+        Robot robot = game.getRobot();
+        RevoluteJointDef jointDef = new RevoluteJointDef();
+        jointDef.bodyA = secretCode.getBody();
+        jointDef.bodyB = robot.getHand();
+        jointDef.localAnchorA.set(0, SCALE * 13);
+        jointDef.localAnchorB.set(robot.getHandPickPoint());
+        secretCodeHandJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
+    }
 
     private class Crane extends GameObject {
         public Crane() {
@@ -378,6 +445,82 @@ public class Cave2 {
                 waterLevel = Math.min(waterLevel + 0.1f, 120);
                 bobbler.setWaterLevel(waterLevel * SCALE);
             }
+        }
+    }
+
+    private class Safe extends GameObject {
+        private long currentTime;
+        private long openStartTime;
+        private boolean opened;
+
+        public Safe() {
+            super(game);
+        }
+
+        @Override
+        protected void paint(Graphics graphics) {
+            graphics.pushTransform();
+            graphics.scale(SCALE, SCALE);
+            graphics.translate(2208, 587);
+            graphics.translate(0, 296);
+            graphics.scale(1, -1);
+            if (opened) {
+                safeResources.opened().draw(graphics);
+                if (currentTime > openStartTime + 400) {
+                    graphics.translate(233, -55);
+                    safeResources.door2().draw(graphics);
+                } else {
+                    graphics.translate(151, -36);
+                    safeResources.door1().draw(graphics);
+                }
+            } else {
+                safeResources.closed().draw(graphics);
+            }
+            graphics.popTransform();
+        }
+
+        public void open() {
+            if (opened) {
+                return;
+            }
+            opened = true;
+            openStartTime = currentTime;
+        }
+
+        @Override
+        protected void time(long time) {
+            currentTime = time;
+        }
+
+        @Override
+        protected boolean click() {
+            if (secretCodeHandJoint == null) {
+                return false;
+            }
+            Robot robot = game.getRobot();
+            robot.pickAt(SCALE * 2410, SCALE * 774, new Runnable() {
+                @Override public void run() {
+                    useSecretCode();
+                }
+            });
+            return true;
+        }
+
+        @Override
+        protected boolean hasPoint(float x, float y) {
+            x /= SCALE;
+            y /= SCALE;
+            return x >= 2201 && x < 2479 && y >= 587 && y <= 987;
+        }
+
+        private void useSecretCode() {
+            Robot robot = game.getRobot();
+            robot.setArmForced(true);
+            robot.setCarriesObject(false);
+            getWorld().destroyJoint(secretCodeHandJoint);
+            secretCodeHandJoint = null;
+            secretCode.dispose();
+            open();
         }
     }
 }

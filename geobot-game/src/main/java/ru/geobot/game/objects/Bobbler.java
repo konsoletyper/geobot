@@ -44,6 +44,10 @@ public class Bobbler extends GameObject {
         }
     }
 
+    public Body getBody() {
+        return body;
+    }
+
     public float getWaterLevel() {
         return waterLevel;
     }
@@ -91,6 +95,6 @@ public class Bobbler extends GameObject {
             return;
         }
         massCenter.mulLocal(1 / mass);
-        body.applyForce(new Vec2(0, 4f * mass), massCenter);
+        body.applyForce(new Vec2(0, 4.5f * mass), massCenter);
     }
 }

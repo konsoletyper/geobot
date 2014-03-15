@@ -19,4 +19,10 @@ public interface BobblerResources {
 
     @ResourcePath("bobbler-load-shape.txt")
     PolygonalBodyFactory loadShape();
+
+    @ResourcePath("secret-code.png")
+    Image secretCodeImage();
+
+    @ResourcePath("secret-code-shape.txt")
+    PolygonalBodyFactory secretCodeShape();
 }
