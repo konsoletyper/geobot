@@ -39,6 +39,8 @@ public class Cave2 {
     private Bobbler bobbler;
     private float waterLevel = 0;
     private boolean waterLevelGrowing;
+    private float vertCraneOffset;
+    private float horzCraneOffset;
 
     public Cave2(GeobotGame game) {
         this.game = game;
@@ -92,12 +94,12 @@ public class Cave2 {
         ropeFactory.setWidth(SCALE * 2);
         ropeFactory.setStartX(SCALE * 900);
         ropeFactory.setStartY(SCALE * 1348);
-        ropeFactory.setDensity(0.0001f);
+        ropeFactory.setDensity(0.1f);
         ropeFactory.setImage(craneResources.cable());
         ropeFactory.setMaskBits(0x100);
         ropeFactory.setCategoryBits(0x100);
         ropeFactory.getDrawFilters().add(leftRopeFilter);
-        for (int i = 0; i < 30; ++i) {
+        for (int i = 0; i < 32; ++i) {
             ropeFactory.addChunk((float)Math.PI / 2);
         }
         leftCraneRope = ropeFactory.create(game);
@@ -105,7 +107,7 @@ public class Cave2 {
         ropeFactory.clearChunks();
         ropeFactory.getDrawFilters().clear();
         ropeFactory.setStartX(SCALE * 960);
-        for (int i = 0; i < 27; ++i) {
+        for (int i = 0; i < 29; ++i) {
             ropeFactory.addChunk((float)Math.PI * 3 / 2);
         }
         ropeFactory.getDrawFilters().add(rightRopeFilter);
@@ -158,19 +160,19 @@ public class Cave2 {
         rightCraneRollerJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
 
         ropeFactory.setStartX(SCALE * 950);
-        ropeFactory.setStartY(SCALE * 1900);
+        ropeFactory.setStartY(SCALE * 1950);
         ropeFactory.clearChunks();
         ropeFactory.getDrawFilters().clear();
         ropeFactory.getDrawFilters().add(centralRopeFilter);
-        ropeFactory.setDensity(0.001f);
-        for (int i = 0; i < 35; ++i) {
+        ropeFactory.setDensity(0.1f);
+        for (int i = 0; i < 38; ++i) {
             ropeFactory.addChunk((float)Math.PI);
         }
         hangerRope = ropeFactory.create(game);
 
         jointDef.bodyA = environment.getBody();
         jointDef.bodyB = hangerRope.part(0);
-        jointDef.localAnchorA.set(SCALE * 950, SCALE * 1900);
+        jointDef.localAnchorA.set(SCALE * 950, SCALE * 1950);
         jointDef.localAnchorB.set(0, 0);
         hangerJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
 
@@ -243,12 +245,18 @@ public class Cave2 {
 
         @Override
         protected void time(long time) {
-            hangerJoint.m_localAnchor1.y = SCALE * (1900 + 4 * heightHandle.getAngle());
-            float offset = 4 * positionHandle.getAngle();
-            hangerJoint.m_localAnchor1.x = SCALE * (950 + offset);
-            crane.setTransform(new Vec2(SCALE * (950 + offset), SCALE * 1240), 0);
-            leftCraneRollerJoint.m_localAnchor1.x = SCALE * (-160 + offset);
-            rightCraneRollerJoint.m_localAnchor1.x = SCALE * (160 + offset);
+            float h = SCALE * (1950 + 4 * heightHandle.getAngle()) + vertCraneOffset;
+            h = Math.min(SCALE * 2200, Math.max(SCALE * 1260, h));
+            vertCraneOffset = h - SCALE * (1950 + 4 * heightHandle.getAngle());
+            hangerJoint.m_localAnchor1.y = h;
+
+            float pos = SCALE * (950 + 4 * positionHandle.getAngle()) + horzCraneOffset;
+            pos = Math.min(SCALE * 1250, Math.max(SCALE * 550, pos));
+            horzCraneOffset = pos - SCALE * (950 + 4 * positionHandle.getAngle());
+            hangerJoint.m_localAnchor1.x = pos;
+            crane.setTransform(new Vec2(pos, SCALE * 1240), 0);
+            leftCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (-160 - 950);
+            rightCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (160 - 950);
         }
     }
 
@@ -318,6 +326,8 @@ public class Cave2 {
     }
 
     private class WaterTap extends GameObject {
+        private RevoluteJoint handJoint;
+
         public WaterTap() {
             super(game);
         }
@@ -329,13 +339,37 @@ public class Cave2 {
 
         @Override
         protected boolean click() {
-            waterLevelGrowing = true;
+            if (handJoint != null) {
+                game.getRobot().setArmForced(true);
+                game.getRobot().setCarriesObject(false);
+                game.getWorld().destroyJoint(handJoint);
+                handJoint = null;
+                waterLevelGrowing = false;
+                return true;
+            }
+            if (game.getRobot().isCarriesObject()) {
+                return false;
+            }
+            Vec2 pt = new Vec2(SCALE * 175, SCALE * 620);
+            game.getRobot().pickAt(pt.x, pt.y, new Runnable() {
+                @Override public void run() {
+                    connectToHand();
+                }
+            });
             return true;
         }
 
-        @Override
-        protected void release() {
-            waterLevelGrowing = false;
+        private void connectToHand() {
+            RevoluteJointDef jointDef = new RevoluteJointDef();
+            jointDef.bodyA = environment.getBody();
+            jointDef.bodyB = game.getRobot().getHand();
+            jointDef.localAnchorA.x = SCALE * 175;
+            jointDef.localAnchorA.y = SCALE * 620;
+            jointDef.localAnchorB.set(game.getRobot().getHandPickPoint());
+            handJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
+            waterLevelGrowing = true;
+            game.getRobot().setArmForced(false);
+            game.getRobot().setCarriesObject(true);
         }
 
         @Override
