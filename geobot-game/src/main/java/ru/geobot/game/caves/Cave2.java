@@ -7,10 +7,7 @@ import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 import org.jbox2d.dynamics.joints.WeldJoint;
 import org.jbox2d.dynamics.joints.WeldJointDef;
-import ru.geobot.Game;
-import ru.geobot.GameAdapter;
-import ru.geobot.GameObject;
-import ru.geobot.GameObjectAdapter;
+import ru.geobot.*;
 import ru.geobot.game.GeobotGame;
 import ru.geobot.game.objects.*;
 import ru.geobot.graphics.Graphics;
@@ -30,6 +27,7 @@ public class Cave2 {
     private SafeResources safeResources;
     private GunResources gunResources;
     private NippersResources nippersResources;
+    private BombResources bombResources;
     private Environment environment;
     private Body leftCraneRoller;
     private Body rightCraneRoller;
@@ -51,6 +49,9 @@ public class Cave2 {
     private WeldJoint gunJoint;
     private GunClickSensor gunClickSensor;
     private BodyObject nippers;
+    private WeldJoint nippersJoint;
+    private BodyObject bomb;
+    private boolean bombInactive;
     private float waterLevel = 0;
     private boolean waterLevelGrowing;
     private float vertCraneOffset;
@@ -65,6 +66,7 @@ public class Cave2 {
         safeResources = game.loadResources(SafeResources.class);
         gunResources = game.loadResources(GunResources.class);
         nippersResources = game.loadResources(NippersResources.class);
+        bombResources = game.loadResources(BombResources.class);
         environment = new Environment(game);
         initControlPanel();
         game.setScale(1.1f);
@@ -78,6 +80,7 @@ public class Cave2 {
         new WaterTap();
         initGun();
         initNippers();
+        initBomb();
     }
 
     private void initControlPanel() {
@@ -448,18 +451,97 @@ public class Cave2 {
         builder.getFixtureDef().restitution = 0.5f;
         builder.setRealHeight(SCALE * 60);
         nippers = builder.build();
-        nippers.addListener(nippersLevelListener);
+        nippers.addListener(nippersListener);
     }
 
-    private GameObjectAdapter nippersLevelListener = new GameObjectAdapter() {
-        @Override public void time(long time) {
+    private GameObjectAdapter nippersListener = new GameObjectAdapter() {
+        @Override
+        public void time(long time) {
             if (!nippersDropped && gunJoint != null && nippers.getBody().getPosition().y < SCALE * 700) {
                 dropGun();
-                nippers.removeListener(nippersLevelListener);
                 nippersDropped = true;
             }
         };
+
+        @Override
+        public boolean click() {
+            if (nippersJoint == null) {
+                return beginPickNippers();
+            } else {
+                dropNippers();
+                return true;
+            }
+        };
     };
+
+    private boolean beginPickNippers() {
+        Robot robot = game.getRobot();
+        if (robot.isCarriesObject()) {
+            return false;
+        }
+        Vec2 pt = new Vec2(SCALE * 140, SCALE * 56);
+        pt = nippers.getBody().getWorldPoint(pt);
+        robot.pickAt(pt.x, pt.y, new Runnable() {
+            @Override public void run() {
+                pickNippers();
+            }
+        });
+        return true;
+    }
+
+    private void pickNippers() {
+        Robot robot = game.getRobot();
+        WeldJointDef jointDef = new WeldJointDef();
+        jointDef.bodyA = nippers.getBody();
+        jointDef.bodyB = robot.getHand();
+        jointDef.localAnchorA.set(SCALE * 140, SCALE * 3);
+        jointDef.localAnchorB.set(robot.getHandPickPoint());
+        jointDef.referenceAngle = -(float)Math.PI;
+        nippersJoint = (WeldJoint)game.getWorld().createJoint(jointDef);
+    }
+
+    private void dropNippers() {
+        game.getWorld().destroyJoint(nippersJoint);
+        nippersJoint = null;
+    }
+
+    private void initBomb() {
+        BodyObjectBuilder builder = new BodyObjectBuilder(game);
+        builder.setImage(bombResources.image());
+        builder.setShape(bombResources.shape());
+        builder.getBodyDef().type = BodyType.DYNAMIC;
+        builder.getBodyDef().position.set(SCALE * 1900, SCALE * 593);
+        builder.getFixtureDef().filter.categoryBits = 8;
+        builder.getFixtureDef().filter.maskBits = 8;
+        builder.getFixtureDef().density = 0.01f;
+        builder.setRealHeight(SCALE * 60);
+        bomb = builder.build();
+        bomb.addListener(new GameObjectAdapter() {
+            @Override public boolean click() {
+                if (nippersJoint != null && !bombInactive) {
+                    deactivateBomb();
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+
+    private void deactivateBomb() {
+        Vec2 pt = new Vec2(SCALE * 121, SCALE * 56);
+        pt = bomb.getBody().getWorldPoint(pt);
+        Robot robot = game.getRobot();
+        Vec2 dir = pt.sub(robot.getShoulderPoint());
+        dir.normalize();
+        dir.mulLocal(SCALE * 140);
+        pt.subLocal(dir);
+        robot.pickAt(pt.x, pt.y, new Runnable() {
+            @Override public void run() {
+                bombInactive = true;
+                bomb.setImage(bombResources.inactiveImage());
+            }
+        });
+    }
 
     private class Crane extends GameObject {
         public Crane() {

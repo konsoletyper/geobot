@@ -989,6 +989,10 @@ public class Robot extends GameObject {
         return armParts[armParts.length - 1];
     }
 
+    public Vec2 getShoulderPoint() {
+        return armParts[0].getWorldPoint(new Vec2(0, 0));
+    }
+
     public Vec2 getHandPickPoint() {
         return new Vec2(scale(280), 0);
     }
