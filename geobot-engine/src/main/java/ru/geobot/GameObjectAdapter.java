@@ -25,4 +25,8 @@ public abstract class GameObjectAdapter implements GameObjectListener {
     @Override
     public void keyUp(Key key) {
     }
+
+    @Override
+    public void time(long time) {
+    }
 }

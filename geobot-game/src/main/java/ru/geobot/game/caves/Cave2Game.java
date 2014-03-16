@@ -15,7 +15,7 @@ public class Cave2Game extends GeobotGame {
 
     @Override
     protected Vec2 getInitialRobotLocation() {
-        return new Vec2(0.4f, 3.1f);
+        return new Vec2(0.4f, 2.4f);
     }
 
     @Override

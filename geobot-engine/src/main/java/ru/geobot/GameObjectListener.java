@@ -14,4 +14,6 @@ public interface GameObjectListener {
     void keyDown(Key key);
 
     void keyUp(Key key);
+
+    void time(long time);
 }

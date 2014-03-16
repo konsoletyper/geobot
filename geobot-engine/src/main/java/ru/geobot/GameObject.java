@@ -45,7 +45,7 @@ public class GameObject {
 
     protected void mouseEnter() {
         if (listeners != null) {
-            for (GameObjectListener listener : listeners) {
+            for (GameObjectListener listener : listeners.toArray(new GameObjectListener[0])) {
                 listener.mouseEnter();
             }
         }
@@ -53,7 +53,7 @@ public class GameObject {
 
     protected void mouseLeave() {
         if (listeners != null) {
-            for (GameObjectListener listener : listeners) {
+            for (GameObjectListener listener : listeners.toArray(new GameObjectListener[0])) {
                 listener.mouseLeave();
             }
         }
@@ -76,7 +76,7 @@ public class GameObject {
     protected boolean click() {
         boolean handled = false;
         if (listeners != null) {
-            for (GameObjectListener listener : listeners) {
+            for (GameObjectListener listener : listeners.toArray(new GameObjectListener[0])) {
                 if (listener.click()) {
                     handled = true;
                 }
@@ -85,7 +85,12 @@ public class GameObject {
         return handled;
     }
 
-    protected void time(@SuppressWarnings("unused") long time) {
+    protected void time(long time) {
+        if (listeners != null) {
+            for (GameObjectListener listener : listeners.toArray(new GameObjectListener[0])) {
+                listener.time(time);
+            }
+        }
     }
 
     protected final int getZIndex() {
