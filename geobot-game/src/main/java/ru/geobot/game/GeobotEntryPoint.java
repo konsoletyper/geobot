@@ -105,12 +105,12 @@ public class GeobotEntryPoint implements EntryPoint, GeobotGameManager {
             game.paint(graphics);
         }
 
-        /*if (fadeLevel > 0) {
+        if (fadeLevel > 0) {
             Color color = Color.black();
             color.a = (short)fadeLevel;
             graphics.setColor(color);
             graphics.fillRectangle(0, 0, width, height);
-        }*/
+        }
     }
 
     @Override

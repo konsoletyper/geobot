@@ -33,7 +33,7 @@ public class Starter {
         new ResourcePreloader(component.getResourceReader()).preloadResources();
         GeobotEntryPoint entryPoint = new GeobotEntryPoint();
         entryPoint.setGame(new Cave2Game(entryPoint));
-        component.run(entryPoint);
+        component.run(new GeobotMenu(entryPoint));
         if (debugMode) {
             startInWindow(component);
             component.suspend();
@@ -58,6 +58,12 @@ public class Starter {
             @Override public void run() {
                 window.requestFocusInWindow();
                 component.requestFocus();
+                window.addWindowListener(new WindowAdapter() {
+                    @Override public void windowClosing(WindowEvent e) {
+                        component.interrupt();
+                        window.dispose();
+                    }
+                });
             }
         });
     }

@@ -37,8 +37,7 @@ public class ImageUtil implements Image {
     public void draw(Graphics graphics, float x, float y, float w, float h) {
         AffineTransform transform = graphics.getTransform();
         graphics.translate(x, y);
-        graphics.scale(w / getWidth(), -h / getHeight());
-        graphics.translate(0, -h);
+        graphics.scale(w / getWidth(), h / getHeight());
         draw(graphics);
         graphics.setTransform(transform);
     }
@@ -46,8 +45,7 @@ public class ImageUtil implements Image {
     public void draw(Graphics graphics, float x, float y, float w, float h, float alpha) {
         AffineTransform transform = graphics.getTransform();
         graphics.translate(x, y);
-        graphics.scale(w / getWidth(), -h / getHeight());
-        graphics.translate(0, -h);
+        graphics.scale(w / getWidth(), h / getHeight());
         draw(graphics, alpha);
         graphics.setTransform(transform);
     }

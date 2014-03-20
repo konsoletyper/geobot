@@ -327,7 +327,7 @@ public class Cave1 {
         protected void paint(Graphics graphics) {
             ImageUtil image = new ImageUtil(stoneColumn == null ? caveResources.backgroundWithoutColumn() :
                     caveResources.background());
-            image.draw(graphics, 0, 7.5f, 13.3333f, 7.5f);
+            image.draw(graphics, 0, 7.5f, 13.3333f, -7.5f);
         }
 
         @Override

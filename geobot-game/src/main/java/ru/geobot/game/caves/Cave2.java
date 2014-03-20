@@ -552,14 +552,14 @@ public class Cave2 {
         protected void paint(Graphics graphics) {
             Vec2 pos = leftCraneRoller.getPosition();
             ImageUtil platform = new ImageUtil(craneResources.platform());
-            platform.draw(graphics, pos.x + SCALE * 195, pos.y + SCALE * 63, SCALE * 947, SCALE * 46);
+            platform.draw(graphics, pos.x + SCALE * 195, pos.y + SCALE * 63, SCALE * 947, -SCALE * 46);
 
             pos = crane.getPosition();
             ImageUtil craneImage = new ImageUtil(craneResources.crane());
             graphics.pushTransform();
             graphics.translate(pos.x, pos.y + SCALE * 25.5f);
             graphics.rotate(crane.getAngle());
-            craneImage.draw(graphics, -SCALE * 25, SCALE * 25, SCALE * 51, SCALE * 51);
+            craneImage.draw(graphics, -SCALE * 25, SCALE * 25, SCALE * 51, -SCALE * 51);
             graphics.popTransform();
 
             graphics.pushTransform();
@@ -567,19 +567,19 @@ public class Cave2 {
             ImageUtil hangerImage = new ImageUtil(craneResources.hanger());
             graphics.translate(pos.x, pos.y);
             graphics.rotate(hanger.getAngle());
-            hangerImage.draw(graphics, 0, SCALE * 72, SCALE * 53, SCALE * 72);
+            hangerImage.draw(graphics, 0, SCALE * 72, SCALE * 53, -SCALE * 72);
             graphics.popTransform();
 
             graphics.pushTransform();
             graphics.scale(SCALE, SCALE);
             graphics.clip(new Rectangle(514, 0, 233, waterLevel));
             ImageUtil water = new ImageUtil(caveResources.water());
-            water.draw(graphics, 514, 0, 233, 494, 0.4f);
+            water.draw(graphics, 514, 494, 233, -494, 0.4f);
             graphics.popClip();
             ImageUtil patch = new ImageUtil(caveResources.holePatch());
             float alpha = -0.5f + Math.abs(game.getRobot().getPosition().x - 600 * SCALE) / 1.2f;
             alpha = Math.max(0f, Math.min(1f, alpha));
-            patch.draw(graphics, 494, 2, 278, 500, alpha);
+            patch.draw(graphics, 494, 502, 278, -500, alpha);
             graphics.popTransform();
         }
 
@@ -639,12 +639,12 @@ public class Cave2 {
             graphics.pushTransform();
             graphics.scale(SCALE, SCALE);
             ImageUtil image = new ImageUtil(caveResources.background());
-            image.draw(graphics, 0, 0, 2500, 1406);
+            image.draw(graphics, 0, 1406, 2500, -1406);
             ImageUtil hole = new ImageUtil(caveResources.hole());
-            hole.draw(graphics, 514, 0, 233, 494);
+            hole.draw(graphics, 514, 494, 233, -494);
             ControlPanelResources controlPanelRes = game.loadResources(ControlPanelResources.class);
             ImageUtil controlPanel = new ImageUtil(controlPanelRes.panel());
-            controlPanel.draw(graphics, 831, 1406 - 633, 180, 149);
+            controlPanel.draw(graphics, 831, 1406 - 593, 180, -149);
             graphics.popTransform();
         }
 

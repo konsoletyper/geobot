@@ -58,7 +58,7 @@ public class ControlPanelHandle extends GameObject {
         graphics.translate(pos.x, pos.y);
         graphics.scale(Cave2.SCALE, Cave2.SCALE);
         graphics.rotate(body.getAngle());
-        image.draw(graphics, 7, 4, 14, 14);
+        image.draw(graphics, 7, 7, 14, -14);
         graphics.popTransform();
     }
 

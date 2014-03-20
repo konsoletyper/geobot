@@ -768,7 +768,7 @@ public class Robot extends GameObject {
         graphics.rotate(leftWheel.getAngle());
         graphics.scale(SCALE, SCALE);
         graphics.translate(-168f / 2, -170f / 2);
-        leftWheelImage.draw(graphics, 0, 0, 168, 170f);
+        leftWheelImage.draw(graphics, 0, 170, 168, -170f);
 
         graphics.setTransform(transform);
         pos = rightWheel.getWorldCenter();
@@ -776,7 +776,7 @@ public class Robot extends GameObject {
         graphics.rotate(rightWheel.getAngle());
         graphics.scale(SCALE, SCALE);
         graphics.translate(-168f / 2, -170f / 2);
-        rightWheelImage.draw(graphics, 0, 0, 168, 170f);
+        rightWheelImage.draw(graphics, 0, 170, 168, -170f);
 
         graphics.setTransform(transform);
         pos = leftSmallWheel.getPosition();
@@ -784,7 +784,7 @@ public class Robot extends GameObject {
         graphics.rotate(leftSmallWheel.getAngle());
         graphics.scale(SCALE, SCALE);
         graphics.translate(-30, -30);
-        smallLeftWheelImage.draw(graphics, 0, 0, 60, 60);
+        smallLeftWheelImage.draw(graphics, 0, 60, 60, -60);
 
         graphics.setTransform(transform);
         pos = rightSmallWheel.getPosition();
@@ -792,42 +792,42 @@ public class Robot extends GameObject {
         graphics.rotate(rightSmallWheel.getAngle());
         graphics.scale(SCALE, SCALE);
         graphics.translate(-30, -30);
-        smallRightWheelImage.draw(graphics, 0, 0, 60, 60);
+        smallRightWheelImage.draw(graphics, 0, 60, 60, -60);
 
         graphics.setTransform(transform);
         pos = leftAxle.getPosition();
         graphics.translate(pos.x, pos.y);
         graphics.rotate(leftAxle.getAngle() - (float)Math.PI / 2);
         graphics.scale(SCALE, SCALE);
-        axleImage.draw(graphics, -7, 40, 14, 110);
+        axleImage.draw(graphics, -7, 150, 14, -110);
 
         pos = rightAxle.getPosition();
         graphics.setTransform(transform);
         graphics.translate(pos.x, pos.y);
         graphics.rotate(rightAxle.getAngle() - (float)Math.PI / 2);
         graphics.scale(SCALE, SCALE);
-        axleImage.draw(graphics, -7, 40, 14, 110);
+        axleImage.draw(graphics, -7, 150, 14, -110);
 
         pos = leftSmallAxle.getPosition();
         graphics.setTransform(transform);
         graphics.translate(pos.x, pos.y);
         graphics.rotate(leftSmallAxle.getAngle() - (float)Math.PI / 2);
         graphics.scale(SCALE, SCALE);
-        axleImage.draw(graphics, -7, 0, 14, 126);
+        axleImage.draw(graphics, -7, 126, 14, -126);
 
         pos = rightSmallAxle.getPosition();
         graphics.setTransform(transform);
         graphics.translate(pos.x, pos.y);
         graphics.rotate(rightSmallAxle.getAngle() - (float)Math.PI / 2);
         graphics.scale(SCALE, SCALE);
-        axleImage.draw(graphics, -7, 0, 14, 126);
+        axleImage.draw(graphics, -7, 126, 14, -126);
 
         pos = body.getPosition();
         graphics.setTransform(transform);
         graphics.translate(pos.x, pos.y);
         graphics.rotate(body.getAngle());
         graphics.scale(SCALE, SCALE);
-        bodyImage.draw(graphics, 0, -5, 336, 244);
+        bodyImage.draw(graphics, 0, 239, 336, -244);
         switch (currentDirection) {
             case LEFT:
                 drawAntenna(graphics, transform);
@@ -835,14 +835,14 @@ public class Robot extends GameObject {
                 graphics.translate(pos.x, pos.y);
                 graphics.rotate(body.getAngle());
                 graphics.scale(SCALE, SCALE);
-                headLeftImage.draw(graphics, -21, 238, 349, 326);
+                headLeftImage.draw(graphics, -21, 238 + 326, 349, -326);
                 break;
             case RIGHT:
-                headRightImage.draw(graphics, 6, 238, 349, 326);
+                headRightImage.draw(graphics, 6, 238 + 326, 349, -326);
                 drawAntenna(graphics, transform);
                 break;
             case FACE:
-                headFaceImage.draw(graphics, -12, 238, 360, 328);
+                headFaceImage.draw(graphics, -12, 238 + 328, 360, -328);
                 drawAntenna(graphics, transform);
                 break;
         }
@@ -853,7 +853,7 @@ public class Robot extends GameObject {
         graphics.translate(pos.x, pos.y);
         graphics.rotate(leftAxle.getAngle() - (float)Math.PI / 2);
         graphics.scale(SCALE, SCALE);
-        damperImage.draw(graphics, -23f / 2, 0, 23f, 71);
+        damperImage.draw(graphics, -23f / 2, 71, 23f, -71);
 
         pos = new Vec2();
         rightAxleJoint.getAnchorA(pos);
@@ -861,7 +861,7 @@ public class Robot extends GameObject {
         graphics.translate(pos.x, pos.y);
         graphics.rotate(rightAxle.getAngle() - (float)Math.PI / 2);
         graphics.scale(SCALE, SCALE);
-        damperImage.draw(graphics, -23f / 2, 0, 23f, 71);
+        damperImage.draw(graphics, -23f / 2, 71, 23f, -71);
 
         pos = new Vec2();
         leftSmallAxleJoint.getAnchorA(pos);
@@ -869,7 +869,7 @@ public class Robot extends GameObject {
         graphics.translate(pos.x, pos.y);
         graphics.rotate(leftSmallAxle.getAngle() - (float)Math.PI / 2);
         graphics.scale(SCALE, SCALE);
-        damperImage.draw(graphics, -23f / 2, 0, 23f, 71);
+        damperImage.draw(graphics, -23f / 2, 71, 23f, -71);
 
         pos = new Vec2();
         rightSmallAxleJoint.getAnchorA(pos);
@@ -877,7 +877,7 @@ public class Robot extends GameObject {
         graphics.translate(pos.x, pos.y);
         graphics.rotate(rightSmallAxle.getAngle() - (float)Math.PI / 2);
         graphics.scale(SCALE, SCALE);
-        damperImage.draw(graphics, -23f / 2, 0, 23f, 71);
+        damperImage.draw(graphics, -23f / 2, 71, 23f, -71);
 
         graphics.setTransform(transform);
         drawArm(graphics, transform);
@@ -940,7 +940,8 @@ public class Robot extends GameObject {
             graphics.translate(pos.x, pos.y);
             graphics.rotate(part.getAngle() - (float)Math.PI / 2);
             graphics.scale(SCALE, SCALE);
-            partImage.draw(graphics, -partImage.getWidth() / 2, 0, partImage.getWidth(), partImage.getHeight());
+            partImage.draw(graphics, -partImage.getWidth() / 2, partImage.getHeight(), partImage.getWidth(),
+                    -partImage.getHeight());
         }
     }
 
@@ -955,12 +956,12 @@ public class Robot extends GameObject {
             graphics.rotate(armPart.getAngle());
             ImageUtil partImage = armImages[i];
             graphics.scale(SCALE, SCALE);
-            partImage.draw(graphics, 0, -partImage.getHeight() / 2, partImage.getWidth(), partImage.getHeight());
+            partImage.draw(graphics, 0, partImage.getHeight() / 2, partImage.getWidth(), -partImage.getHeight());
         }
 
         ImageUtil armStartImage = new ImageUtil(images.arm1());
-        armStartImage.draw(graphics, -15, -armStartImage.getHeight() / 2, armStartImage.getWidth(),
-                armStartImage.getHeight());
+        armStartImage.draw(graphics, -15, armStartImage.getHeight() / 2, armStartImage.getWidth(),
+                -armStartImage.getHeight());
 
         ImageUtil upperClawImage = new ImageUtil(images.upperClaw());
         ImageUtil lowerClawImage = new ImageUtil(images.lowerClaw());
@@ -973,15 +974,16 @@ public class Robot extends GameObject {
         graphics.translate(armImages[2].getWidth(), 0);
         graphics.pushTransform();
         graphics.rotate(clawsAngle / 2);
-        upperClawImage.draw(graphics, 0, 0, upperClawImage.getWidth(), upperClawImage.getHeight());
+        upperClawImage.draw(graphics, 0, upperClawImage.getHeight(), upperClawImage.getWidth(),
+                -upperClawImage.getHeight());
         graphics.popTransform();
         graphics.pushTransform();
         graphics.rotate(-clawsAngle / 2);
-        lowerClawImage.draw(graphics, 2, -lowerClawImage.getHeight(), lowerClawImage.getWidth(),
-                lowerClawImage.getHeight());
+        lowerClawImage.draw(graphics, 2, 0, lowerClawImage.getWidth(),
+                -lowerClawImage.getHeight());
         graphics.popTransform();
-        clawMountImage.draw(graphics, -clawMountImage.getWidth() / 2f, -clawMountImage.getHeight() / 2,
-                clawMountImage.getWidth(), clawMountImage.getHeight());
+        clawMountImage.draw(graphics, -clawMountImage.getWidth() / 2f, clawMountImage.getHeight() / 2,
+                clawMountImage.getWidth(), -clawMountImage.getHeight());
 
     }
 
