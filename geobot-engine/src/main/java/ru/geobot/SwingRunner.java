@@ -10,6 +10,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import ru.geobot.graphics.Rectangle;
 import ru.geobot.resources.ResourceLoader;
 import ru.geobot.resources.ResourceReader;
@@ -27,6 +28,7 @@ public class SwingRunner extends JComponent {
     private boolean suspended;
     private long timeOffset = System.currentTimeMillis();
     private long suspendTime = timeOffset;
+    private List<Runnable> stopHandlers = new ArrayList<>();
 
     public SwingRunner() {
         addMouseMotionListener(new MouseMotionAdapter() {
@@ -99,6 +101,10 @@ public class SwingRunner extends JComponent {
             }
         });
         setFocusable(true);
+    }
+
+    public void addStopHandler(Runnable handler) {
+        stopHandlers.add(handler);
     }
 
     public void dispatchSizeChange() {
@@ -229,6 +235,13 @@ public class SwingRunner extends JComponent {
             if (interrupted) {
                 entryPoint.interrupt();
             }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    for (Runnable stopHandler : stopHandlers) {
+                        stopHandler.run();
+                    }
+                }
+            });
         }
 
         private void paint(int currentWidth, int currentHeight) {

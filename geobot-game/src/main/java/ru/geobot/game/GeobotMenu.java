@@ -3,6 +3,7 @@ package ru.geobot.game;
 import ru.geobot.EntryPoint;
 import ru.geobot.EntryPointCallback;
 import ru.geobot.Key;
+import ru.geobot.game.ui.MainMenu;
 import ru.geobot.graphics.Graphics;
 import ru.geobot.graphics.ImageUtil;
 import ru.geobot.resources.ResourceReader;
@@ -16,7 +17,8 @@ public class GeobotMenu implements EntryPoint {
     private static int buttonHeight = 111;
     private static int buttonPadding = 20;
     private EntryPoint inner;
-    private boolean displayingMenu;
+    private EntryPoint menu;
+    private boolean displayingMenu = true;
     private long timeOffset;
     private long currentTime;
     private long suspendTime;
@@ -28,8 +30,8 @@ public class GeobotMenu implements EntryPoint {
     private int mouseX;
     private int mouseY;
 
-    public GeobotMenu(EntryPoint inner) {
-        this.inner = inner;
+    public GeobotMenu() {
+        menu = new MainMenu(this);
     }
 
     @Override
@@ -39,7 +41,7 @@ public class GeobotMenu implements EntryPoint {
         if (!displayingMenu) {
             inner.mouseMove(x, y);
         } else {
-
+            menu.mouseMove(x, y);
         }
     }
 
@@ -52,7 +54,7 @@ public class GeobotMenu implements EntryPoint {
                 showMenu();
             }
         } else {
-
+            menu.mouseDown();
         }
     }
 
@@ -63,7 +65,7 @@ public class GeobotMenu implements EntryPoint {
                 inner.mouseUp();
             }
         } else {
-
+            menu.mouseUp();
         }
     }
 
@@ -72,7 +74,7 @@ public class GeobotMenu implements EntryPoint {
         if (!displayingMenu) {
             inner.keyDown(key);
         } else {
-
+            menu.keyDown(key);
         }
     }
 
@@ -81,7 +83,7 @@ public class GeobotMenu implements EntryPoint {
         if (!displayingMenu) {
             inner.keyUp(key);
         } else {
-
+            menu.keyUp(key);
         }
     }
 
@@ -99,6 +101,8 @@ public class GeobotMenu implements EntryPoint {
     public void resize(int width, int height) {
         if (!displayingMenu) {
             inner.resize(width, height);
+        } else {
+            menu.resize(width, height);
         }
         this.width = width;
         this.height = height;
@@ -115,9 +119,7 @@ public class GeobotMenu implements EntryPoint {
             menuButton.draw(graphics, width - buttonWidth - buttonPadding, height - buttonHeight - buttonPadding,
                     buttonWidth, buttonHeight);
         } else {
-            ImageUtil background = new ImageUtil(resources.background());
-            int imageWidth = background.getWidth() * height / background.getHeight();
-            background.draw(graphics, (width - imageWidth) / 2, 0, imageWidth, height);
+            menu.paint(graphics);
         }
     }
 
@@ -129,6 +131,7 @@ public class GeobotMenu implements EntryPoint {
 
     @Override
     public void start(EntryPointCallback callback) {
+        menu.start(callback);
         if (!displayingMenu) {
             inner.start(callback);
         } else {
@@ -140,7 +143,10 @@ public class GeobotMenu implements EntryPoint {
     public void setResourceReader(ResourceReader resourceReader) {
         this.resourceReader = resourceReader;
         resources = resourceReader.getResourceSet(GameResources.class);
-        inner.setResourceReader(resourceReader);
+        if (inner != null) {
+            inner.setResourceReader(resourceReader);
+        }
+        menu.setResourceReader(resourceReader);
     }
 
     @Override
@@ -169,5 +175,14 @@ public class GeobotMenu implements EntryPoint {
         }
         displayingMenu = true;
         suspendTime = currentTime;
+    }
+
+    public void setMenu(EntryPoint menu) {
+        this.menu = menu;
+    }
+
+    public void setInner(EntryPoint inner) {
+        this.inner = inner;
+        inner.setResourceReader(resourceReader);
     }
 }
