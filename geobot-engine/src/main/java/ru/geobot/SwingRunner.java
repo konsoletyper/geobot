@@ -101,6 +101,12 @@ public class SwingRunner extends JComponent {
         setFocusable(true);
     }
 
+    public void dispatchSizeChange() {
+        if (currentExecution != null) {
+            currentExecution.setSize(getWidth(), getHeight());
+        }
+    }
+
     public void stop() {
         if (currentExecution != null) {
             currentExecution.stop();

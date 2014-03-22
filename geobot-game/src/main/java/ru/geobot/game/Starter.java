@@ -20,6 +20,7 @@ import ru.geobot.game.caves.Cave2Game;
 public class Starter {
     private static boolean debugMode;
     private static SwingRunner component;
+    private static ResourcePreloader preloader;
 
     public static void main(String[] args) {
         Settings.maxPolygonVertices = 30;
@@ -30,7 +31,7 @@ public class Starter {
         }
 
         component = new SwingRunner();
-        new ResourcePreloader(component.getResourceReader()).preloadResources();
+        preloader = new ResourcePreloader(component.getResourceReader());
         GeobotEntryPoint entryPoint = new GeobotEntryPoint();
         entryPoint.setGame(new Cave2Game(entryPoint));
         component.run(new GeobotMenu(entryPoint));
@@ -49,11 +50,30 @@ public class Starter {
         window.setSize(600, 400);
         window.setUndecorated(true);
         window.setFocusable(true);
-        window.add(component);
         window.setLayout(new BoxLayout(window.getContentPane(), BoxLayout.PAGE_AXIS));
+        window.add(new LoadProgressComponent());
         graphicsDevice.setFullScreenWindow(window);
         window.setVisible(true);
-        component.resume();
+        new Thread(new Runnable() {
+            @Override public void run() {
+                preloader.preloadResources();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        window.getContentPane().removeAll();
+                        window.invalidate();
+                        window.setLayout(new BoxLayout(window.getContentPane(), BoxLayout.PAGE_AXIS));
+                        window.add(component);
+                        window.revalidate();
+                        window.repaint();
+                        component.revalidate();
+                        component.resume();
+                        component.repaint();
+                        window.requestFocusInWindow();
+                        component.requestFocus();
+                    }
+                });
+            }
+        }).start();
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
                 window.requestFocusInWindow();
@@ -69,6 +89,7 @@ public class Starter {
     }
 
     private static void startInWindow(final SwingRunner component) {
+        preloader.preloadResources();
         final JFrame frame = new JFrame("Geobot");
         frame.setSize(600, 400);
         frame.setFocusable(true);
