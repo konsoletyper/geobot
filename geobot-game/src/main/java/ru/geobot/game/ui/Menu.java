@@ -16,9 +16,9 @@ import ru.geobot.resources.ResourceReader;
 public abstract class Menu implements EntryPoint {
     private List<Button> buttons = new ArrayList<>();
     private Button hoverButton;
-    private Image background;
-    private int screenWidth;
-    private int screenHeight;
+    protected Image background;
+    protected int screenWidth;
+    protected int screenHeight;
 
     protected final void addButton(Button button) {
         buttons.add(button);
@@ -87,7 +87,7 @@ public abstract class Menu implements EntryPoint {
         return (screenWidth - getRealWidth()) / 2;
     }
 
-    private int getRealWidth() {
+    protected int getRealWidth() {
         return background != null ? scale(background.getWidth()) : 0;
     }
 
@@ -95,7 +95,7 @@ public abstract class Menu implements EntryPoint {
         return (screenHeight - getRealHeight()) / 2;
     }
 
-    private int getRealHeight() {
+    protected int getRealHeight() {
         return Math.max(16, screenHeight * 3 / 4);
     }
 

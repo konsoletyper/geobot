@@ -14,6 +14,7 @@ import ru.geobot.game.objects.Robot;
 public abstract class GeobotGame extends Game {
     private GeobotGameManager gameManager;
     private Robot robot;
+    private EntryPointCallback callback;
 
     public GeobotGame(GeobotGameManager gameManager) {
         this.gameManager = gameManager;
@@ -29,6 +30,7 @@ public abstract class GeobotGame extends Game {
                 robot.pointAt(x, y);
             }
         });
+        this.callback = callback;
     }
 
     protected abstract Vec2 getInitialRobotLocation();
@@ -51,5 +53,9 @@ public abstract class GeobotGame extends Game {
 
     public GeobotGameManager getGameManager() {
         return gameManager;
+    }
+
+    public void stop() {
+        callback.stop();
     }
 }

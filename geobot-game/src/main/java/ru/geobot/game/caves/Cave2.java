@@ -763,6 +763,9 @@ public class Cave2 {
         @Override
         protected void time(long time) {
             currentTime = time;
+            if (opened && time >= openStartTime + 2000) {
+                game.stop();
+            }
         }
 
         @Override

@@ -69,4 +69,8 @@ public class MainMenu extends Menu {
         menuScreen.showGame();
         continueButton.setEnabled(true);
     }
+
+    public void disableContinue() {
+        continueButton.setEnabled(false);
+    }
 }

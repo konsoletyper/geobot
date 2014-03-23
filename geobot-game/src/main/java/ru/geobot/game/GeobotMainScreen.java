@@ -3,6 +3,7 @@ package ru.geobot.game;
 import ru.geobot.EntryPoint;
 import ru.geobot.EntryPointCallback;
 import ru.geobot.Key;
+import ru.geobot.game.ui.GameOverMenu;
 import ru.geobot.game.ui.MainMenu;
 import ru.geobot.graphics.Color;
 import ru.geobot.graphics.Graphics;
@@ -19,20 +20,23 @@ public class GeobotMainScreen implements EntryPoint {
     private static int buttonPadding = 20;
     private EntryPoint inner;
     private EntryPoint menu;
+    private MainMenu mainMenu;
+    private GameOverMenu gameOverMenu;
     private boolean displayingMenu = true;
     private long timeOffset;
     private long currentTime;
     private long suspendTime;
     private int width;
     private int height;
-    private EntryPointCallback entryCallback;
     private ResourceReader resourceReader;
     private GameResources resources;
     private int mouseX;
     private int mouseY;
 
     public GeobotMainScreen() {
-        menu = new MainMenu(this);
+        mainMenu = new MainMenu(this);
+        menu = mainMenu;
+        gameOverMenu = new GameOverMenu(mainMenu, this);
     }
 
     @Override
@@ -142,11 +146,11 @@ public class GeobotMainScreen implements EntryPoint {
     @Override
     public void start(EntryPointCallback callback) {
         menu.start(callback);
-        if (!displayingMenu) {
-            inner.start(callback);
-        } else {
-            entryCallback = callback;
-        }
+    }
+
+    private void stopGame() {
+        setMenu(gameOverMenu);
+        showMenu();
     }
 
     @Override
@@ -157,6 +161,7 @@ public class GeobotMainScreen implements EntryPoint {
             inner.setResourceReader(resourceReader);
         }
         menu.setResourceReader(resourceReader);
+        gameOverMenu.setResourceReader(resourceReader);
     }
 
     @Override
@@ -190,6 +195,10 @@ public class GeobotMainScreen implements EntryPoint {
         this.inner = inner;
         inner.setResourceReader(resourceReader);
         inner.resize(width, height);
-        inner.start(entryCallback);
+        inner.start(new EntryPointCallback() {
+            @Override public void stop() {
+                stopGame();
+            }
+        });
     }
 }
