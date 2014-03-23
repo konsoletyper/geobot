@@ -4,6 +4,7 @@ import ru.geobot.EntryPoint;
 import ru.geobot.EntryPointCallback;
 import ru.geobot.Key;
 import ru.geobot.game.ui.MainMenu;
+import ru.geobot.graphics.Color;
 import ru.geobot.graphics.Graphics;
 import ru.geobot.graphics.ImageUtil;
 import ru.geobot.resources.ResourceReader;
@@ -91,7 +92,7 @@ public class GeobotMainScreen implements EntryPoint {
     public boolean idle(long time) {
         currentTime = time;
         if (!displayingMenu) {
-            return inner.idle(time + timeOffset);
+            return inner.idle(time - timeOffset);
         } else {
             return false;
         }
@@ -119,6 +120,15 @@ public class GeobotMainScreen implements EntryPoint {
             menuButton.draw(graphics, width - buttonWidth - buttonPadding, height - buttonHeight - buttonPadding,
                     buttonWidth, buttonHeight);
         } else {
+            if (inner != null) {
+                graphics.pushTransform();
+                inner.paint(graphics);
+                graphics.popTransform();
+                Color hazeColor = Color.black();
+                hazeColor.a = 196;
+                graphics.setColor(hazeColor);
+                graphics.fillRectangle(0, 0, width, height);
+            }
             menu.paint(graphics);
         }
     }
@@ -160,12 +170,6 @@ public class GeobotMainScreen implements EntryPoint {
         }
         displayingMenu = false;
         timeOffset += currentTime - suspendTime;
-        if (entryCallback != null) {
-            inner.setResourceReader(resourceReader);
-            inner.start(entryCallback);
-            inner.resize(width, height);
-            entryCallback = null;
-        }
         inner.resize(width, height);
     }
 
@@ -186,5 +190,6 @@ public class GeobotMainScreen implements EntryPoint {
         this.inner = inner;
         inner.setResourceReader(resourceReader);
         inner.resize(width, height);
+        inner.start(entryCallback);
     }
 }

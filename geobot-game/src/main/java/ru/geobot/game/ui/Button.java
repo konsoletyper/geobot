@@ -16,6 +16,7 @@ public class Button {
     private Image hoverImage;
     private boolean hover;
     private Runnable clickHandler;
+    private boolean enabled = true;
 
     public Button(int left, int top, int right, int bottom, Image hoverImage) {
         this.left = left;
@@ -45,6 +46,14 @@ public class Button {
         if (clickHandler != null && hover) {
             clickHandler.run();
         }
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     void paint(Graphics graphics) {

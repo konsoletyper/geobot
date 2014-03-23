@@ -14,6 +14,7 @@ public class MainMenu extends Menu {
     private GeobotMainScreen menuScreen;
     private ControlsMenu controlsMenu;
     private EntryPointCallback callback;
+    private Button continueButton;
 
     public MainMenu(GeobotMainScreen menuScreen) {
         this.menuScreen = menuScreen;
@@ -31,7 +32,8 @@ public class MainMenu extends Menu {
             }
         });
         addButton(startButton);
-        Button continueButton = new Button(182, 344, resources.continueButton());
+        continueButton = new Button(182, 344, resources.continueButton());
+        continueButton.setEnabled(false);
         continueButton.setClickHandler(new Runnable() {
             @Override public void run() {
                 menuScreen.showGame();
@@ -65,5 +67,6 @@ public class MainMenu extends Menu {
         entryPoint.setGame(new Cave2Game(entryPoint));
         menuScreen.setInner(entryPoint);
         menuScreen.showGame();
+        continueButton.setEnabled(true);
     }
 }

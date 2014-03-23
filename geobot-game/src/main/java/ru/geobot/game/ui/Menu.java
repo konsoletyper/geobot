@@ -34,6 +34,9 @@ public abstract class Menu implements EntryPoint {
         y = unscale(y - getY());
         Button newHoverButton = null;
         for (Button button : buttons) {
+            if (!button.isEnabled()) {
+                continue;
+            }
             if (x >= button.left && x < button.right && y >= button.top && y < button.bottom) {
                 newHoverButton = button;
                 break;
