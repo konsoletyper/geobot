@@ -2,7 +2,7 @@ package ru.geobot.game.ui;
 
 import ru.geobot.EntryPointCallback;
 import ru.geobot.game.GeobotEntryPoint;
-import ru.geobot.game.GeobotMenu;
+import ru.geobot.game.GeobotMainScreen;
 import ru.geobot.game.caves.Cave2Game;
 import ru.geobot.resources.ResourceReader;
 
@@ -11,11 +11,13 @@ import ru.geobot.resources.ResourceReader;
  * @author Alexey Andreev <konsoletyper@gmail.com>
  */
 public class MainMenu extends Menu {
-    private GeobotMenu menuScreen;
+    private GeobotMainScreen menuScreen;
+    private ControlsMenu controlsMenu;
     private EntryPointCallback callback;
 
-    public MainMenu(GeobotMenu menuScreen) {
+    public MainMenu(GeobotMainScreen menuScreen) {
         this.menuScreen = menuScreen;
+        controlsMenu = new ControlsMenu(this, menuScreen);
     }
 
     @Override
@@ -36,7 +38,13 @@ public class MainMenu extends Menu {
             }
         });
         addButton(continueButton);
-        addButton(new Button(186, 546, resources.controlsButton()));
+        Button controlsButton = new Button(186, 546, resources.controlsButton());
+        controlsButton.setClickHandler(new Runnable() {
+            @Override public void run() {
+                menuScreen.setMenu(controlsMenu);
+            }
+        });
+        addButton(controlsButton);
         Button exitButton = new Button(301, 749, resources.exitButton());
         exitButton.setClickHandler(new Runnable() {
             @Override public void run() {
@@ -44,6 +52,7 @@ public class MainMenu extends Menu {
             }
         });
         addButton(exitButton);
+        controlsMenu.setResourceReader(resourceReader);
     }
 
     @Override

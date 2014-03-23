@@ -29,18 +29,18 @@ public class Cave2 {
     private NippersResources nippersResources;
     private BombResources bombResources;
     private Environment environment;
-    private Body leftCraneRoller;
-    private Body rightCraneRoller;
-    private Rope leftCraneRope;
-    private Rope rightCraneRope;
+    //private Body leftCraneRoller;
+    //private Body rightCraneRoller;
+    //private Rope leftCraneRope;
+    //private Rope rightCraneRope;
     private Body crane;
     private Rope hangerRope;
     private Body hanger;
     private ControlPanelHandle heightHandle;
     private ControlPanelHandle positionHandle;
     private RevoluteJoint hangerJoint;
-    private RevoluteJoint leftCraneRollerJoint;
-    private RevoluteJoint rightCraneRollerJoint;
+    //private RevoluteJoint leftCraneRollerJoint;
+    //private RevoluteJoint rightCraneRollerJoint;
     private Bobbler bobbler;
     private BodyObject secretCode;
     private RevoluteJoint secretCodeJoint;
@@ -101,7 +101,7 @@ public class Cave2 {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyType.STATIC;
         bodyDef.position.set(SCALE * 236, SCALE * 1283);
-        leftCraneRoller = game.getWorld().createBody(bodyDef);
+        //leftCraneRoller = game.getWorld().createBody(bodyDef);
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.filter.categoryBits = 0x100;
         fixtureDef.filter.maskBits = 0x100;
@@ -111,10 +111,10 @@ public class Cave2 {
         PolygonShape box = new PolygonShape();
         box.setAsBox(SCALE * 250, SCALE * 37);
         fixtureDef.shape = box;
-        leftCraneRoller.createFixture(fixtureDef);
+        //leftCraneRoller.createFixture(fixtureDef);
         bodyDef.position.x = SCALE * 1580;
-        rightCraneRoller = game.getWorld().createBody(bodyDef);
-        rightCraneRoller.createFixture(fixtureDef);
+        //rightCraneRoller = game.getWorld().createBody(bodyDef);
+        //rightCraneRoller.createFixture(fixtureDef);
 
         RopeFactory ropeFactory = new RopeFactory();
         ropeFactory.setWidth(SCALE * 2);
@@ -128,7 +128,7 @@ public class Cave2 {
         for (int i = 0; i < 32; ++i) {
             ropeFactory.addChunk((float)Math.PI / 2);
         }
-        leftCraneRope = ropeFactory.create(game);
+        //leftCraneRope = ropeFactory.create(game);
 
         ropeFactory.clearChunks();
         ropeFactory.getDrawFilters().clear();
@@ -137,7 +137,7 @@ public class Cave2 {
             ropeFactory.addChunk((float)Math.PI * 3 / 2);
         }
         ropeFactory.getDrawFilters().add(rightRopeFilter);
-        rightCraneRope = ropeFactory.create(game);
+        //rightCraneRope = ropeFactory.create(game);
 
         bodyDef.type = BodyType.STATIC;
         bodyDef.position.set(SCALE * 950, SCALE * 1240);
@@ -166,15 +166,15 @@ public class Cave2 {
 
         RevoluteJointDef jointDef = new RevoluteJointDef();
         jointDef.bodyA = crane;
-        jointDef.bodyB = leftCraneRope.part(0);
+        //jointDef.bodyB = leftCraneRope.part(0);
         jointDef.localAnchorA.set(SCALE * -30, 25 * SCALE);
-        game.getWorld().createJoint(jointDef);
+        //game.getWorld().createJoint(jointDef);
 
-        jointDef.bodyB = rightCraneRope.part(0);
+        //jointDef.bodyB = rightCraneRope.part(0);
         jointDef.localAnchorA.set(SCALE * 30, 25 * SCALE);
-        game.getWorld().createJoint(jointDef);
+        //game.getWorld().createJoint(jointDef);
 
-        jointDef.bodyA = leftCraneRoller;
+        /*jointDef.bodyA = leftCraneRoller;
         jointDef.bodyB = leftCraneRope.part(leftCraneRope.partCount() - 1);
         jointDef.localAnchorA.set(-160 * SCALE, 42 * SCALE);
         jointDef.localAnchorB.set(0, leftCraneRope.getChunkLength());
@@ -183,7 +183,7 @@ public class Cave2 {
         jointDef.bodyA = rightCraneRoller;
         jointDef.bodyB = rightCraneRope.part(rightCraneRope.partCount() - 1);
         jointDef.localAnchorA.set(160 * SCALE, 42 * SCALE);
-        rightCraneRollerJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
+        rightCraneRollerJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);*/
 
         ropeFactory.setStartX(SCALE * 950);
         ropeFactory.setStartY(SCALE * 1950);
@@ -550,7 +550,7 @@ public class Cave2 {
 
         @Override
         protected void paint(Graphics graphics) {
-            Vec2 pos = leftCraneRoller.getPosition();
+            Vec2 pos = new Vec2(SCALE * 236, SCALE * 1283);
             ImageUtil platform = new ImageUtil(craneResources.platform());
             platform.draw(graphics, pos.x + SCALE * 195, pos.y + SCALE * 63, SCALE * 947, -SCALE * 46);
 
@@ -595,8 +595,8 @@ public class Cave2 {
             horzCraneOffset = pos - SCALE * (950 + 4 * positionHandle.getAngle());
             hangerJoint.m_localAnchor1.x = pos;
             crane.setTransform(new Vec2(pos, SCALE * 1240), 0);
-            leftCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (-160 - 950);
-            rightCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (160 - 950);
+            //leftCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (-160 - 950);
+            //rightCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (160 - 950);
         }
     }
 

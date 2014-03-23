@@ -248,7 +248,7 @@ public class SwingRunner extends JComponent {
             BufferedImage image = new BufferedImage(currentWidth, currentHeight,
                     BufferedImage.TYPE_INT_RGB);
             Graphics2D awtGraphics = image.createGraphics();
-            awtGraphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            awtGraphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             awtGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             awtGraphics.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
                     RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);

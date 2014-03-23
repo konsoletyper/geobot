@@ -31,7 +31,7 @@ public class Starter {
 
         component = new SwingRunner();
         preloader = new ResourcePreloader(component.getResourceReader());
-        component.run(new GeobotMenu());
+        component.run(new GeobotMainScreen());
         if (debugMode) {
             startInWindow(component);
             component.suspend();

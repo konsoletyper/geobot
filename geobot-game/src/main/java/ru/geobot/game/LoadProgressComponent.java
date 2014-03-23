@@ -36,7 +36,7 @@ public class LoadProgressComponent extends JComponent {
     public void paint(Graphics g) {
         Graphics2D gfx = (Graphics2D)g;
         gfx.setColor(Color.black);
-        gfx.clearRect(0, 0, getWidth(), getHeight());
+        gfx.fillRect(0, 0, getWidth(), getHeight());
         BufferedImage image = getWidth() > 540 ? startScreen : smallStartScreen;
         AffineTransform transform = new AffineTransform();
         int width = image.getWidth() * getHeight() / image.getHeight();

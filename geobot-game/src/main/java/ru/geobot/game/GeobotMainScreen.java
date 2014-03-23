@@ -12,7 +12,7 @@ import ru.geobot.resources.ResourceReader;
  *
  * @author Alexey Andreev <konsoletyper@gmail.com>
  */
-public class GeobotMenu implements EntryPoint {
+public class GeobotMainScreen implements EntryPoint {
     private static int buttonWidth = 120;
     private static int buttonHeight = 111;
     private static int buttonPadding = 20;
@@ -30,7 +30,7 @@ public class GeobotMenu implements EntryPoint {
     private int mouseX;
     private int mouseY;
 
-    public GeobotMenu() {
+    public GeobotMainScreen() {
         menu = new MainMenu(this);
     }
 
@@ -179,10 +179,12 @@ public class GeobotMenu implements EntryPoint {
 
     public void setMenu(EntryPoint menu) {
         this.menu = menu;
+        menu.resize(width, height);
     }
 
     public void setInner(EntryPoint inner) {
         this.inner = inner;
         inner.setResourceReader(resourceReader);
+        inner.resize(width, height);
     }
 }
