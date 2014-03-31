@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2013, Daniel Murphy
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 	* Redistributions of source code must retain the above copyright notice,
@@ -9,7 +9,7 @@
  * 	* Redistributions in binary form must reproduce the above copyright notice,
  * 	  this list of conditions and the following disclaimer in the documentation
  * 	  and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -158,7 +158,7 @@ However, we can compute sin+cos of the same angle fast.
  * @author Daniel Murphy
  */
 public class Island {
-	
+
 	public ContactListener m_listener;
 
 	public Body[] m_bodies;
@@ -167,21 +167,21 @@ public class Island {
 
 	public Position[] m_positions;
 	public Velocity[] m_velocities;
-	
+
 	public int m_bodyCount;
 	public int m_jointCount;
 	public int m_contactCount;
-	
+
 	public int m_bodyCapacity;
 	public int m_contactCapacity;
 	public int m_jointCapacity;
-	
+
 	public int m_positionIterationCount;
-	
+
 	public Island(){
-		
+
 	}
-	
+
 	public void init(int bodyCapacity, int contactCapacity, int jointCapacity, ContactListener listener){
 		m_bodyCapacity = bodyCapacity;
 		m_contactCapacity = contactCapacity;
@@ -189,19 +189,19 @@ public class Island {
 		m_bodyCount = 0;
 		m_contactCount = 0;
 		m_jointCount = 0;
-		
+
 		m_listener = listener;
-		
+
 		if(m_bodies == null || m_bodyCapacity > m_bodies.length){
 			m_bodies = new Body[m_bodyCapacity];
 		}
 		if(m_joints == null || m_jointCapacity > m_joints.length){
-			m_joints = new Joint[m_jointCapacity];			
+			m_joints = new Joint[m_jointCapacity];
 		}
 		if(m_contacts == null || m_contactCapacity > m_contacts.length){
 			m_contacts = new Contact[m_contactCapacity];
 		}
-		
+
 		// dynamic array
 		if(m_velocities == null || m_bodyCapacity > m_velocities.length){
 		  final Velocity[] old = m_velocities == null ? new Velocity[0] : m_velocities;
@@ -211,7 +211,7 @@ public class Island {
 				m_velocities[i] = new Velocity();
 			}
 		}
-		
+
 		// dynamic array
 		if(m_positions == null || m_bodyCapacity > m_positions.length){
 		  final Position[] old = m_positions == null ? new Position[0] : m_positions;
@@ -222,16 +222,16 @@ public class Island {
 			}
 		}
 	}
-	
+
 	public void clear(){
 		m_bodyCount = 0;
 		m_contactCount = 0;
 		m_jointCount = 0;
 	}
-	
+
 	private final ContactSolver contactSolver = new ContactSolver();
 	private final Vec2 translation = new Vec2();
-	
+
 	public void solve(TimeStep step, Vec2 gravity, boolean allowSleep){
 		// Integrate velocities and apply damping.
 		for (int i = 0; i < m_bodyCount; ++i){
@@ -240,18 +240,18 @@ public class Island {
 			if (b.getType() != BodyType.DYNAMIC){
 				continue;
 			}
-			
+
 
 			// Integrate velocities.
 			///b.m_linearVelocity += step.dt * (gravity + b.m_invMass * b.m_force);
 //			temp.set(b.m_force).mulLocal(b.m_invMass).addLocal(gravity).mulLocal(step.dt);
 //			b.m_linearVelocity.addLocal(temp);
 //			b.m_angularVelocity += step.dt * b.m_invI * b.m_torque;
-			
+
 			b.m_linearVelocity.x += (b.m_force.x * b.m_invMass + gravity.x)*step.dt;
 			b.m_linearVelocity.y += (b.m_force.y * b.m_invMass + gravity.y)*step.dt;
 			b.m_angularVelocity += step.dt * b.m_invI * b.m_torque;
-			
+
 
 			// Apply damping.
 			// ODE: dv/dt + c * v = 0
@@ -262,13 +262,13 @@ public class Island {
 			// v2 = (1.0f - c * dt) * v1
 //			b.m_linearVelocity.mulLocal(MathUtils.clamp(1.0f - step.dt * b.m_linearDamping, 0.0f, 1.0f));
 //			b.m_angularVelocity *= MathUtils.clamp(1.0f - step.dt * b.m_angularDamping, 0.0f, 1.0f);
-			
-			
+
+
 			float a = (1.0f - step.dt * b.m_linearDamping);
 			float a1 = (0.0f > (a < 1.0f ? a : 1.0f) ? 0.0f : (a < 1.0f ? a : 1.0f));
 			b.m_linearVelocity.x *= a1;
 			b.m_linearVelocity.y *= a1;
-			
+
 			float a2 = (1.0f - step.dt * b.m_angularDamping);
 			float b1 = (a2 < 1.0f ? a2 : 1.0f);
 			b.m_angularVelocity *= 0.0f > b1 ? 0.0f : b1;
@@ -294,7 +294,7 @@ public class Island {
 		// Initialize velocity constraints.
 		contactSolver.init(m_contacts, m_contactCount, step.dtRatio);
 		contactSolver.warmStart();
-		
+
 		for (int i = 0; i < m_jointCount; ++i){
 			m_joints[i].initVelocityConstraints(step);
 		}
@@ -406,25 +406,25 @@ public class Island {
 			}
 		}
 	}
-	
+
 	public void add(Body body){
 		assert(m_bodyCount < m_bodyCapacity);
 		body.m_islandIndex = m_bodyCount;
 		m_bodies[m_bodyCount++] = body;
 	}
-	
+
 	public void add(Contact contact){
 		assert(m_contactCount < m_contactCapacity);
 		m_contacts[m_contactCount++] = contact;
 	}
-	
+
 	public void add(Joint joint){
 		assert(m_jointCount < m_jointCapacity);
 		m_joints[m_jointCount++] = joint;
 	}
-	
+
 	private final ContactImpulse impulse = new ContactImpulse();
-	
+
 	public void report(ContactConstraint[] constraints){
 		if (m_listener == null){
 			return;
@@ -434,7 +434,7 @@ public class Island {
 			Contact c = m_contacts[i];
 
 			ContactConstraint cc = constraints[i];
-			
+
 			for (int j = 0; j < cc.pointCount; ++j){
 				impulse.normalImpulses[j] = cc.points[j].normalImpulse;
 				impulse.tangentImpulses[j] = cc.points[j].tangentImpulse;

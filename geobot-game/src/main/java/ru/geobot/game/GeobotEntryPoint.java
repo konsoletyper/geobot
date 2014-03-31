@@ -21,6 +21,7 @@ public class GeobotEntryPoint implements EntryPoint, GeobotGameManager {
     private int height;
     private ResourceReader resourceReader;
     private boolean started;
+    private EntryPointCallback callback;
 
     @Override
     public void mouseMove(int x, int y) {
@@ -115,6 +116,7 @@ public class GeobotEntryPoint implements EntryPoint, GeobotGameManager {
 
     @Override
     public void start(EntryPointCallback callback) {
+        this.callback = callback;
         if (game != null) {
             game.start(callback);
         }
@@ -155,10 +157,7 @@ public class GeobotEntryPoint implements EntryPoint, GeobotGameManager {
             }
             if (started) {
                 game.resize(width, height);
-                game.start(new EntryPointCallback() {
-                    @Override public void stop() {
-                    }
-                });
+                game.start(callback);
                 game.idle(0);
             }
         }

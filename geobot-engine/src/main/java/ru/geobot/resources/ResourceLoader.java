@@ -156,8 +156,7 @@ public class ResourceLoader {
             }
             BufferedImage nextImage = new BufferedImage(w, h, scaledImage.getType());
             Graphics2D graphics = nextImage.createGraphics();
-            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             graphics.drawRenderedImage(scaledImage, AffineTransform.getScaleInstance(
                     (float)w / scaledImage.getWidth(), (float)h / scaledImage.getHeight()));
             graphics.dispose();

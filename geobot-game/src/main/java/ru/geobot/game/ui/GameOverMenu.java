@@ -23,7 +23,7 @@ public class GameOverMenu extends Menu {
 
     @Override
     protected int getRealHeight() {
-        return Math.max(1, background.getHeight() * screenWidth / getRealWidth());
+        return Math.max(1, background.getHeight() * getRealWidth() / background.getWidth());
     }
 
     @Override
@@ -33,6 +33,7 @@ public class GameOverMenu extends Menu {
         Button exitButton = new Button(94, 94, resources.button());
         exitButton.setClickHandler(new Runnable() {
             @Override public void run() {
+                mainMenu.disableContinue();
                 mainScreen.setMenu(mainMenu);
             }
         });

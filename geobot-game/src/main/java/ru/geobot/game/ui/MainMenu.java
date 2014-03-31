@@ -3,7 +3,7 @@ package ru.geobot.game.ui;
 import ru.geobot.EntryPointCallback;
 import ru.geobot.game.GeobotEntryPoint;
 import ru.geobot.game.GeobotMainScreen;
-import ru.geobot.game.caves.Cave2Game;
+import ru.geobot.game.caves.Cave1Game;
 import ru.geobot.resources.ResourceReader;
 
 /**
@@ -64,7 +64,7 @@ public class MainMenu extends Menu {
 
     private void startGame() {
         GeobotEntryPoint entryPoint = new GeobotEntryPoint();
-        entryPoint.setGame(new Cave2Game(entryPoint));
+        entryPoint.setGame(new Cave1Game(entryPoint));
         menuScreen.setInner(entryPoint);
         menuScreen.showGame();
         continueButton.setEnabled(true);

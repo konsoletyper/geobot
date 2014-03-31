@@ -61,6 +61,7 @@ public class Rope extends GameObject {
         for (int i = 0; i < parts.length; ++i) {
             partDef.angle = factory.angles.get(i);
             parts[i] = getWorld().createBody(partDef);
+            parts[i].setUserData("rope");
             endShape.m_p.y = 0;
             partFixtureDef.shape = endShape;
             parts[i].createFixture(partFixtureDef);

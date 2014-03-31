@@ -61,12 +61,17 @@ abstract class ClassPathScanner {
 
     private void scanJar(String path) throws IOException {
         try (JarInputStream input = new JarInputStream(new FileInputStream(path))) {
-            ZipEntry entry = input.getNextEntry();
-            if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
-                ClassReader classReader = new ClassReader(input);
-                classReader.accept(getVisitor(), 0);
+            while (true) {
+                ZipEntry entry = input.getNextEntry();
+                if (entry == null) {
+                    break;
+                }
+                if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
+                    ClassReader classReader = new ClassReader(input);
+                    classReader.accept(getVisitor(), 0);
+                }
+                input.closeEntry();
             }
-            input.closeEntry();
         }
     }
 

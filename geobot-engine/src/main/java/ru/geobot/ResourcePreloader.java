@@ -15,7 +15,6 @@ public class ResourcePreloader {
     private ResourceReader loader;
 
     public ResourcePreloader(ResourceReader loader) {
-        super();
         this.loader = loader;
     }
 

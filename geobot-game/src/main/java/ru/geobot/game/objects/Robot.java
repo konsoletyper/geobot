@@ -444,11 +444,11 @@ public class Robot extends GameObject {
     }
 
     private void destroyAntenna() {
-        for (Body body : antenna) {
-            getWorld().destroyBody(body);
-        }
         for (Joint joint : antennaJoints) {
             getWorld().destroyJoint(joint);
+        }
+        for (Body body : antenna) {
+            getWorld().destroyBody(body);
         }
     }
 
@@ -984,7 +984,6 @@ public class Robot extends GameObject {
         graphics.popTransform();
         clawMountImage.draw(graphics, -clawMountImage.getWidth() / 2f, clawMountImage.getHeight() / 2,
                 clawMountImage.getWidth(), -clawMountImage.getHeight());
-
     }
 
     public Body getHand() {
