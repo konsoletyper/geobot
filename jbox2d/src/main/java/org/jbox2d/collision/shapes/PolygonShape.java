@@ -72,18 +72,13 @@ public class PolygonShape extends Shape {
 	 * The vertices of the shape. Note: use getVertexCount(), not
 	 * m_vertices.length, to get number of active vertices.
 	 */
-	public final Vec2 m_vertices[];
+	public Vec2 m_vertices[];
 
 	/**
 	 * The normals of the shape. Note: use getVertexCount(), not
 	 * m_normals.length, to get number of active normals.
 	 */
-	public final Vec2 m_normals[];
-
-	/**
-	 * Number of active vertices in the shape.
-	 */
-	public int m_vertexCount;
+	public Vec2 m_normals[];
 
 	// pooling
 	private final Vec2 pool1 = new Vec2();
@@ -97,12 +92,11 @@ public class PolygonShape extends Shape {
 	public PolygonShape() {
 		m_type = ShapeType.POLYGON;
 
-		m_vertexCount = 0;
-		m_vertices = new Vec2[Settings.maxPolygonVertices];
+		m_vertices = new Vec2[0];
 		for (int i = 0; i < m_vertices.length; i++) {
 			m_vertices[i] = new Vec2();
 		}
-		m_normals = new Vec2[Settings.maxPolygonVertices];
+		m_normals = new Vec2[0];
 		for (int i = 0; i < m_normals.length; i++) {
 			m_normals[i] = new Vec2();
 		}
@@ -113,13 +107,14 @@ public class PolygonShape extends Shape {
 	@Override
     public final Shape clone() {
 		PolygonShape shape = new PolygonShape();
+		shape.m_vertices = new Vec2[m_vertices.length];
+		shape.m_normals = new Vec2[m_normals.length];
 		shape.m_centroid.set(this.m_centroid);
-		for (int i = 0; i < shape.m_normals.length; i++) {
-			shape.m_normals[i].set(m_normals[i]);
-			shape.m_vertices[i].set(m_vertices[i]);
+		for (int i = 0; i < shape.m_vertices.length; ++i) {
+		    shape.m_vertices[i] = new Vec2(m_vertices[i]);
+		    shape.m_normals[i] = new Vec2(m_normals[i]);
 		}
 		shape.m_radius = this.m_radius;
-		shape.m_vertexCount = this.m_vertexCount;
 		return shape;
 	}
 
@@ -132,7 +127,7 @@ public class PolygonShape extends Shape {
 	public final int getSupport(final Vec2 d) {
 		int bestIndex = 0;
 		float bestValue = Vec2.dot(m_vertices[0], d);
-		for (int i = 1; i < m_vertexCount; i++) {
+		for (int i = 1; i < m_vertices.length; i++) {
 			float value = Vec2.dot(m_vertices[i], d);
 			if (value > bestValue) {
 				bestIndex = i;
@@ -151,7 +146,7 @@ public class PolygonShape extends Shape {
 	public final Vec2 getSupportVertex(final Vec2 d) {
 		int bestIndex = 0;
 		float bestValue = Vec2.dot(m_vertices[0], d);
-		for (int i = 1; i < m_vertexCount; i++) {
+		for (int i = 1; i < m_vertices.length; i++) {
 			float value = Vec2.dot(m_vertices[i], d);
 			if (value > bestValue) {
 				bestIndex = i;
@@ -166,26 +161,25 @@ public class PolygonShape extends Shape {
 	 * assumed that the exterior is the the right of each edge.
 	 */
 	public final void set(final Vec2[] vertices, final int count) {
-		assert (2 <= count && count <= Settings.maxPolygonVertices);
-		m_vertexCount = count;
+		assert 2 <= count;
 
 		// Copy vertices.
-		for (int i = 0; i < m_vertexCount; ++i) {
-			if (m_vertices[i] == null) {
-				m_vertices[i] = new Vec2();
-			}
-			m_vertices[i].set(vertices[i]);
+		m_vertices = new Vec2[count];
+		for (int i = 0; i < count; ++i) {
+			m_vertices[i] = new Vec2(vertices[i]);
 		}
 
 		final Vec2 edge = pool1;
 
 		// Compute normals. Ensure the edges have non-zero length.
-		for (int i = 0; i < m_vertexCount; ++i) {
+		m_normals = new Vec2[count];
+		for (int i = 0; i < count; ++i) {
 			final int i1 = i;
-			final int i2 = i + 1 < m_vertexCount ? i + 1 : 0;
+			final int i2 = i + 1 < count ? i + 1 : 0;
 			edge.set(m_vertices[i2]).subLocal(m_vertices[i1]);
 
-			assert (edge.lengthSquared() > Settings.EPSILON * Settings.EPSILON);
+			assert edge.lengthSquared() > Settings.EPSILON * Settings.EPSILON;
+			m_normals[i] = new Vec2();
 			Vec2.crossToOut(edge, 1f, m_normals[i]);
 			m_normals[i].normalize();
 		}
@@ -196,12 +190,12 @@ public class PolygonShape extends Shape {
 
 			// Ensure the polygon is convex and the interior
 			// is to the left of each edge.
-			for (int i = 0; i < m_vertexCount; ++i) {
+			for (int i = 0; i < count; ++i) {
 				final int i1 = i;
-				final int i2 = i + 1 < m_vertexCount ? i + 1 : 0;
+				final int i2 = i + 1 < count ? i + 1 : 0;
 				edge.set(m_vertices[i2]).subLocal(m_vertices[i1]);
 
-				for (int j = 0; j < m_vertexCount; ++j) {
+				for (int j = 0; j < count; ++j) {
 					// Don't check vertices on the current edge.
 					if (j == i1 || j == i2) {
 						continue;
@@ -218,7 +212,7 @@ public class PolygonShape extends Shape {
 		}
 
 		// Compute the polygon centroid.
-		computeCentroidToOut(m_vertices, m_vertexCount, m_centroid);
+		computeCentroidToOut(m_vertices, count, m_centroid);
 	}
 
 	/**
@@ -230,15 +224,16 @@ public class PolygonShape extends Shape {
 	 *            the half-height.
 	 */
 	public final void setAsBox(final float hx, final float hy) {
-		m_vertexCount = 4;
-		m_vertices[0].set(-hx, -hy);
-		m_vertices[1].set(hx, -hy);
-		m_vertices[2].set(hx, hy);
-		m_vertices[3].set(-hx, hy);
-		m_normals[0].set(0.0f, -1.0f);
-		m_normals[1].set(1.0f, 0.0f);
-		m_normals[2].set(0.0f, 1.0f);
-		m_normals[3].set(-1.0f, 0.0f);
+		m_vertices = new Vec2[4];
+		m_normals = new Vec2[4];
+		m_vertices[0] = new Vec2(-hx, -hy);
+		m_vertices[1] = new Vec2(hx, -hy);
+		m_vertices[2] = new Vec2(hx, hy);
+		m_vertices[3] = new Vec2(-hx, hy);
+		m_normals[0] = new Vec2(0.0f, -1.0f);
+		m_normals[1] = new Vec2(1.0f, 0.0f);
+		m_normals[2] = new Vec2(0.0f, 1.0f);
+		m_normals[3] = new Vec2(-1.0f, 0.0f);
 		m_centroid.setZero();
 	}
 
@@ -256,15 +251,16 @@ public class PolygonShape extends Shape {
 	 */
 	public final void setAsBox(final float hx, final float hy,
 			final Vec2 center, final float angle) {
-		m_vertexCount = 4;
-		m_vertices[0].set(-hx, -hy);
-		m_vertices[1].set(hx, -hy);
-		m_vertices[2].set(hx, hy);
-		m_vertices[3].set(-hx, hy);
-		m_normals[0].set(0.0f, -1.0f);
-		m_normals[1].set(1.0f, 0.0f);
-		m_normals[2].set(0.0f, 1.0f);
-		m_normals[3].set(-1.0f, 0.0f);
+		m_vertices = new Vec2[4];
+		m_normals = new Vec2[4];
+		m_vertices[0] = new Vec2(-hx, -hy);
+		m_vertices[1] = new Vec2(hx, -hy);
+		m_vertices[2] = new Vec2(hx, hy);
+		m_vertices[3] = new Vec2(-hx, hy);
+		m_normals[0] = new Vec2(0.0f, -1.0f);
+		m_normals[1] = new Vec2(1.0f, 0.0f);
+		m_normals[2] = new Vec2(0.0f, 1.0f);
+		m_normals[3] = new Vec2(-1.0f, 0.0f);
 		m_centroid.set(center);
 
 		final Transform xf = poolt1;
@@ -272,7 +268,7 @@ public class PolygonShape extends Shape {
 		xf.R.set(angle);
 
 		// Transform vertices and normals.
-		for (int i = 0; i < m_vertexCount; ++i) {
+		for (int i = 0; i < 4; ++i) {
 			Transform.mulToOut(xf, m_vertices[i], m_vertices[i]);
 			Mat22.mulToOut(xf.R, m_normals[i], m_normals[i]);
 		}
@@ -285,16 +281,17 @@ public class PolygonShape extends Shape {
 	 * @param v2
 	 */
 	public final void setAsEdge(final Vec2 v1, final Vec2 v2) {
-		m_vertexCount = 2;
-		m_vertices[0].set(v1);
-		m_vertices[1].set(v2);
+	    m_vertices = new Vec2[2];
+        m_normals = new Vec2[2];
+		m_vertices[0] = new Vec2(v1);
+		m_vertices[1] = new Vec2(v2);
 		m_centroid.set(v1).addLocal(v2).mulLocal(0.5f);
 		// = 0.5f * (v1 + v2);
-		m_normals[0].set(v2).subLocal(v1);
+		m_normals[0] = new Vec2(v2).subLocal(v1);
 		Vec2.crossToOut(m_normals[0], 1f, m_normals[0]);
 		// m_normals[0] = Cross(v2 - v1, 1.0f);
 		m_normals[0].normalize();
-		m_normals[1].set(m_normals[0]).negateLocal();
+		m_normals[1] = new Vec2(m_normals[0]).negateLocal();
 	}
 
 	/**
@@ -311,7 +308,7 @@ public class PolygonShape extends Shape {
 		if (m_debug) {
 			System.out.println("--testPoint debug--");
 			System.out.println("Vertices: ");
-			for (int i = 0; i < m_vertexCount; ++i) {
+			for (int i = 0; i < m_vertices.length; ++i) {
 				System.out.println(m_vertices[i]);
 			}
 			System.out.println("pLocal: " + pLocal);
@@ -319,7 +316,7 @@ public class PolygonShape extends Shape {
 
 		final Vec2 temp = pool2;
 
-		for (int i = 0; i < m_vertexCount; ++i) {
+		for (int i = 0; i < m_vertices.length; ++i) {
 			temp.set(pLocal).subLocal(m_vertices[i]);
 			final float dot = Vec2.dot(m_normals[i], temp);
 			if (dot > 0.0f) {
@@ -343,7 +340,7 @@ public class PolygonShape extends Shape {
 		Transform.mulToOut(argXf, m_vertices[0], lower);
 		upper.set(lower);
 
-		for (int i = 1; i < m_vertexCount; ++i) {
+		for (int i = 1; i < m_vertices.length; ++i) {
 			Transform.mulToOut(argXf, m_vertices[i], v);
 			// Vec2 v = Mul(xf, m_vertices[i]);
 			Vec2.minToOut(lower, v, lower);
@@ -443,7 +440,7 @@ public class PolygonShape extends Shape {
 	 * @return
 	 */
 	public final int getVertexCount() {
-		return m_vertexCount;
+		return m_vertices.length;
 	}
 
 	/**
@@ -453,7 +450,6 @@ public class PolygonShape extends Shape {
 	 * @return
 	 */
 	public final Vec2 getVertex(final int index) {
-		assert (0 <= index && index < m_vertexCount);
 		return m_vertices[index];
 	}
 
@@ -475,7 +471,7 @@ public class PolygonShape extends Shape {
 		Mat22.mulTransToOut(argXf.R, p2, p2);
 		d.set(p2).subLocal(p1);
 
-		if (m_vertexCount == 2) {
+		if (m_vertices.length == 2) {
 			Vec2 v1 = m_vertices[0];
 			Vec2 v2 = m_vertices[1];
 			Vec2 normal = m_normals[0];
@@ -534,7 +530,7 @@ public class PolygonShape extends Shape {
 
 			int index = -1;
 
-			for (int i = 0; i < m_vertexCount; ++i) {
+			for (int i = 0; i < m_vertices.length; ++i) {
 				// p = p1 + a * d
 				// dot(normal, p - v) = 0
 				// dot(normal, p1 - v) + a * dot(normal, d) = 0
@@ -658,10 +654,8 @@ public class PolygonShape extends Shape {
 		//
 		// The rest of the derivation is handled by computer algebra.
 
-		assert (m_vertexCount >= 2);
-
 		// A line segment has zero mass.
-		if (m_vertexCount == 2) {
+		if (m_vertices.length == 2) {
 			// massData.center = 0.5f * (m_vertices[0] + m_vertices[1]);
 			massData.center.set(m_vertices[0]).addLocal(m_vertices[1])
 					.mulLocal(0.5f);
@@ -685,12 +679,11 @@ public class PolygonShape extends Shape {
 		final Vec2 e1 = pool3;
 		final Vec2 e2 = pool4;
 
-		for (int i = 0; i < m_vertexCount; ++i) {
+		for (int i = 0; i < m_vertices.length; ++i) {
 			// Triangle vertices.
 			final Vec2 p1 = pRef;
 			final Vec2 p2 = m_vertices[i];
-			final Vec2 p3 = i + 1 < m_vertexCount ? m_vertices[i + 1]
-					: m_vertices[0];
+			final Vec2 p3 = i + 1 < m_vertices.length ? m_vertices[i + 1] : m_vertices[0];
 
 			e1.set(p2);
 			e1.subLocal(p1);

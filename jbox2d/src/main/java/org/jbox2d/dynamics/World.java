@@ -1312,7 +1312,6 @@ public class World {
 
 	private final Vec2 center = new Vec2();
 	private final Vec2 axis = new Vec2();
-	private final Vec2Array tlvertices = new Vec2Array();
 
 	private void drawShape(Fixture fixture, Transform xf, Color3f color) {
 		switch (fixture.getType()) {
@@ -1346,16 +1345,13 @@ public class World {
 
 			case POLYGON : {
 				PolygonShape poly = (PolygonShape) fixture.getShape();
-				int vertexCount = poly.m_vertexCount;
-				assert (vertexCount <= Settings.maxPolygonVertices);
-				Vec2[] vertices = tlvertices.get(Settings.maxPolygonVertices);
+				Vec2[] vertices = new Vec2[poly.getVertexCount()];
 
-				for (int i = 0; i < vertexCount; ++i) {
-					// vertices[i] = Mul(xf, poly.m_vertices[i]);
+				for (int i = 0; i < poly.getVertexCount(); ++i) {
 					Transform.mulToOut(xf, poly.m_vertices[i], vertices[i]);
 				}
 
-				m_debugDraw.drawSolidPolygon(vertices, vertexCount, color);
+				m_debugDraw.drawSolidPolygon(vertices, poly.getVertexCount(), color);
 			}
 				break;
             default:

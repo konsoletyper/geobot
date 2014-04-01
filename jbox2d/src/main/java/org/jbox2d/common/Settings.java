@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2013, Daniel Murphy
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 	* Redistributions of source code must retain the above copyright notice,
@@ -9,7 +9,7 @@
  * 	* Redistributions in binary form must reproduce the above copyright notice,
  * 	  this list of conditions and the following disclaimer in the documentation
  * 	  and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -23,18 +23,18 @@
  ******************************************************************************/
 /*
  * JBox2D - A Java Port of Erin Catto's Box2D
- * 
- * JBox2D homepage: http://jbox2d.sourceforge.net/ 
+ *
+ * JBox2D homepage: http://jbox2d.sourceforge.net/
  * Box2D homepage: http://www.box2d.org
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  * claim that you wrote the original software. If you use this software
  * in a product, an acknowledgment in the product documentation would be
@@ -53,13 +53,13 @@ package org.jbox2d.common;
  * (vertices per shape, pairs, etc.).
  */
 public class Settings {
-	
+
 	/** A "close to zero" float epsilon value for use */
 	public static final float EPSILON = 1.1920928955078125E-7f;
-	
+
 	/** Pi. */
 	public static final float PI = (float) Math.PI;
-	
+
 	// JBox2D specific settings
 	/**
 	 * needs to be final, or will slow down math methods
@@ -101,45 +101,40 @@ public class Settings {
 	 * lerp. Or, run the tests yourself in {@link SinCosTest}.
 	 */
 	public static final boolean SINCOS_LUT_LERP = false;
-	
+
 	// Collision
-	
+
 	/**
 	 * The maximum number of contact points between two convex shapes.
 	 */
 	public static int maxManifoldPoints = 2;
-	
-	/**
-	 * The maximum number of vertices on a convex polygon.
-	 */
-	public static int maxPolygonVertices = 8;
-	
+
 	/**
 	 * This is used to fatten AABBs in the dynamic tree. This allows proxies to
 	 * move by a small amount without triggering a tree adjustment. This is in
 	 * meters.
 	 */
 	public static float aabbExtension = 0.1f;
-	
+
 	/**
 	 * This is used to fatten AABBs in the dynamic tree. This is used to predict
 	 * the future position based on the current displacement.
 	 * This is a dimensionless multiplier.
 	 */
 	public static float aabbMultiplier = 2.0f;
-	
+
 	/**
 	 * A small length used as a collision and constraint tolerance. Usually it
 	 * is chosen to be numerically significant, but visually insignificant.
 	 */
 	public static float linearSlop = 0.005f;
-	
+
 	/**
 	 * A small angle used as a collision and constraint tolerance. Usually it is
 	 * chosen to be numerically significant, but visually insignificant.
 	 */
 	public static float angularSlop = (2.0f / 180.0f * PI);
-	
+
 	/**
 	 * The radius of the polygon/edge shape skin. This should not be modified.
 	 * Making this smaller means polygons will have and insufficient for
@@ -147,75 +142,75 @@ public class Settings {
 	 * collision.
 	 */
 	public static float polygonRadius = (2.0f * linearSlop);
-	
+
 	// Dynamics
-	
+
 	/**
 	 * Maximum number of contacts to be handled to solve a TOI island.
 	 */
 	public static int maxTOIContacts = 32;
-	
+
 	/**
 	 * A velocity threshold for elastic collisions. Any collision with a
 	 * relative linear velocity below this threshold will be treated as
 	 * inelastic.
 	 */
 	public static float velocityThreshold = 1.0f;
-	
+
 	/**
 	 * The maximum linear position correction used when solving constraints.
 	 * This helps to prevent overshoot.
 	 */
 	public static float maxLinearCorrection = 0.2f;
-	
+
 	/**
 	 * The maximum angular position correction used when solving constraints.
 	 * This helps to prevent overshoot.
 	 */
 	public static float maxAngularCorrection = (8.0f / 180.0f * PI);
-	
+
 	/**
 	 * The maximum linear velocity of a body. This limit is very large and is
 	 * used to prevent numerical problems. You shouldn't need to adjust this.
 	 */
 	public static float maxTranslation = 2.0f;
 	public static float maxTranslationSquared = (maxTranslation * maxTranslation);
-	
+
 	/**
 	 * The maximum angular velocity of a body. This limit is very large and is
 	 * used to prevent numerical problems. You shouldn't need to adjust this.
 	 */
 	public static float maxRotation = (0.5f * PI);
 	public static float maxRotationSquared = (maxRotation * maxRotation);
-	
+
 	/**
 	 * This scale factor controls how fast overlap is resolved. Ideally this
 	 * would be 1 so that overlap is removed in one time step. However using
 	 * values close to 1 often lead to overshoot.
 	 */
 	public static float contactBaumgarte = 0.2f;
-	
+
 	// Sleep
-	
+
 	/**
 	 * The time that a body must be still before it will go to sleep.
 	 */
 	public static float timeToSleep = 0.5f;
-	
+
 	/**
 	 * A body cannot sleep if its linear velocity is above this tolerance.
 	 */
 	public static float linearSleepTolerance = 0.01f;
-	
+
 	/**
 	 * A body cannot sleep if its angular velocity is above this tolerance.
 	 */
 	public static float angularSleepTolerance = (2.0f / 180.0f * PI);
-	
+
 	/**
 	 * Friction mixing law. Feel free to customize this.
 	 * TODO djm: add customization
-	 * 
+	 *
 	 * @param friction1
 	 * @param friction2
 	 * @return
@@ -223,11 +218,11 @@ public class Settings {
 	public static final float mixFriction(float friction1, float friction2) {
 		return MathUtils.sqrt(friction1 * friction2);
 	}
-	
+
 	/**
 	 * Restitution mixing law. Feel free to customize this.
 	 * TODO djm: add customization
-	 * 
+	 *
 	 * @param restitution1
 	 * @param restitution2
 	 * @return

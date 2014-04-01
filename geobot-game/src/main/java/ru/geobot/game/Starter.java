@@ -22,7 +22,6 @@ public class Starter {
     private static ResourcePreloader preloader;
 
     public static void main(String[] args) {
-        Settings.maxPolygonVertices = 30;
         if (args.length > 0) {
             if (args[0].equals("debug")) {
                 debugMode = true;
