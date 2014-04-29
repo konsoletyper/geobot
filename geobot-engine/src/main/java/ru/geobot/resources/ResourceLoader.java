@@ -114,17 +114,16 @@ public class ResourceLoader {
                     polygon.add(v);
                 }
                 if (polygon.size() >= 3) {
-                    List<Vertex> triangles = GeometryUtils.triangulate(polygon);
-                    for (int i = 0; i < triangles.size(); i += 3) {
-                        Vertex a = triangles.get(i);
-                        Vertex b = triangles.get(i + 1);
-                        Vertex c = triangles.get(i + 2);
+                    List<List<Vertex>> polys = GeometryUtils.triangulate(polygon);
+                    for (List<Vertex> poly : polys) {
                         PolygonShape shapePrototype = new PolygonShape();
-                        Vec2[] vertices;
-                        if (GeometryUtils.getOrientation(Arrays.asList(a, b, c)) > 0) {
-                            vertices = new Vec2[] { new Vec2(a.x, a.y), new Vec2(b.x, b.y), new Vec2(c.x, c.y) };
-                        } else {
-                            vertices = new Vec2[] { new Vec2(c.x, c.y), new Vec2(b.x, b.y), new Vec2(a.x, a.y) };
+                        Vec2[] vertices = new Vec2[poly.size()];
+                        if (GeometryUtils.getOrientation(poly) < 0) {
+                            Collections.reverse(poly);
+                        }
+                        for (int i = 0; i < vertices.length; ++i) {
+                            Vec2 vec = new Vec2(poly.get(i).x, poly.get(i).y);
+                            vertices[i] = vec;
                         }
                         shapePrototype.set(vertices, vertices.length);
                         shapes.add(shapePrototype);

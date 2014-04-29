@@ -14,20 +14,40 @@ class PolygonNode {
     private boolean ear;
     private PolygonNode next;
     private PolygonNode previous;
+    Edge nextEdge;
+    Edge previousEdge;
 
     private PolygonNode(Vertex vertex) {
         this.vertex = vertex;
     }
 
-    public PolygonNode delete() {
+    public Edge cut() {
         if (next == this) {
             return null;
         }
+        Edge edge = new Edge();
+        edge.next = next.nextEdge;
+        edge.previous = previous.previousEdge;
+        edge.first = previous.vertex;
+        edge.second = next.vertex;
+        Edge cutEdge = new Edge();
+        cutEdge.next = previous.nextEdge;
+        cutEdge.previous = next.previousEdge;
+        cutEdge.first = next.vertex;
+        cutEdge.second = previous.vertex;
+        cutEdge.opposite = edge;
+        edge.opposite = cutEdge;
+        edge.previous.next = edge;
+        edge.next.previous = edge;
+        cutEdge.previous.next = cutEdge;
+        cutEdge.next.previous = cutEdge;
         PolygonNode next = this.next;
         PolygonNode previous = this.previous;
         next.previous = previous;
+        next.previousEdge = edge;
         previous.next = next;
-        return previous;
+        previous.nextEdge = edge;
+        return cutEdge;
     }
 
     public PolygonNode getNext() {
@@ -52,14 +72,24 @@ class PolygonNode {
 
     public static PolygonNode create(List<Vertex> vertices) {
         List<PolygonNode> nodes = new ArrayList<>();
+        List<Edge> edges = new ArrayList<>();
         for (int i = 0; i < vertices.size(); ++i) {
             nodes.add(new PolygonNode(vertices.get(i)));
+            edges.add(new Edge());
         }
         for (int i = 0; i < vertices.size(); ++i) {
             PolygonNode a = nodes.get(i);
             PolygonNode b = nodes.get((i + 1) % vertices.size());
             a.next = b;
             b.previous = a;
+            Edge p = edges.get(i);
+            Edge q = edges.get((i + 1) % vertices.size());
+            p.next = q;
+            q.previous = p;
+            p.first = a.vertex;
+            p.second = b.vertex;
+            a.nextEdge = p;
+            b.previousEdge = p;
         }
         return nodes.get(0);
     }

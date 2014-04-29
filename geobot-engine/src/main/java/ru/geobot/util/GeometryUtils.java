@@ -7,7 +7,7 @@ import java.util.*;
  * @author Alexey Andreev <konsoletyper@gmail.com>
  */
 public class GeometryUtils {
-    public static List<Vertex> triangulate(List<Vertex> vertices) {
+    public static List<List<Vertex>> triangulate(List<Vertex> vertices) {
         int orientation = getOrientation(vertices);
         if (orientation < 0) {
             vertices = new ArrayList<>(vertices);
@@ -26,26 +26,65 @@ public class GeometryUtils {
                 queue.add(node);
             }
         }
-        List<Vertex> result = new ArrayList<>();
+        List<List<Vertex>> result = new ArrayList<>();
 
         int count = vertices.size();
+        List<Edge> edges = new ArrayList<>();
+        List<Edge> outerEdges = new ArrayList<>();
         while (count > 3) {
            PolygonNode node = queue.remove();
            PolygonNode next = node.getNext();
            PolygonNode previous = node.getPrevious();
-           result.add(node.getVertex());
-           result.add(node.getPrevious().getVertex());
-           result.add(node.getNext().getVertex());
-           queue.remove(next);
-           queue.remove(previous);
-           node.delete();
+           if (next.isEar()) {
+               queue.remove(next);
+           }
+           if (previous.isEar()) {
+               queue.remove(previous);
+           }
+           outerEdges.add(node.previousEdge.previous);
+           outerEdges.add(node.nextEdge.next);
+           Edge cutEdge = node.cut();
+           edges.add(cutEdge);
+           edges.add(cutEdge.opposite);
+           outerEdges.add(cutEdge);
+           outerEdges.add(cutEdge.opposite);
            --count;
            updateNodes(queue, next, previous);
         }
-        PolygonNode node = queue.remove();
-        result.add(node.getVertex());
-        result.add(node.getPrevious().getVertex());
-        result.add(node.getNext().getVertex());
+
+        for (Edge edge : edges) {
+            if (edge.isDestroyed() || edge.opposite == null) {
+                continue;
+            }
+            Edge iter = edge.next;
+            List<Vertex> piece = new ArrayList<>();
+            while (iter != edge) {
+                piece.add(iter.first);
+                iter = iter.next;
+            }
+            iter = edge.opposite.next;
+            while (iter != edge.opposite) {
+                piece.add(iter.first);
+                iter = iter.next;
+            }
+            if (isConvex(piece)) {
+                edge.merge();
+            }
+        }
+
+        for (Edge edge : outerEdges) {
+            if (edge.isDestroyed()) {
+                continue;
+            }
+            List<Vertex> piece = new ArrayList<>();
+            Edge iter = edge;
+            do {
+                piece.add(iter.first);
+                iter = iter.next;
+                iter.previous.destroy();
+            } while (iter != edge);
+            result.add(piece);
+        }
 
         return result;
     }
@@ -59,12 +98,31 @@ public class GeometryUtils {
         }
     }
 
+    public static boolean isConvex(List<Vertex> vertices) {
+        int dir = 0;
+        for (int i = 0; i < vertices.size(); ++i) {
+            int j = (i + 1) % vertices.size();
+            int k = (j + 1) % vertices.size();
+            Vertex a = vertices.get(j).subtract(vertices.get(i));
+            Vertex b = vertices.get(k).subtract(vertices.get(j));
+            int nextDir = Integer.signum(a.crossProduct(b));
+            if (nextDir == 0) {
+                continue;
+            }
+            if (dir != 0 && dir != nextDir) {
+                return false;
+            }
+            dir = nextDir;
+        }
+        return true;
+    }
+
     public static int getOrientation(List<Vertex> vertices) {
         int sum = 0;
         for (int i = 0; i < vertices.size(); ++i) {
             int j = (i + 1) % vertices.size();
             sum += vertices.get(i).crossProduct(vertices.get(j));
         }
-        return sum > 0 ? 1 : sum < 0 ? -1 : 0;
+        return Integer.signum(sum);
     }
 }
