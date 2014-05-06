@@ -31,6 +31,9 @@ public class GeometryUtils {
         int count = vertices.size();
         List<Edge> edges = new ArrayList<>();
         List<Edge> outerEdges = new ArrayList<>();
+        for (Edge iter = firstNode.nextEdge; iter.next != firstNode.nextEdge; iter = iter.next) {
+            outerEdges.add(iter);
+        }
         while (count > 3) {
            PolygonNode node = queue.remove();
            PolygonNode next = node.getNext();
@@ -41,16 +44,13 @@ public class GeometryUtils {
            if (previous.isEar()) {
                queue.remove(previous);
            }
-           outerEdges.add(node.previousEdge.previous);
-           outerEdges.add(node.nextEdge.next);
            Edge cutEdge = node.cut();
            edges.add(cutEdge);
            edges.add(cutEdge.opposite);
-           outerEdges.add(cutEdge);
-           outerEdges.add(cutEdge.opposite);
            --count;
            updateNodes(queue, next, previous);
         }
+        outerEdges.addAll(edges);
 
         for (Edge edge : edges) {
             if (edge.isDestroyed() || edge.opposite == null) {
