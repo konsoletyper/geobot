@@ -162,8 +162,8 @@ public class Robot extends GameObject {
         axleJointDef.enableLimit = true;
         axleJointDef.enableMotor = true;
         axleJointDef.referenceAngle = 240f * (float)Math.PI / 180;
-        axleJointDef.localAxis1.x = (float)Math.cos(axleJointDef.referenceAngle);
-        axleJointDef.localAxis1.y = (float)Math.sin(axleJointDef.referenceAngle);
+        axleJointDef.localAxisA.x = (float)Math.cos(axleJointDef.referenceAngle);
+        axleJointDef.localAxisA.y = (float)Math.sin(axleJointDef.referenceAngle);
         leftAxleJoint = (PrismaticJoint)getWorld().createJoint(axleJointDef);
 
         RevoluteJointDef wheelJointDef = new RevoluteJointDef();
@@ -226,8 +226,8 @@ public class Robot extends GameObject {
         axleJointDef.enableLimit = true;
         axleJointDef.enableMotor = true;
         axleJointDef.referenceAngle = -60f * (float)Math.PI / 180;
-        axleJointDef.localAxis1.x = (float)Math.cos(axleJointDef.referenceAngle);
-        axleJointDef.localAxis1.y = (float)Math.sin(axleJointDef.referenceAngle);
+        axleJointDef.localAxisA.x = (float)Math.cos(axleJointDef.referenceAngle);
+        axleJointDef.localAxisA.y = (float)Math.sin(axleJointDef.referenceAngle);
         rightAxleJoint = (PrismaticJoint)getWorld().createJoint(axleJointDef);
 
         RevoluteJointDef wheelJointDef = new RevoluteJointDef();
@@ -290,8 +290,8 @@ public class Robot extends GameObject {
         axleJointDef.enableLimit = true;
         axleJointDef.enableMotor = true;
         axleJointDef.referenceAngle = 270f * (float)Math.PI / 180;
-        axleJointDef.localAxis1.x = (float)Math.cos(axleJointDef.referenceAngle);
-        axleJointDef.localAxis1.y = (float)Math.sin(axleJointDef.referenceAngle);
+        axleJointDef.localAxisA.x = (float)Math.cos(axleJointDef.referenceAngle);
+        axleJointDef.localAxisA.y = (float)Math.sin(axleJointDef.referenceAngle);
         leftSmallAxleJoint = (PrismaticJoint)getWorld().createJoint(axleJointDef);
 
         RevoluteJointDef wheelJointDef = new RevoluteJointDef();
@@ -360,8 +360,8 @@ public class Robot extends GameObject {
         axleJointDef.enableLimit = true;
         axleJointDef.enableMotor = true;
         axleJointDef.referenceAngle = 270f * (float)Math.PI / 180;
-        axleJointDef.localAxis1.x = (float)Math.cos(axleJointDef.referenceAngle);
-        axleJointDef.localAxis1.y = (float)Math.sin(axleJointDef.referenceAngle);
+        axleJointDef.localAxisA.x = (float)Math.cos(axleJointDef.referenceAngle);
+        axleJointDef.localAxisA.y = (float)Math.sin(axleJointDef.referenceAngle);
         rightSmallAxleJoint = (PrismaticJoint)getWorld().createJoint(axleJointDef);
 
         RevoluteJointDef wheelJointDef = new RevoluteJointDef();
@@ -484,8 +484,8 @@ public class Robot extends GameObject {
         for (int i = 0; i < 2; ++i) {
             armJointDef.bodyA = armParts[i];
             armJointDef.bodyB = armParts[i + 1];
-            armJointDef.localAxis1.x = 1;
-            armJointDef.localAxis1.y = 0;
+            armJointDef.localAxisA.x = 1;
+            armJointDef.localAxisA.y = 0;
             armJointDef.lowerTranslation = 0;
             armJointDef.upperTranslation = scale(250);
             armJointDef.enableLimit = true;

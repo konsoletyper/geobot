@@ -52,7 +52,7 @@ public class Game implements EntryPoint {
     public Game() {
         currentSlicedTime = (currentTime / timeSlice) * timeSlice;
         Vec2 gravity = new Vec2(0, -9.8f);
-        world = new World(gravity, false);
+        world = new World(gravity);
         world.setContactListener(new ContactListener() {
             @Override
             public void preSolve(Contact contact, Manifold oldManifold) {

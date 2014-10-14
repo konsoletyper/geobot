@@ -38,7 +38,7 @@ public class Cave2 {
     private Body hanger;
     private ControlPanelHandle heightHandle;
     private ControlPanelHandle positionHandle;
-    private RevoluteJoint hangerJoint;
+    private Body hangerHolder;
     //private RevoluteJoint leftCraneRollerJoint;
     //private RevoluteJoint rightCraneRollerJoint;
     private Bobbler bobbler;
@@ -196,11 +196,17 @@ public class Cave2 {
         }
         hangerRope = ropeFactory.create(game);
 
-        jointDef.bodyA = environment.getBody();
+        BodyDef hangerHolderDef = new BodyDef();
+        hangerHolderDef.type = BodyType.STATIC;
+        hangerHolderDef.position.x = SCALE * 950;
+        hangerHolderDef.position.y = SCALE * 1950;
+        hangerHolder = game.getWorld().createBody(hangerHolderDef);
+
+        jointDef.bodyA = hangerHolder;
         jointDef.bodyB = hangerRope.part(0);
-        jointDef.localAnchorA.set(SCALE * 950, SCALE * 1950);
+        //jointDef.localAnchorA.set(SCALE * 950, SCALE * 1950);
         jointDef.localAnchorB.set(0, 0);
-        hangerJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
+        game.getWorld().createJoint(jointDef);
 
         WeldJointDef weldJointDef = new WeldJointDef();
         weldJointDef.bodyA = hangerRope.part(hangerRope.partCount() - 1);
@@ -588,12 +594,12 @@ public class Cave2 {
             float h = SCALE * (1950 + 4 * heightHandle.getAngle()) + vertCraneOffset;
             h = Math.min(SCALE * 2200, Math.max(SCALE * 1260, h));
             vertCraneOffset = h - SCALE * (1950 + 4 * heightHandle.getAngle());
-            hangerJoint.m_localAnchor1.y = h;
 
             float pos = SCALE * (950 + 4 * positionHandle.getAngle()) + horzCraneOffset;
             pos = Math.min(SCALE * 1250, Math.max(SCALE * 550, pos));
             horzCraneOffset = pos - SCALE * (950 + 4 * positionHandle.getAngle());
-            hangerJoint.m_localAnchor1.x = pos;
+
+            hangerHolder.setTransform(new Vec2(pos, h), 0);
             crane.setTransform(new Vec2(pos, SCALE * 1240), 0);
             //leftCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (-160 - 950);
             //rightCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (160 - 950);

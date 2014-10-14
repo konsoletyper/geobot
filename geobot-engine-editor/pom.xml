@@ -23,7 +23,7 @@
       <version>3.1</version>
     </dependency>
     <dependency>
-      <groupId>ru.geobot</groupId>
+      <groupId>org.jbox2d</groupId>
       <artifactId>jbox2d-library</artifactId>
     </dependency>
     <dependency>

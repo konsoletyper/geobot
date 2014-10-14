@@ -84,10 +84,14 @@ public class BodyObjectBuilder {
             if (shape instanceof PolygonShape) {
                 PolygonShape polygon = (PolygonShape)shape;
                 Vec2[] points = Arrays.copyOf(polygon.getVertices(), polygon.getVertexCount());
-                PolygonShape expandedPolygon = new PolygonShape();
                 Vec2[] expandedPoints = expandPolygon(points, distance);
-                expandedPolygon.set(expandedPoints, expandedPoints.length);
-                shapes.add(expandedPolygon);
+                for (int i = 2; i < expandedPoints.length; ++i) {
+                    PolygonShape expandedPolygon = new PolygonShape();
+                    Vec2[] expandedTriangle = new Vec2[] { expandedPoints[0], expandedPoints[i - 1],
+                           expandedPoints[i] };
+                    expandedPolygon.set(expandedTriangle, expandedTriangle.length);
+                    shapes.add(expandedPolygon);
+                }
             } else if (shape instanceof CircleShape) {
                 CircleShape circle = new CircleShape();
                 CircleShape expandedCircle = new CircleShape();

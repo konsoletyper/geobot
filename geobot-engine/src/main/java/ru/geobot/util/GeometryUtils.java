@@ -1,6 +1,7 @@
 package ru.geobot.util;
 
 import java.util.*;
+import org.jbox2d.common.Settings;
 
 /**
  *
@@ -67,7 +68,7 @@ public class GeometryUtils {
                 piece.add(iter.first);
                 iter = iter.next;
             }
-            if (isConvex(piece)) {
+            if (piece.size() <= Settings.maxPolygonVertices && isConvex(piece)) {
                 edge.merge();
             }
         }
