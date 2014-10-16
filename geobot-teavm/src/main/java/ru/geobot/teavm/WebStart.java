@@ -8,20 +8,16 @@ import org.teavm.dom.events.Event;
 import org.teavm.dom.events.EventListener;
 import org.teavm.dom.events.EventTarget;
 import org.teavm.dom.events.MouseEvent;
-import org.teavm.dom.html.HTMLCanvasElement;
-import org.teavm.dom.html.HTMLDocument;
-import org.teavm.dom.html.HTMLElement;
-import org.teavm.dom.html.HTMLImageElement;
+import org.teavm.dom.html.*;
 import org.teavm.jso.JS;
+import org.teavm.jso.JSObject;
 import ru.geobot.EntryPoint;
 import ru.geobot.EntryPointCallback;
 import ru.geobot.Key;
 import ru.geobot.game.GeobotMainScreen;
 import ru.geobot.graphics.Color;
 import ru.geobot.resources.ResourceReader;
-import ru.geobot.teavm.js.CanvasGlobal;
-import ru.geobot.teavm.js.KeyEvent;
-import ru.geobot.teavm.js.LocatedElement;
+import ru.geobot.teavm.js.*;
 
 /**
  *
@@ -34,8 +30,11 @@ public class WebStart {
     private HTMLCanvasElement canvas = (HTMLCanvasElement)document.getElementById("geobot-canvas");
     private HTMLElement progressBar = document.getElementById("progress-bar");
     private HTMLElement progressBarContent = document.getElementById("progress-bar-content");
+    private HTMLButtonElement fullScreenButton = (HTMLButtonElement)document.getElementById("fullscreen-button");
     private long startTime;
     private boolean stopped;
+    private int defaultWidth = canvas.getWidth();
+    private int defaultHeight = canvas.getHeight();
 
     public WebStart(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
@@ -51,6 +50,13 @@ public class WebStart {
                 context.drawImage(image, (canvas.getWidth() - image.getWidth()) / 2, 0);
             }
         });
+    }
+
+    private boolean isFullScreenAvailable() {
+        FullScreenElement fullScreenCanvas = (FullScreenElement)canvas;
+        return !JS.isUndefined(fullScreenCanvas.getRequestFullscreen()) ||
+                !JS.isUndefined(fullScreenCanvas.getMozRequestFullScreen()) ||
+                !JS.isUndefined(fullScreenCanvas.getWebkitRequestFullscreen());
     }
 
     public void run() {
@@ -74,6 +80,22 @@ public class WebStart {
     }
 
     private void resourcesLoaded() {
+        if (isFullScreenAvailable()) {
+            fullScreenButton.getStyle().setProperty("display", "");
+            fullScreenButton.addEventListener("click", new EventListener() {
+                @Override public void handleEvent(Event evt) {
+                    goToFullScreen();
+                }
+            });
+            EventListener fullScreenEventListener = new EventListener() {
+                @Override public void handleEvent(Event evt) {
+                    refreshFullScreenState();
+                }
+            };
+            canvas.addEventListener("fullscreenchange", fullScreenEventListener);
+            canvas.addEventListener("mozfullscreenchange", fullScreenEventListener);
+            canvas.addEventListener("webkitfullscreenchange", fullScreenEventListener);
+        }
         entryPoint.start(new EntryPointCallback() {
             @Override public void stop() {
                 stopped = true;
@@ -83,6 +105,38 @@ public class WebStart {
         });
         entryPoint.resize(canvas.getWidth(), canvas.getHeight());
         step();
+    }
+
+    private void goToFullScreen() {
+        FullScreenElement fullScreenCanvas = (FullScreenElement)canvas;
+        if (!JS.isUndefined(fullScreenCanvas.getRequestFullscreen())) {
+            fullScreenCanvas.requestFullscreen();
+        } else if (!JS.isUndefined(fullScreenCanvas.getMozRequestFullScreen())) {
+            fullScreenCanvas.mozRequestFullScreen();
+        } else if (!JS.isUndefined(fullScreenCanvas.getWebkitRequestFullscreen())) {
+            fullScreenCanvas.webkitRequestFullscreen();
+        }
+    }
+
+    private void refreshFullScreenState() {
+        FullScreenDocument doc = (FullScreenDocument)document;
+        if (!isNullOrUndefined(doc.getFullscreenElement()) ||
+                !isNullOrUndefined(doc.getMozFullscreenElement()) ||
+                !isNullOrUndefined(doc.getWebkitFullscreenElement())) {
+            CanvasGlobal global = (CanvasGlobal)window;
+            Screen screen = global.getScreen();
+            canvas.setWidth(screen.getWidth());
+            canvas.setHeight(screen.getHeight());
+            entryPoint.resize(screen.getWidth(), screen.getHeight());
+        } else {
+            canvas.setWidth(defaultWidth);
+            canvas.setHeight(defaultHeight);
+            entryPoint.resize(canvas.getWidth(), canvas.getHeight());
+        }
+    }
+
+    private static boolean isNullOrUndefined(JSObject obj) {
+        return JS.isUndefined(obj) || obj == null;
     }
 
     private void installInputListeners() {
@@ -153,7 +207,7 @@ public class WebStart {
         CanvasRenderingContext2D context = (CanvasRenderingContext2D)canvas.getContext("2d");
         CanvasGraphics graphics = new CanvasGraphics(context);
         graphics.setColor(Color.black());
-        graphics.fillRectangle(0, 0, 800, 600);
+        graphics.fillRectangle(0, 0, canvas.getWidth(), canvas.getHeight());
         entryPoint.paint(graphics);
         if (!stopped) {
             window.setTimeout(new TimerHandler() {
