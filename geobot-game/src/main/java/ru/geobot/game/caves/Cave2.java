@@ -29,18 +29,12 @@ public class Cave2 {
     private NippersResources nippersResources;
     private BombResources bombResources;
     private Environment environment;
-    //private Body leftCraneRoller;
-    //private Body rightCraneRoller;
-    //private Rope leftCraneRope;
-    //private Rope rightCraneRope;
     private Body crane;
     private Rope hangerRope;
     private Body hanger;
     private ControlPanelHandle heightHandle;
     private ControlPanelHandle positionHandle;
     private Body hangerHolder;
-    //private RevoluteJoint leftCraneRollerJoint;
-    //private RevoluteJoint rightCraneRollerJoint;
     private Bobbler bobbler;
     private BodyObject secretCode;
     private RevoluteJoint secretCodeJoint;
@@ -101,7 +95,6 @@ public class Cave2 {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyType.STATIC;
         bodyDef.position.set(SCALE * 236, SCALE * 1283);
-        //leftCraneRoller = game.getWorld().createBody(bodyDef);
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.filter.categoryBits = 0x100;
         fixtureDef.filter.maskBits = 0x100;
@@ -111,10 +104,7 @@ public class Cave2 {
         PolygonShape box = new PolygonShape();
         box.setAsBox(SCALE * 250, SCALE * 37);
         fixtureDef.shape = box;
-        //leftCraneRoller.createFixture(fixtureDef);
         bodyDef.position.x = SCALE * 1580;
-        //rightCraneRoller = game.getWorld().createBody(bodyDef);
-        //rightCraneRoller.createFixture(fixtureDef);
 
         RopeFactory ropeFactory = new RopeFactory();
         ropeFactory.setWidth(SCALE * 2);
@@ -166,24 +156,9 @@ public class Cave2 {
 
         RevoluteJointDef jointDef = new RevoluteJointDef();
         jointDef.bodyA = crane;
-        //jointDef.bodyB = leftCraneRope.part(0);
         jointDef.localAnchorA.set(SCALE * -30, 25 * SCALE);
-        //game.getWorld().createJoint(jointDef);
 
-        //jointDef.bodyB = rightCraneRope.part(0);
         jointDef.localAnchorA.set(SCALE * 30, 25 * SCALE);
-        //game.getWorld().createJoint(jointDef);
-
-        /*jointDef.bodyA = leftCraneRoller;
-        jointDef.bodyB = leftCraneRope.part(leftCraneRope.partCount() - 1);
-        jointDef.localAnchorA.set(-160 * SCALE, 42 * SCALE);
-        jointDef.localAnchorB.set(0, leftCraneRope.getChunkLength());
-        leftCraneRollerJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);
-
-        jointDef.bodyA = rightCraneRoller;
-        jointDef.bodyB = rightCraneRope.part(rightCraneRope.partCount() - 1);
-        jointDef.localAnchorA.set(160 * SCALE, 42 * SCALE);
-        rightCraneRollerJoint = (RevoluteJoint)game.getWorld().createJoint(jointDef);*/
 
         ropeFactory.setStartX(SCALE * 950);
         ropeFactory.setStartY(SCALE * 1950);
@@ -204,7 +179,6 @@ public class Cave2 {
 
         jointDef.bodyA = hangerHolder;
         jointDef.bodyB = hangerRope.part(0);
-        //jointDef.localAnchorA.set(SCALE * 950, SCALE * 1950);
         jointDef.localAnchorB.set(0, 0);
         game.getWorld().createJoint(jointDef);
 
@@ -354,7 +328,6 @@ public class Cave2 {
         pt = gun.getBody().getWorldPoint(pt);
         new Bullet(pt.x, pt.y, gun.getBody().getAngle());
 
-        //gun.getBody().setLinearVelocity(gun.getBody().getWorldVector(new Vec2(-10.5f, 0)));
         gun.getBody().applyLinearImpulse(gun.getBody().getWorldVector(new Vec2(-0.05f, 0)),
                 gun.getBody().getWorldCenter());
     }
@@ -601,8 +574,6 @@ public class Cave2 {
 
             hangerHolder.setTransform(new Vec2(pos, h), 0);
             crane.setTransform(new Vec2(pos, SCALE * 1240), 0);
-            //leftCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (-160 - 950);
-            //rightCraneRollerJoint.m_localAnchor1.x = pos + SCALE * (160 - 950);
         }
     }
 

@@ -1,0 +1,16 @@
+#progress-bar {
+    width: 1024px;
+    height: 20px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(200,200,200);
+    position: relative;
+}
+#progress-bar-content {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    width: 0%;
+    background-color: blue;
+}

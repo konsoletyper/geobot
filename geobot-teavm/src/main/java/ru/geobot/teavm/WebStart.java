@@ -3,15 +3,15 @@ package ru.geobot.teavm;
 import org.teavm.dom.browser.TimerHandler;
 import org.teavm.dom.browser.Window;
 import org.teavm.dom.canvas.CanvasRenderingContext2D;
-import org.teavm.dom.core.Document;
 import org.teavm.dom.core.Element;
-import org.teavm.dom.css.CSSStyleDeclaration;
 import org.teavm.dom.events.Event;
 import org.teavm.dom.events.EventListener;
 import org.teavm.dom.events.EventTarget;
 import org.teavm.dom.events.MouseEvent;
 import org.teavm.dom.html.HTMLCanvasElement;
+import org.teavm.dom.html.HTMLDocument;
 import org.teavm.dom.html.HTMLElement;
+import org.teavm.dom.html.HTMLImageElement;
 import org.teavm.jso.JS;
 import ru.geobot.EntryPoint;
 import ru.geobot.EntryPointCallback;
@@ -19,8 +19,9 @@ import ru.geobot.Key;
 import ru.geobot.game.GeobotMainScreen;
 import ru.geobot.graphics.Color;
 import ru.geobot.resources.ResourceReader;
-import ru.geobot.teavm.js.LocatedElement;
+import ru.geobot.teavm.js.CanvasGlobal;
 import ru.geobot.teavm.js.KeyEvent;
+import ru.geobot.teavm.js.LocatedElement;
 
 /**
  *
@@ -29,42 +30,27 @@ import ru.geobot.teavm.js.KeyEvent;
 public class WebStart {
     private EntryPoint entryPoint;
     private Window window = (Window)JS.getGlobal();
-    private Document document = window.getDocument();
-    private HTMLCanvasElement canvas;
-    private HTMLElement progressBar;
-    private HTMLElement progressBarContent;
+    private HTMLDocument document = window.getDocument();
+    private HTMLCanvasElement canvas = (HTMLCanvasElement)document.getElementById("geobot-canvas");
+    private HTMLElement progressBar = document.getElementById("progress-bar");
+    private HTMLElement progressBarContent = document.getElementById("progress-bar-content");
     private long startTime;
     private boolean stopped;
 
     public WebStart(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
-        Element body = document.getDocumentElement().getElementsByTagName("body").get(0);
-        canvas = (HTMLCanvasElement)document.createElement("canvas");
-        canvas.setAttribute("width", "800px");
-        canvas.setAttribute("height", "600px");
-        body.appendChild(canvas);
-        body.appendChild(createProgressBar());
-    }
-
-    private HTMLElement createProgressBar() {
-        progressBar = (HTMLElement)document.createElement("div");
-        CSSStyleDeclaration style = progressBar.getStyle();
-        style.setProperty("width", "800px");
-        style.setProperty("height", "20px");
-        style.setProperty("border-width", "1px");
-        style.setProperty("border-style", "solid");
-        style.setProperty("border-color", "rgb(200,200,200)");
-        style.setProperty("position", "relative");
-        progressBarContent = (HTMLElement)document.createElement("div");
-        style = progressBarContent.getStyle();
-        style.setProperty("position", "absolute");
-        style.setProperty("left", "0px");
-        style.setProperty("top", "0px");
-        style.setProperty("bottom", "0px");
-        style.setProperty("width", "0%");
-        style.setProperty("background-color", "blue");
-        progressBar.appendChild(progressBarContent);
-        return progressBar;
+        CanvasRenderingContext2D context = (CanvasRenderingContext2D)canvas.getContext("2d");
+        context.setFillStyle("black");
+        context.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        CanvasGlobal canvasGlobal = (CanvasGlobal)window;
+        final HTMLImageElement image = canvasGlobal.newImage();
+        image.setSrc("main-screen.png");
+        image.addEventListener("load", new EventListener() {
+            @Override public void handleEvent(Event evt) {
+                CanvasRenderingContext2D context = (CanvasRenderingContext2D)canvas.getContext("2d");
+                context.drawImage(image, (canvas.getWidth() - image.getWidth()) / 2, 0);
+            }
+        });
     }
 
     public void run() {
@@ -73,8 +59,7 @@ public class WebStart {
         ResourceReader resourceLoader = CanvasResourceLoader.getInstance();
         CanvasResourceLoader.init();
         CanvasResourceLoader.addProgressListener(new ProgressListener() {
-            @Override
-            public void progressChanged(int current, int total) {
+            @Override public void progressChanged(int current, int total) {
                 progressBarContent.getStyle().setProperty("width", String.valueOf(100 * current / (float)total) + "%");
             }
         });
@@ -96,7 +81,7 @@ public class WebStart {
                 parent.removeChild(canvas);
             }
         });
-        entryPoint.resize(800, 600);
+        entryPoint.resize(canvas.getWidth(), canvas.getHeight());
         step();
     }
 
@@ -108,8 +93,8 @@ public class WebStart {
                 float y = mouseEvent.getClientY();
                 LocatedElement element = (LocatedElement)canvas;
                 while (element != null && !JS.isUndefined(element)) {
-                    x -= element.getOffsetLeft() - element.getScrollLeft();
-                    y -= element.getOffsetTop() - element.getScrollTop();
+                    x -= element.getOffsetLeft();
+                    y -= element.getOffsetTop();
                     element = element.getOffsetElement();
                 }
                 entryPoint.mouseMove((int)x, (int)y);
